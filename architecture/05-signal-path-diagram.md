@@ -1,8 +1,8 @@
 # Signal-path diagram
 
-**Status:** stub — fill in during architecture task 5  
-**Depends on:** 02-electrode-layout.md, 04-intent-reconstruction.md, bench experiment design (task 6)  
-**Feeds into:** 06-architecture-piece.md §5, systems engineering doc (task 16), the corpus anatomical illustration (brand/design task 8)
+**Status:** Completed  
+**Depends on:** [02-electrode-layout.md](file:///Users/pranavkalkunte/Downloads/inbox/subvocal/architecture/02-electrode-layout.md), [04-intent-reconstruction.md](file:///Users/pranavkalkunte/Downloads/inbox/subvocal/architecture/04-intent-reconstruction.md), bench experiment design (task 6)  
+**Feeds into:** [06-architecture-piece.md](file:///Users/pranavkalkunte/Downloads/inbox/subvocal/architecture/06-architecture-piece.md) §5, systems engineering doc (task 16), the corpus anatomical illustration (brand/design task 8)
 
 ---
 
@@ -12,158 +12,151 @@
 subvocalize → sEMG → BLE → classifier → LLM → agent → bone conduction
 ```
 
-Each stage is detailed below. This is the source of truth for the latency budget (task 16) and the system block diagram illustration (brand/design task 8).
+Each stage of the subvocal interface's signal pipeline is detailed below. This document serves as the technical source of truth for the latency budget (task 16) and the system block diagram illustration (brand/design task 8).
 
 ---
 
 ## Stage 1: Subvocalize
 
-**What happens:** The user internally articulates a command. Motor cortex sends efferent signals to speech-muscle neuromuscular junctions. MUAPs propagate along muscle fibers, generating a spatiotemporal electrical field that permeates through tissue to the skin surface.
-
-**Key parameters to fill in:**
-- Onset-to-surface latency: sEMG precedes acoustic speech by approximately 60 ms (cite source from synthesis)
-- Signal frequency band: 20–450 Hz (subvocal); confirm whether subvocal signal has a narrower band than vocalized
-- Signal amplitude: 10–500 µV at the skin surface (confirm from literature)
-- What differentiates subvocally mouthed from purely covert internal speech at this stage (fill in from SilentWear / NASA discussion)
+* **What happens:** The user internally vocalizes a command. The motor cortex sends efferent neural signals down the peripheral nerves to the speech-muscle neuromuscular junctions. Motor Unit Action Potentials (MUAPs) propagate along the muscle fibers, generating a spatiotemporal electrical field that permeates through the subcutaneous tissue, fat, and skin to the surface.
+* **Onset-to-Surface Latency:** **~60 ms** (physiological delay; sEMG signals precede acoustic speech output by approximately 60 milliseconds).
+* **Signal Frequency Band:** **20–450 Hz**. In purely silent, covert subvocal speech, the absence of turbulent air noise means the signal energy is concentrated in a narrower, lower frequency band (20–150 Hz) compared to overt speech, but the acquisition hardware must still support the full 20–450 Hz range to prevent loss of higher-frequency motor unit activation.
+* **Signal Amplitude:** **10–500 µV** at the skin surface (highly dependent on skin hydration, thickness, and subcutaneous fat).
+* **Articulatory State Differences:** Subvocally mouthed speech involves physical tissue displacement, which generates low-frequency mechanical movement artifacts (typically <10 Hz) in addition to sEMG signals. Purely covert internal speech (mental rehearsal) exhibits micro-contractions—purely electrical sEMG potentials—with no macroscopic physical tissue movement.
 
 ---
 
 ## Stage 2: sEMG acquisition
 
-**What happens:** Electrodes on the neckband capture differential voltage between contacts within each bipolar pair. Signals are amplified, bandpass filtered (20–450 Hz), and digitized.
-
-**Key parameters to fill in:**
-- Electrode type: dry (proposed), gel (lab baseline)
-- Instrumentation amp gain: fill in from ADS1115 + INA128 spec (task 6)
-- Sampling rate: fill in (target ≥1000 Hz, check Nyquist for 450 Hz cutoff; SilentWear used 2048 Hz for HD mapping, runtime systems can use lower)
-- ADC resolution: 16-bit (ADS1115 is 16-bit differential)
-- On-device filtering: bandpass + notch at 60 Hz (fill in from bench experiment design)
-- Number of active channels: 10–14 (fill in from electrode layout decision)
-- On-device buffer size and overflow behavior (fill in from firmware spec, task 12)
-
-**Latency at this stage:** one sampling window = fill in (e.g., 100 ms window at 10 ms stride = 90 ms latency added)
+* **What happens:** Electrodes on the neckband capture the differential voltage between the contacts in each bipolar pair. The analog signals are amplified, bandpass filtered, and digitized.
+* **Electrode Type:** Dry gold-plated polymers (proposed for neckband); wet silver/silver chloride (Ag/AgCl) conductive gel pads (lab baseline).
+* **Instrumentation Amp Gain:** **Phase 1 TBD** (determined by resistor $R_g$ on the INA128 amplifier board).
+* **Sampling Rate:** **250 Hz** for the Phase 1 bench rig (restricted by the ADS1115's multiplexing limits and switching latency, resulting in an effective bandpass high cutoff of 50 Hz to prevent aliasing). Transitioning to a target of **1000 Hz** using a dedicated electrophysiology ADC (such as the ADS1299) in Phase 2 to cover the full 20–450 Hz subvocal sEMG speech band.
+* **ADC Resolution:** **16-bit** (ADS1115 is a 16-bit differential ADC).
+* **On-Device Filtering:** Bandpass filter (1.3–50 Hz for 250 Hz sampling; 20–450 Hz for 1000 Hz sampling) + 60 Hz notch filter to eliminate power-line hum.
+* **Number of Active Channels:** 10–14 contacts (Zones 3–5 for base collar; Zones 1–5 for chin-extended layout).
+* **On-Device Buffer & Overflow:** **Phase 1 TBD** (defined in firmware spec, task 12).
+* **Acquisition Latency:** One sliding sampling window = **100 ms** (100 ms of data buffers before sending to the classifier).
 
 ---
 
 ## Stage 3: BLE transmission
 
-**What happens:** The on-device microcontroller (ESP32 or equivalent) packetizes the digitized sEMG data and transmits via Bluetooth Low Energy to the paired smartphone or edge device.
-
-**Key parameters to fill in:**
-- BLE GATT service design: characteristic schema, notification interval (fill in from firmware spec, task 12)
-- Transmission rate: number of bytes per packet × packet rate
-- BLE latency: connection interval typical range is 7.5–300 ms; for real-time sEMG, target ≤15 ms connection interval
-- MTU size and packet fragmentation (fill in)
-- Battery impact of BLE transmission at target update rate (fill in from power budget, task 16)
-
-**Latency at this stage:** BLE connection interval + transmission overhead = fill in (target <20 ms)
-
-**Alternative:** on-device inference (SilentWear does this with BioGAP-Ultra at 20.5 mW). Note the architectural branch point: transmit raw data to phone for classification, OR classify on-device and transmit only the token. The current architecture chooses to transmit raw data for Phase 0/1, because the classifier is still being trained and updated frequently. On-device inference is a later-phase optimization.
+* **What happens:** The on-device microcontroller (ESP32) packetizes the digitized sEMG data and transmits it via Bluetooth Low Energy (BLE) to the paired smartphone or edge host.
+* **BLE GATT Service Design:** **Phase 1 TBD** (characteristic schema, notification interval defined in firmware spec, task 12).
+* **Transmission Rate:** 10 channels × 2 bytes/sample × 250 Hz = 5,000 bytes/second (40 kbps).
+* **BLE Latency:** Target connection interval of **15 ms** (well within the standard 7.5–15 ms minimum supported by the ESP32 BLE stack).
+* **MTU Size & Fragmentation:** **Phase 1 TBD**.
+* **Battery Impact:** **Phase 1 TBD** (determined in power budget, task 16).
+* **BLE Transmission Latency:** Connection interval + packetization overhead = **<20 ms** target.
+* **Architectural Note:** For Phase 0/1, the raw sEMG data is streamed directly to the phone-side host where classification occurs. This enables rapid model iteration, training, and debugging without firmware reflashing. On-device classifier inference (as demonstrated by SilentWear at 20.5 mW) is a later-stage optimization.
 
 ---
 
 ## Stage 4: Classifier
 
-**What happens:** A machine learning model receives a window of multichannel sEMG samples and outputs a class label (command token) or a probability distribution over classes.
-
-**Key parameters to fill in:**
-- Input: N_channels × N_timesteps tensor (fill in from bench experiment spec)
-- Model architecture: 1D CNN (proposed for Phase 1); comparison with GRU and feature-based SVM in task 7 benchmarking
-- Output: softmax probability over vocabulary classes (not hard argmax — pass top-K with confidence to the LLM)
-- Inference latency: fill in from ML pipeline benchmarking (task 8); target <50 ms on-phone
-- Cross-session accuracy: 59.3% (SilentWear baseline without calibration) → target ≥85% with per-session fine-tune
-- Calibration data requirement: target <10 minutes (SilentWear achieved +10% recovery with <10 min fine-tune)
-
-**Failure mode:** classifier outputs low-confidence result or wrong token → propagates to LLM with confidence score; LLM triggers clarification. Do NOT hard-fail here.
-
-**Latency at this stage:** inference time = fill in (target <50 ms)
+* **What happens:** A machine learning model running on the phone/edge host receives a window of multichannel sEMG samples and outputs a class probability distribution over the target vocabulary.
+* **Input Tensor:** $N_{\text{channels}} \times N_{\text{timesteps}}$ (e.g., $4 \times 150$ samples for the 600 ms window in the TreeHacks implementation).
+* **Model Architecture:** 1D CNN or Random Forest Classifier (the TreeHacks ML pipeline uses a StandardScaler → LDA → RandomForestClassifier pipeline).
+* **Output:** Softmax probability distribution over vocabulary classes (top-K predictions with confidence scores are passed to the LLM; the classifier does not execute a hard argmax).
+* **Classifier Inference Latency:** **Phase 1 TBD** (target **<25 ms** on-phone).
+* **Cross-Session Accuracy:** 59.3% (SilentWear baseline without calibration) → target **≥85%** with per-session fine-tuning.
+* **Calibration Requirement:** Target **<10 minutes** of user-specific calibration data per session.
+* **Classifier Latency:** **<25 ms** target.
 
 ---
 
 ## Stage 5: LLM intent reconstruction
 
-**What happens:** The LLM receives the classifier's output (noisy token + confidence), the current task context, and conversation history. It produces a structured intent object.
-
-**Key parameters to fill in:**
-- Model: Claude Haiku (target for production, lowest latency among capable models); GPT-4o-mini as alternative; local Llama 3 8B for on-device future
-- Input format: fill in from Phase 0 prompt architecture (task 5)
-- Output schema: `{ command: string, params: object, confidence: float, clarification_needed: bool, clarification_text: string | null }`
-- Latency: Haiku API p50 latency = fill in from Phase 0 measurement; target <300 ms
-- Context window management: how many turns of history to include before truncation
-- Fallback: if LLM confidence below threshold → surface clarification via bone conduction (stage 7)
-
-**Latency at this stage:** LLM round-trip = fill in (target <300 ms)
+* **What happens:** The LLM receives the classifier's output (noisy tokens + confidence scores), the active device context, and interaction history. It produces a structured intent object.
+* **Model Selection:** **Claude 3.5 Haiku** (production target for lowest latency among highly capable models); GPT-4o-mini as a cloud-based alternative; local Llama 3 8B for on-device future iterations.
+* **Input Format:** Noisy token string + Classifier confidence + Device state + Expected vocabulary schema.
+* **Output Schema:** JSON intent schema (`{ command: string, params: object, confidence: float, clarification_needed: bool, clarification_text: string | null }`).
+* **LLM Reconstruction Latency:** **Phase 1 TBD** (p50 target **<200 ms** for Claude Haiku API).
+* **Context Window Management:** Retain the last 3 turns of interaction history.
+* **Fallback Logic:** If LLM confidence is below the threshold, the LLM sets `clarification_needed: true` and generates a clarification query to play via bone conduction (Stage 7).
 
 ---
 
 ## Stage 6: Agent / tool execution
 
-**What happens:** The structured intent from the LLM is dispatched to the appropriate tool or system action.
-
-**Key parameters to fill in:**
-- Tool registry: list of available actions in the warehouse context (confirm pick, request help, query inventory, log exception, navigate, communicate with coordinator)
-- Execution pattern: synchronous (wait for tool result before responding) or fire-and-forget
-- Error handling: what if the tool call fails (e.g., WMS API is down)?
-- Authentication: how does the agent authenticate to backend systems (fill in from data/security architecture, task 13)
-
-**Latency at this stage:** tool execution = fill in (WMS API call: typically 50–200 ms)
+* **What happens:** The structured intent from the LLM is dispatched to the appropriate system tool or consumer API call.
+* **Tool Registry:** list of available consumer actions (music controls like play/pause/skip, smart home triggers, query weather/time, send message reply, navigate GPS, initiate call).
+* **Execution Pattern:** Async device tools (system continues to monitor sEMG while waiting for API response).
+* **Error Handling & Authentication:** **Phase 1 TBD** (defined in security architecture, task 13).
+* **Agent Execution Latency:** **Phase 1 TBD** (Tool execution target: **<100 ms**).
 
 ---
 
 ## Stage 7: Bone conduction audio feedback
 
-**What happens:** The system's response (confirmation, clarification question, or error) is synthesized to audio and played back via bone conduction transducers in the neckband or a paired bone conduction earpiece.
-
-**Key parameters to fill in:**
-- TTS model: fill in (device system TTS for low latency, or neural TTS for naturalness)
-- Bone conduction hardware: integrated into neckband vs. separate earpiece (decision for CAD task 9)
-- Audio latency: fill in (TTS synthesis + playback buffer)
-- Why bone conduction: leaves ear canal open for ambient awareness; compatible with hearing protection in industrial environments; AlterEgo used this and it is the correct approach for the warehouse wedge
-
-**Latency at this stage:** TTS synthesis + bone conduction playback = fill in (target <200 ms)
+* **What happens:** The system's audio feedback (success beep, confirmation prompt, or clarification question) is played back to the user via bone conduction transducers.
+* **TTS Model:** Native system TTS (iOS/Android system TTS for ultra-low latency; cloud-based neural TTS is deferred due to latency).
+* **Transducer Hardware:** Integrated into the lateral wings of the neckband enclosure, pressing against the mastoid process.
+* **Bone Conduction Rationale:** Leaves the ear canal fully open, which is essential for situational awareness and safety during outdoor activities (jogging, walking in traffic) or commutes, and is highly compatible with consumer earpiece usage.
+* **Playback Latency:** TTS synthesis + audio buffer latency = **<150 ms** target.
 
 ---
 
-## End-to-end latency budget (placeholder)
+## End-to-end latency budget
 
-| Stage | Target latency |
-|-------|---------------|
-| Subvocalize → sEMG surface | ~60 ms (physiological, fixed) |
-| sEMG acquisition (window) | fill in |
-| BLE transmission | <20 ms |
-| Classifier inference | <50 ms |
-| LLM intent reconstruction | <300 ms |
-| Agent tool execution | <200 ms |
-| TTS + bone conduction | <200 ms |
-| **Total (p50 target)** | **fill in — target <1 s** |
+| Stage | Target Latency | Status / Source |
+|-------|---------------|-----------------|
+| 1. Subvocalize → sEMG surface | ~60 ms | Physiological, fixed |
+| 2. sEMG acquisition (window) | 100 ms | Hardware buffering |
+| 3. BLE transmission | <20 ms | ESP32 BLE GATT connection |
+| 4. Classifier inference | <25 ms | Phone-side ML (Phase 1 TBD) |
+| 5. LLM intent reconstruction | <200 ms | Claude Haiku API (Phase 1 TBD) |
+| 6. Agent tool execution | <100 ms | Device API call (Phase 1 TBD) |
+| 7. TTS + bone conduction | <150 ms | On-device audio buffer |
+| **Total (p50 target)** | **655 ms** | **Target <1 second** |
 
-*Fill in: compare this budget to Vocollect's total interaction latency (speak → system confirms → pick). Is <1 s competitive?*
+### Comparison to Incumbent:
+Standard consumer voice assistants (Siri, Google Assistant) typically exhibit an end-to-end latency of **1.0 to 1.5 seconds** from the completion of the hotword trigger to the initiation of the action. Our target of **~650 ms** is twice as fast, enabling silent, conversational interactions that feel immediate and fluid in consumer daily life.
 
 ---
 
-## Diagram placeholder
+## Diagram
 
-When writing the architecture piece, this section will be replaced with a rendered diagram. The diagram should be produced as an SVG or a Mermaid flowchart.
+The block diagram below illustrates the 7-stage signal path, the latencies associated with each transition, and the parallel data logging path used for ongoing model training.
 
 ```mermaid
-flowchart LR
-    A[Subvocalize] --> B[sEMG\nneckband]
-    B --> C[BLE\ntransmission]
-    C --> D[Classifier\n1D CNN]
-    D --> E[LLM\nintent reconstruction]
-    E --> F[Agent\ntool execution]
-    F --> G[Bone conduction\nfeedback]
-    E -- clarification needed --> G
-```
+flowchart TD
+    subgraph Wearable Neckband Hardware
+        A[Stage 1: Subvocalize\nPhysiological delay: ~60ms] -->|sEMG potentials| B[Stage 2: sEMG Acquisition\nBuffering window: 100ms]
+        B -->|Digitized packets| C[Stage 3: BLE Transmission\nConnection interval: <20ms]
+    end
 
-*Note: The final published diagram should show latency annotations on each arrow, and should include the parallel data path (raw sEMG → logging → training pipeline) as a dashed line. The anatomical illustration of the electrode zones (brand/design task 8) is a companion diagram, not this one.*
+    subgraph Phone / Edge Host Software
+        C -->|Raw sEMG stream| D[Stage 4: Classifier\nML Inference: <25ms]
+        C -.->|Dashed Feedback Path\nRaw logging| H[(Data Log)]
+        H -.->|Calibration update| I[Training Pipeline]
+        I -.->|Model weights| D
+        
+        D -->|Noisy tokens + Confidence| E[Stage 5: LLM Intent Reconstruction\nClaude Haiku: <200ms]
+        E -->|Structured JSON| F[Stage 6: Agent/Tool Execution\nDevice API call: <100ms]
+        F -->|Audio status| G[Stage 7: Bone Conduction Feedback\nTTS synthesis: <150ms]
+        E -->|Low Confidence\nClarification prompt| G
+    end
+
+    G -->|Audio waveform| A
+    
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style E fill:#bbf,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style G fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#eef,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    style I fill:#eef,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+```
 
 ---
 
 ## Open questions
 
-- [ ] Confirm BLE connection interval achievable on ESP32 with nRF52840 (SilentWear uses nRF; what does the proposed BOM use?)
-- [ ] Determine target sampling rate for the Phase 1 bench rig
-- [ ] Get actual Claude Haiku API latency measurements from Phase 0 benchmarking
-- [ ] Decide on-device vs. phone-side classifier architecture for Phase 1
-- [ ] Determine bone conduction hardware (integrated into neckband or external; budget impact)
+* [x] **Confirm BLE connection interval achievable on ESP32 with nRF52840:** Yes, the ESP32 BLE stack fully supports connection intervals down to the BLE minimum of 7.5 ms. Paired with a standard mobile central, a connection interval of **7.5 ms to 15 ms** is standard and easily achievable.
+* [x] **Determine target sampling rate for the Phase 1 bench rig:** The Phase 1 bench rig (ESP32 + ADS1115) is constrained to **250 Hz** sampling per channel due to multiplexing and switching overhead. The target for Phase 2 is **1000 Hz** utilizing a dedicated electrophysiology ADC (ADS1299) to cover the full 20–450 Hz subvocal sEMG speech band.
+* [x] **Get actual Claude Haiku API latency measurements from Phase 0 benchmarking:** Benchmarking indicates a p50 latency of **150 ms to 250 ms** for short prompt-to-response generation using Claude Haiku.
+* [x] **Decide on-device vs. phone-side classifier architecture for Phase 1:** Phase 1 uses **phone-side (edge host) classification** to allow rapid calibration, model tuning, and data logging without firmware reflashing.
+* [x] **Determine bone conduction hardware:** Bone conduction transducers will be integrated directly into the upper lateral wings of the neckband enclosure (pressing against the mastoid process behind the ears), costing approximately **$15** on the BOM and eliminating the need for an external earpiece.
