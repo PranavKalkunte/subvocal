@@ -1,0 +1,53 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+ENV/
+env/
+dist/
+build/
+*.egg
+
+# Node / JS
+node_modules/
+.next/
+out/
+.npm
+.eslintcache
+
+# IDE / Editor config
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Logs and databases
+*.log
+*.sqlite
+
+# Browser / automation profiles
+.browser_profile/
+
+# Data and models (large binary artifacts)
+treehacks-2026-main/silentpilot/data/*.npz
+treehacks-2026-main/silentpilot/models/*.joblib

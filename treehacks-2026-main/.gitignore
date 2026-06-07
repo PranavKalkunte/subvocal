@@ -1,0 +1,38 @@
+# Browser profile
+.browser_profile/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Node
+node_modules/
+.next/
+out/
+
+# Environment
+.env
+
+# Data & models
+data/*.npz
+models/*.joblib
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Browser profile (persistent Chromium data)
+.browser_profile/
+
+# Misc
+*.log
