@@ -102,7 +102,10 @@ class SubvocalPipeline:
         context = self.context_provider.get_context()
 
         # 2. Reconstruct intent via LLM
-        intent = self.llm_provider.reconstruct_intent(tokens_to_process, context)
+        try:
+            intent = self.llm_provider.reconstruct_intent(tokens_to_process, context)
+        except Exception:
+            return None
 
         # 3. Create Action from Intent
         action = Action(

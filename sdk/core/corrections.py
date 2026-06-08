@@ -29,9 +29,8 @@ class CorrectionManager:
             log_path: Path to the JSONL log file. Defaults to 'sdk/data/corrections_log.jsonl'.
         """
         if log_path is None:
-            # Resolve relative to the current workspace sdk/data directory
-            self.log_path = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "data", "corrections_log.jsonl")
+            self.log_path = os.path.join(
+                os.path.expanduser("~"), ".subvocal", "data", "corrections_log.jsonl"
             )
         else:
             self.log_path = os.path.abspath(log_path)
@@ -87,6 +86,38 @@ class FinetuningHook:
     """Converts correction logs into training datasets for fine-tuning LLMs."""
 
     @staticmethod
+    def _build_user_prompt(entry: "CorrectionLogEntry") -> str:
+        """Builds the canonical user prompt for a correction entry, matching live inference format."""
+        from .prompts import PromptManager
+        from shorthand.decoder import heuristic_decode_phrase
+
+        contacts_str = ", ".join([f"{c.name} ({c.shorthand_name})" for c in entry.context_snapshot.contacts])
+        calendar_str = ", ".join(
+            [f"{e.title} at {e.start_time} ({e.shorthand_title})" for e in entry.context_snapshot.calendar]
+        )
+        web_elements_str = ", ".join(
+            [f"{el.label} [{el.element_type}] ({el.shorthand_label})" for el in entry.context_snapshot.app_state.visible_elements]
+        )
+        history_str = "\n".join([f"{m.role}: {m.text}" for m in entry.context_snapshot.conversation_history])
+
+        heur_phrase, _ = heuristic_decode_phrase(
+            entry.raw_shorthand,
+            ui_elements=[el.label for el in entry.context_snapshot.app_state.visible_elements],
+            contacts=[c.name for c in entry.context_snapshot.contacts],
+            calendar_events=[e.title for e in entry.context_snapshot.calendar],
+        )
+
+        return PromptManager().format_prompt(
+            noisy_input=entry.raw_shorthand,
+            heuristic_recommendation=heur_phrase,
+            web_context=web_elements_str or "(none)",
+            calendar=calendar_str or "(none)",
+            contacts=contacts_str or "(none)",
+            history=history_str or "(none)",
+            version="v1",
+        )
+
+    @staticmethod
     def export_to_openai(
         entries: List[CorrectionLogEntry],
         system_instruction: str = "Translate silent speech shorthand and context into correct system actions.",
@@ -96,35 +127,16 @@ class FinetuningHook:
         Format:
             {"messages": [{"role": "system", "content": ...}, {"role": "user", "content": ...}, {"role": "assistant", "content": ...}]}
         """
-        from .prompts import PromptManager
-        prompt_mgr = PromptManager()
-
-        dataset = []
-        for entry in entries:
-            # Reconstruct the user prompt context
-            contacts_str = ", ".join([f"{c.name} ({c.shorthand_name})" for c in entry.context_snapshot.contacts])
-            calendar_str = ", ".join([f"{e.title} ({e.shorthand_title})" for e in entry.context_snapshot.calendar])
-            web_elements_str = ", ".join([f"{el.label} ({el.shorthand_label})" for el in entry.context_snapshot.app_state.visible_elements])
-            history_str = "\n".join([f"{m.role}: {m.text}" for m in entry.context_snapshot.conversation_history])
-
-            user_prompt = prompt_mgr.format_prompt(
-                noisy_input=entry.raw_shorthand,
-                heuristic_recommendation=entry.decoded_intent,  # Use predicted intent as heuristic recommendation
-                web_context=web_elements_str or "(none)",
-                calendar=calendar_str or "(none)",
-                contacts=contacts_str or "(none)",
-                history=history_str or "(none)",
-                version="v1"
-            )
-
-            dataset.append({
+        return [
+            {
                 "messages": [
                     {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": user_prompt},
-                    {"role": "assistant", "content": entry.corrected_intent}
+                    {"role": "user", "content": FinetuningHook._build_user_prompt(entry)},
+                    {"role": "assistant", "content": entry.corrected_intent},
                 ]
-            })
-        return dataset
+            }
+            for entry in entries
+        ]
 
     @staticmethod
     def export_to_gemini(
@@ -134,44 +146,18 @@ class FinetuningHook:
         """Converts entries to Google Gemini fine-tuning format.
 
         Format:
-            {"contents": [{"role": "user", "parts": [{"text": ...}]}, {"role": "model", "parts": [{"text": ...}]}], "systemInstruction": {"parts": [{"text": ...}]}}
+            {"contents": [...], "systemInstruction": {...}}
         """
-        from .prompts import PromptManager
-        prompt_mgr = PromptManager()
-
-        dataset = []
-        for entry in entries:
-            contacts_str = ", ".join([f"{c.name} ({c.shorthand_name})" for c in entry.context_snapshot.contacts])
-            calendar_str = ", ".join([f"{e.title} ({e.shorthand_title})" for e in entry.context_snapshot.calendar])
-            web_elements_str = ", ".join([f"{el.label} ({el.shorthand_label})" for el in entry.context_snapshot.app_state.visible_elements])
-            history_str = "\n".join([f"{m.role}: {m.text}" for m in entry.context_snapshot.conversation_history])
-
-            user_prompt = prompt_mgr.format_prompt(
-                noisy_input=entry.raw_shorthand,
-                heuristic_recommendation=entry.decoded_intent,
-                web_context=web_elements_str or "(none)",
-                calendar=calendar_str or "(none)",
-                contacts=contacts_str or "(none)",
-                history=history_str or "(none)",
-                version="v1"
-            )
-
-            dataset.append({
-                "systemInstruction": {
-                    "parts": [{"text": system_instruction}]
-                },
+        return [
+            {
+                "systemInstruction": {"parts": [{"text": system_instruction}]},
                 "contents": [
-                    {
-                        "role": "user",
-                        "parts": [{"text": user_prompt}]
-                    },
-                    {
-                        "role": "model",
-                        "parts": [{"text": entry.corrected_intent}]
-                    }
-                ]
-            })
-        return dataset
+                    {"role": "user", "parts": [{"text": FinetuningHook._build_user_prompt(entry)}]},
+                    {"role": "model", "parts": [{"text": entry.corrected_intent}]},
+                ],
+            }
+            for entry in entries
+        ]
 
     @staticmethod
     def export_to_jsonl(data: List[Dict[str, Any]], output_path: str) -> int:

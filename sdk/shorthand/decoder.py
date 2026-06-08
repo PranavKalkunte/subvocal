@@ -385,37 +385,15 @@ def reconstruct_intent_llm(
         # No API key found, unable to run LLM reconstruction step
         return None
         
-    # Build vocab description
-    vocab_desc = "\n".join([f"- {cmd}: {details['description']}" for cmd, details in COMMANDS.items()])
-    
-    prompt = f"""You are the core intent reconstruction decoder for a silent speech subvocal interface neckband.
-The user is speaking silently. Jaw/throat sEMG sensors capture signals and classify them into phonetic/mouth-shape shorthand.
-Due to sEMG noise, character insertions, deletions, and substitutions occur.
-
-TARGET COMMAND VOCABULARY:
-{vocab_desc}
-
-SHORTHAND RULES applied by user:
-1. Commands are written as abbreviations (e.g. GOTO -> gt, SEARCH -> srch, CLICK -> clk, TYPE -> typ).
-2. Words have subsequent vowels and 'h' omitted, double consonants collapsed.
-
-INPUT TO RECONSTRUCT:
-Noisy Shorthand Stream: "{noisy_input}"
-Heuristic Alignment Recommendation: "{heuristic_candidate}"
-
-USER CONTEXT DATA:
-- Web Page Context (Visible elements): {web_context or "(none)"}
-- Calendar Events: {calendar or "(none)"}
-- Contacts List: {contacts or "(none)"}
-- Conversation History: {history or "(none)"}
-
-Your goal: Output ONLY the correct reconstructed command and arguments.
-Reconstruct the full words, restore deleted vowels, correct phonetic substitutions.
-The output MUST start with one of the target commands (e.g., GOTO, SEARCH, CLICK, TYPE, etc.).
-If the command requires arguments (like GOTO a URL, SEARCH a query, TYPE a word), complete them based on the noisy stream and user context.
-
-Output format: Return ONLY the raw reconstructed command string (e.g. "GOTO google.com" or "CLICK Sign In"). No explanations, no markdown formatting, no JSON wrappers.
-"""
+    from core.prompts import PromptManager
+    prompt = PromptManager().format_prompt(
+        noisy_input=noisy_input,
+        heuristic_recommendation=heuristic_candidate,
+        web_context=web_context or "(none)",
+        calendar=calendar or "(none)",
+        contacts=contacts or "(none)",
+        history=history or "(none)",
+    )
     result = call_llm_api(provider, api_key, model, prompt)
     if result:
         # Strip any quotes or whitespace the LLM might have returned
@@ -456,7 +434,7 @@ def hybrid_decode(
     # Let's check if any API key is configured
     has_key = any(os.environ.get(k) for k in ["GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"])
     
-    if has_key:
+    if has_key and heur_conf < 0.9:
         flat_web = web_context_words
         if not flat_web and ui_elements:
             flat_web = ui_elements

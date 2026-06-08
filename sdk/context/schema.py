@@ -66,4 +66,4 @@ class UserContext(BaseModel):
     calendar: List[CalendarEvent] = Field(default_factory=list, description="Upcoming calendar schedule")
     location: Optional[LocationInfo] = Field(default=None, description="Current location information")
     conversation_history: List[Message] = Field(default_factory=list, description="Recent dialog turns")
-    app_state: AppState = Field(description="Current application and active UI elements")
+    app_state: AppState = Field(default_factory=lambda: AppState(current_app=""), description="Current application and active UI elements")

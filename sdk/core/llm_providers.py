@@ -11,6 +11,7 @@ from typing import List, Optional, Any, Dict
 from context.schema import UserContext
 from .models import CommandToken, Intent
 from .interfaces import LLMProvider
+from .prompts import PromptManager
 
 
 class BaseLLMProvider(LLMProvider):
@@ -35,6 +36,7 @@ class BaseLLMProvider(LLMProvider):
         self.model_name = model_name
         self.mock_response = mock_response
         self.prompt_version = prompt_version
+        self._prompt_mgr = PromptManager(default_version=prompt_version)
 
     def _get_api_key(self, env_var: str) -> str:
         key = self.api_key or os.environ.get(env_var)
@@ -77,7 +79,7 @@ class BaseLLMProvider(LLMProvider):
             "history": history_str or "(none)",
         }
 
-    def _parse_llm_output(self, output: str, raw_shorthand: str) -> Intent:
+    def _parse_llm_output(self, output: str, raw_shorthand: str, default_confidence: float = 0.95) -> Intent:
         """Parses the LLM plain text output into a validated Intent."""
         cleaned = output.replace('"', '').replace("'", "").strip()
         parts = cleaned.split()
@@ -97,7 +99,7 @@ class BaseLLMProvider(LLMProvider):
         return Intent(
             command=command,
             arguments=arguments,
-            confidence=0.95,  # Default confidence for LLM resolved intents
+            confidence=default_confidence,
             resolved_text=cleaned,
             raw_shorthand=raw_shorthand,
             timestamp=time.time()
@@ -111,12 +113,11 @@ class ClaudeProvider(BaseLLMProvider):
         return "anthropic"
 
     def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
-        from .prompts import PromptManager
-
         key = self._get_api_key("ANTHROPIC_API_KEY")
         model = self.model_name or "claude-3-5-sonnet-20241022"
 
         raw_shorthand = " ".join([t.text for t in tokens])
+        mean_conf = sum(t.confidence for t in tokens) / len(tokens) if tokens else 0.95
         from shorthand.decoder import heuristic_decode_phrase
         heur_phrase, _ = heuristic_decode_phrase(
             raw_shorthand,
@@ -125,10 +126,8 @@ class ClaudeProvider(BaseLLMProvider):
             calendar_events=[e.title for e in context.calendar]
         )
 
-        # Build prompt
         formatted_ctx = self._format_context(context)
-        prompt_mgr = PromptManager(default_version=self.prompt_version)
-        prompt = prompt_mgr.format_prompt(
+        prompt = self._prompt_mgr.format_prompt(
             version=self.prompt_version,
             noisy_input=raw_shorthand,
             heuristic_recommendation=heur_phrase,
@@ -158,7 +157,7 @@ class ClaudeProvider(BaseLLMProvider):
             res_json = json.loads(response_str)
             output = res_json["content"][0]["text"]
 
-        return self._parse_llm_output(output, raw_shorthand)
+        return self._parse_llm_output(output, raw_shorthand, mean_conf)
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -168,12 +167,11 @@ class OpenAIProvider(BaseLLMProvider):
         return "openai"
 
     def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
-        from .prompts import PromptManager
-
         key = self._get_api_key("OPENAI_API_KEY")
         model = self.model_name or "gpt-4o"
 
         raw_shorthand = " ".join([t.text for t in tokens])
+        mean_conf = sum(t.confidence for t in tokens) / len(tokens) if tokens else 0.95
         from shorthand.decoder import heuristic_decode_phrase
         heur_phrase, _ = heuristic_decode_phrase(
             raw_shorthand,
@@ -183,8 +181,7 @@ class OpenAIProvider(BaseLLMProvider):
         )
 
         formatted_ctx = self._format_context(context)
-        prompt_mgr = PromptManager(default_version=self.prompt_version)
-        prompt = prompt_mgr.format_prompt(
+        prompt = self._prompt_mgr.format_prompt(
             version=self.prompt_version,
             noisy_input=raw_shorthand,
             heuristic_recommendation=heur_phrase,
@@ -211,7 +208,7 @@ class OpenAIProvider(BaseLLMProvider):
             res_json = json.loads(response_str)
             output = res_json["choices"][0]["message"]["content"]
 
-        return self._parse_llm_output(output, raw_shorthand)
+        return self._parse_llm_output(output, raw_shorthand, mean_conf)
 
 
 class GeminiProvider(BaseLLMProvider):
@@ -221,12 +218,11 @@ class GeminiProvider(BaseLLMProvider):
         return "gemini"
 
     def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
-        from .prompts import PromptManager
-
         key = self._get_api_key("GEMINI_API_KEY")
         model = self.model_name or "gemini-1.5-flash"
 
         raw_shorthand = " ".join([t.text for t in tokens])
+        mean_conf = sum(t.confidence for t in tokens) / len(tokens) if tokens else 0.95
         from shorthand.decoder import heuristic_decode_phrase
         heur_phrase, _ = heuristic_decode_phrase(
             raw_shorthand,
@@ -236,8 +232,7 @@ class GeminiProvider(BaseLLMProvider):
         )
 
         formatted_ctx = self._format_context(context)
-        prompt_mgr = PromptManager(default_version=self.prompt_version)
-        prompt = prompt_mgr.format_prompt(
+        prompt = self._prompt_mgr.format_prompt(
             version=self.prompt_version,
             noisy_input=raw_shorthand,
             heuristic_recommendation=heur_phrase,
@@ -261,7 +256,7 @@ class GeminiProvider(BaseLLMProvider):
             res_json = json.loads(response_str)
             output = res_json["candidates"][0]["content"]["parts"][0]["text"]
 
-        return self._parse_llm_output(output, raw_shorthand)
+        return self._parse_llm_output(output, raw_shorthand, mean_conf)
 
 
 class LlamaProvider(BaseLLMProvider):
@@ -282,11 +277,10 @@ class LlamaProvider(BaseLLMProvider):
         return "llama"
 
     def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
-        from .prompts import PromptManager
-
         model = self.model_name or "llama3"
 
         raw_shorthand = " ".join([t.text for t in tokens])
+        mean_conf = sum(t.confidence for t in tokens) / len(tokens) if tokens else 0.95
         from shorthand.decoder import heuristic_decode_phrase
         heur_phrase, _ = heuristic_decode_phrase(
             raw_shorthand,
@@ -296,8 +290,7 @@ class LlamaProvider(BaseLLMProvider):
         )
 
         formatted_ctx = self._format_context(context)
-        prompt_mgr = PromptManager(default_version=self.prompt_version)
-        prompt = prompt_mgr.format_prompt(
+        prompt = self._prompt_mgr.format_prompt(
             version=self.prompt_version,
             noisy_input=raw_shorthand,
             heuristic_recommendation=heur_phrase,
@@ -324,4 +317,4 @@ class LlamaProvider(BaseLLMProvider):
             res_json = json.loads(response_str)
             output = res_json["choices"][0]["message"]["content"]
 
-        return self._parse_llm_output(output, raw_shorthand)
+        return self._parse_llm_output(output, raw_shorthand, mean_conf)
