@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation | Subvocal SDK</title>
+  <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+
+  <main data-page="opencode">
+    <div data-component="container">
+      
+      <!-- Top Sticky Navigation Header -->
+      <section data-component="top">
+        <div>
+          <a href="./index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        
+        <!-- Desktop Nav -->
+        <nav data-component="nav-desktop">
+          <ul>
+            <li>
+              <a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a>
+            </li>
+            <li>
+              <a href="./docs.html" aria-current="page">Docs</a>
+            </li>
+          </ul>
+        </nav>
+        
+        <!-- Mobile Nav -->
+        <nav data-component="nav-mobile">
+          <button
+            type="button"
+            data-component="nav-mobile-toggle"
+            aria-expanded="false"
+            aria-controls="nav-mobile-menu"
+            class="nav-toggle"
+            onclick="toggleMobileMenu()"
+          >
+            <span class="sr-only">Open Menu</span>
+            <svg id="hamburger-icon" class="icon icon-hamburger" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 17H5V16H19V17Z" fill="currentColor" />
+              <path d="M19 8H5V7H19V8Z" fill="currentColor" />
+            </svg>
+            <svg id="close-icon" class="icon icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+              <path d="M12.7071 11.9993L18.0104 17.3026L17.3033 18.0097L12 12.7064L6.6967 18.0097L5.98959 17.3026L11.2929 11.9993L5.98959 6.69595L6.6967 5.98885L12 11.2921L17.3033 5.98885L18.0104 6.69595L12.7071 11.9993Z" fill="currentColor" />
+            </svg>
+          </button>
+        </nav>
+      </section>
+
+      <!-- Mobile Menu Dropdown -->
+      <div id="nav-mobile-menu" data-component="nav-mobile" style="display: none;">
+        <nav data-component="nav-mobile-menu-list">
+          <ul>
+            <li><a href="./index.html" onclick="toggleMobileMenu()">Home</a></li>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></li>
+            <li><a href="./docs.html" aria-current="page" onclick="toggleMobileMenu()">Docs</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Docs Sidebar + Content Layout Grid -->
+      <div class="docs-layout">
+        
+        <!-- Left Sidebar Navigation -->
+        <aside class="docs-sidebar">
+          <h4>Getting Started</h4>
+          <ul>
+            <li><a href="#overview"><span>[*]</span> Overview</a></li>
+            <li><a href="#installation"><span>[*]</span> Installation</a></li>
+            <li><a href="#verification"><span>[*]</span> Verification</a></li>
+            <li><a href="#benchmarks"><span>[*]</span> Benchmarks</a></li>
+          </ul>
+          
+          <h4>SDK Core Modules</h4>
+          <ul>
+            <li><a href="#structure"><span>[*]</span> Repository Layout</a></li>
+            <li><a href="#dsp"><span>[*]</span> Preprocessing (DSP)</a></li>
+            <li><a href="#classifiers"><span>[*]</span> ML Classifiers</a></li>
+            <li><a href="#shorthand"><span>[*]</span> Shorthand Decoder</a></li>
+            <li><a href="#tts"><span>[*]</span> Zero-Dependency TTS</a></li>
+          </ul>
+        </aside>
+
+        <!-- Right Content Area -->
+        <article class="docs-body">
+          
+          <!-- Overview -->
+          <section id="overview" class="docs-section">
+            <h2>Overview</h2>
+            <p>
+              The <strong>Subvocal SDK</strong> is an open-source, hardware-agnostic middleware platform designed to connect surface electromyography (sEMG) biosensors directly to LLM-driven AI agents.
+            </p>
+            <p>
+              Traditional silent speech interfaces lock developers into proprietary neckbands or restricted, pre-trained whole-word vocabularies. Subvocal SDK overcomes these limits by providing the software infrastructure (digital signal preprocessing, deep learning training skeletons, articulatory phonetic shorthand simulators, and context-aware decoders) to enable open-vocabulary control with high accuracy and low execution latency.
+            </p>
+          </section>
+
+          <!-- Installation -->
+          <section id="installation" class="docs-section">
+            <h2>Installation</h2>
+            <p>
+              The Subvocal SDK runs fully offline and does not require heavy runtime dependencies. You only need a standard python environment with packaging for data modeling:
+            </p>
+            <pre><code>pip install pydantic scikit-learn joblib torch</code></pre>
+            <p>
+              <em>Note: PyTorch models are configured by default to run on CPU threads. This avoids MPS device-pooling overhead on Apple Silicon, keeping gesture inference latencies under 1 millisecond.</em>
+            </p>
+          </section>
+
+          <!-- Verification -->
+          <section id="verification" class="docs-section">
+            <h2>Verification</h2>
+            <p>
+              To confirm that the ML classifiers, DSP pipelines, and decoders compile and run correctly, run the integration test suites:
+            </p>
+            <pre><code># Test 1: ML Classifiers (RF, CNN, GRU)
+python3 sdk/emg_core/test_ml.py
+
+# Test 2: Shorthand Phonetic Alignment
+python3 sdk/shorthand/test_shorthand.py
+
+# Test 3: Context-Aware Intent Resolution
+python3 sdk/context/test_context.py</code></pre>
+          </section>
+
+          <!-- Benchmarks -->
+          <section id="benchmarks" class="docs-section">
+            <h2>Benchmarks</h2>
+            <p>
+              The SDK comes pre-packaged with an evaluation harness that simulates muscle biopotential noise and executes intent-reconstruction tests across 50 realistic shorthand command scenarios:
+            </p>
+            <pre><code>python3 sdk/shorthand/eval_runner.py</code></pre>
+            <p>
+              Running this script will output overall classification heuristics, word error rates, and average classification latencies.
+            </p>
+          </section>
+
+          <!-- Structure -->
+          <section id="structure" class="docs-section">
+            <h2>Repository Structure</h2>
+            <p>
+              The codebase is organized in a clean, modular structure:
+            </p>
+            <ul>
+              <li><strong>sdk/emg_core/</strong>: Signal preprocessing (notch and bandpass filtering) and classifier architectures (Random Forest, GRU, 1D CNN).</li>
+              <li><strong>sdk/shorthand/</strong>: Compressed phonetic consonant simulators, dictionary vocabs, and the Asymmetric Levenshtein decoder.</li>
+              <li><strong>sdk/context/</strong>: Pydantic context schemas and search priorities (calendar events, focused browser URL, contacts).</li>
+              <li><strong>sdk/tts/</strong>: Local zero-dependency Text-to-Speech audio confirmations.</li>
+            </ul>
+          </section>
+
+          <!-- Preprocessing (DSP) -->
+          <section id="dsp" class="docs-section">
+            <h2>Digital Signal Preprocessing (DSP)</h2>
+            <p>
+              Physiological raw signals ingest at 250 Hz. Signal conditioning routines are located in <code>sdk/emg_core/dsp/filters.py</code> and apply:
+            </p>
+            <ul>
+              <li>An AlterEgo-inspired <strong>1.3–50.0 Hz bandpass filter</strong> designed to capture slow, low-velocity articulatory gestures.</li>
+              <li>A **50 Hz notch filter** to remove local AC line noise.</li>
+              <li>Time-domain feature extraction yielding **TD10 segment features** (840-dimensional representations per segment).</li>
+            </ul>
+          </section>
+
+          <!-- ML Classifiers -->
+          <section id="classifiers" class="docs-section">
+            <h2>ML Classifier Models</h2>
+            <p>
+              Custom pipeline training skeletons are located in <code>sdk/emg_core/ml/train.py</code>. The SDK supports:
+            </p>
+            <ul>
+              <li><strong>Random Forest</strong>: Standard lightweight heuristic baseline.</li>
+              <li><strong>GRU (Gated Recurrent Unit)</strong>: Sequence model trained on temporal sEMG feature frames.</li>
+              <li><strong>1D CNN</strong>: Temporal convolutional model mapping multi-channel muscle traces.</li>
+            </ul>
+            <p>
+              Inference is managed by a unified <code>InferenceEngine</code> in <code>sdk/emg_core/ml/infer.py</code> utilizing confidence thresholds and adaptive cooldown gating to prevent duplicate gesture triggers.
+            </p>
+          </section>
+
+          <!-- Shorthand Intent Decoder -->
+          <section id="shorthand" class="docs-section">
+            <h2>Articulatory Shorthand Decoder</h2>
+            <p>
+              Rather than classifying whole words (which degrades rapidly beyond small vocabularies), users speak compressed phonetic consonant shorthand (e.g. <code>g gl</code> for <code>Google</code>).
+            </p>
+            <p>
+              The decoder in <code>sdk/shorthand/decoder.py</code> aligns shorthand strings using a custom dynamic programming cost matrix (Asymmetric Levenshtein) configured with biological muscle confusion groups (Labial, Alveolar, Velar, Rhotic). Vowels are ignored, and consonant omissions are weighted by physical gesture overlap.
+            </p>
+          </section>
+
+          <!-- TTS -->
+          <section id="tts" class="docs-section">
+            <h2>Zero-Dependency TTS Engine</h2>
+            <p>
+              Located in <code>sdk/tts/engine.py</code>, the speech feedback system operates offline with zero external service requirements. It defaults to macOS system commands (<code>say</code> and <code>afplay</code>) to provide local audio confirmations.
+            </p>
+          </section>
+
+        </article>
+
+      </div>
+      
+      <!-- Footer Grid -->
+      <footer data-component="footer">
+        <div data-slot="cell">
+          <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        </div>
+        <div data-slot="cell">
+          <a href="./docs.html">Docs</a>
+        </div>
+        <div data-slot="cell">
+          <a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a>
+        </div>
+      </footer>
+      
+    </div>
+    
+    <!-- Legal Section -->
+    <div data-component="legal">
+      <span>
+        ©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a>
+      </span>
+      <span>
+        <a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a>
+      </span>
+      <span>English</span>
+    </div>
+  </main>
+
+  <!-- Interactive JavaScript -->
+  <script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      const menu = document.getElementById('nav-mobile-menu');
+      const hamburger = document.getElementById('hamburger-icon');
+      const close = document.getElementById('close-icon');
+      
+      const isOpen = menu.style.display === 'block';
+      if (isOpen) {
+        menu.style.display = 'none';
+        hamburger.style.display = 'block';
+        close.style.display = 'none';
+      } else {
+        menu.style.display = 'block';
+        hamburger.style.display = 'none';
+        close.style.display = 'block';
+      }
+    }
+
+    // Scroll highlighting logic for sidebar
+    const sections = document.querySelectorAll('.docs-section');
+    const navLinks = document.querySelectorAll('.docs-sidebar a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (scrollY >= sectionTop - 150) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.removeAttribute('aria-current');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1706,3 +1706,152 @@ body {
 
 /* --- End of {os.path.basename(file_path)} --- */
 
+/* --- Custom modifications for Subvocal SDK --- */
+
+/* Fix command tab button vertical stretching */
+[data-slot="command"] {
+  height: auto !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+
+/* Docs Layout styling matching the monospace brutalist design */
+.docs-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  border-top: 1px solid var(--color-border-weak);
+  min-height: calc(100vh - 80px);
+  background: var(--color-background);
+
+  @media (max-width: 48rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.docs-sidebar {
+  border-right: 1px solid var(--color-border-weak);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: var(--font-mono);
+  background: var(--color-background-weak);
+
+  @media (max-width: 48rem) {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-weak);
+    padding: 1.5rem;
+  }
+}
+
+.docs-sidebar h4 {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-strong);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.docs-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.docs-sidebar a {
+  text-decoration: none;
+  font-size: 14px;
+  color: var(--color-text-weak);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docs-sidebar a span {
+  color: var(--color-icon);
+}
+
+.docs-sidebar a:hover, .docs-sidebar a[aria-current="page"] {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.docs-body {
+  padding: 3rem var(--padding);
+  max-width: 55rem;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+
+  @media (max-width: 48rem) {
+    padding: 2rem 1.5rem;
+  }
+}
+
+.docs-section {
+  margin-bottom: 4rem;
+  scroll-margin-top: 100px;
+}
+
+.docs-body h2 {
+  font-size: var(--heading-font-size);
+  color: var(--color-text-strong);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border-weak);
+  padding-bottom: 0.5rem;
+}
+
+.docs-body h3 {
+  font-size: 1.125rem;
+  color: var(--color-text-strong);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.docs-body p {
+  margin-bottom: 1.25rem;
+  line-height: 1.8;
+}
+
+.docs-body ul, .docs-body ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.docs-body li {
+  margin-bottom: 0.5rem;
+}
+
+.docs-body pre {
+  background: var(--color-background-weak);
+  border: 1px solid var(--color-border-weak);
+  padding: 1.25rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-mono);
+}
+
+.docs-body code {
+  font-family: var(--font-mono);
+  background: var(--color-background-weak);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.docs-body pre code {
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+}
+
