@@ -1855,3 +1855,95 @@ body {
   font-size: 14px;
 }
 
+/* Card layout grid and elements */
+.docs-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 40rem) {
+  .docs-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.docs-card {
+  display: block;
+  text-decoration: none !important;
+  background: var(--color-background-weak);
+  border: 1px solid var(--color-border-weak);
+  padding: 1.25rem;
+  color: var(--color-text) !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.docs-card:hover {
+  border-color: var(--color-text-strong);
+  background: var(--color-background);
+}
+
+.docs-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.docs-card-title {
+  font-weight: 700;
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.docs-card-icon {
+  color: var(--color-text-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.docs-card p {
+  font-size: 13px;
+  color: var(--color-text-weak);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Callout alert components */
+.docs-callout {
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-left: 3px solid var(--color-border-weak);
+  background: var(--color-background-weak);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.docs-callout.note {
+  border-left-color: var(--color-text-strong);
+}
+
+.docs-callout.tip {
+  border-left-color: #03B000;
+}
+
+.docs-callout.warning {
+  border-left-color: #B00000;
+}
+
+.docs-callout.info {
+  border-left-color: var(--color-border);
+}
+
+.docs-callout-title {
+  font-weight: 700;
+  color: var(--color-text-strong);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+
