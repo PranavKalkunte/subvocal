@@ -6,7 +6,7 @@ import struct
 import socket
 import os
 import csv
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 import numpy as np
 
 from core.models import Sample, Frame
@@ -254,10 +254,14 @@ class OpenBCICytonDriver(HardwareSource):
         if not self._connected or not self._board:
             return
 
-        self._board.stop_stream()
-        self._board.release_session()
-        self._board = None
-        self._connected = False
+        try:
+            self._board.stop_stream()
+            self._board.release_session()
+        except Exception:
+            pass
+        finally:
+            self._board = None
+            self._connected = False
 
     def is_connected(self) -> bool:
         return self._connected
@@ -392,6 +396,10 @@ class DelsysTrignoDriver(HardwareSource):
         # Unpack binary data
         samples = []
         parsed_samples = len(raw_data) // packet_size
+        if parsed_samples == 0:
+            raise RuntimeError(
+                f"DelsysTrignoDriver: no data received from {self.host}:{self.data_port} within 100 ms timeout"
+            )
 
         for idx in range(parsed_samples):
             self._sample_counter += 1

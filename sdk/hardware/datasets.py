@@ -131,7 +131,7 @@ class PutEMGDriver(HardwareSource):
             
             # Helper to search for datasets
             def find_emg(name, obj):
-                if isinstance(obj, self._h5py.Dataset) and len(obj.shape) == 2 and obj.shape[1] > 1:
+                if self._emg_dataset is None and isinstance(obj, self._h5py.Dataset) and len(obj.shape) == 2 and obj.shape[1] > 1:
                     self._emg_dataset = obj
 
             self._h5_file.visititems(find_emg)
@@ -156,6 +156,8 @@ class PutEMGDriver(HardwareSource):
                 self._h5_file.close()
             except Exception:
                 pass
+            self._h5_file = None
+            self._emg_dataset = None
         self._connected = False
 
     def is_connected(self) -> bool:
@@ -214,17 +216,19 @@ class PutEMGDriver(HardwareSource):
 class CSLHDEMGDriver(HardwareSource):
     """Streams electromyography signals from CSL-HDEMG binary or NumPy (.npy) files."""
 
-    def __init__(self, file_path: str, fs: float = 2000.0, loop: bool = True):
+    def __init__(self, file_path: str, fs: float = 2000.0, loop: bool = True, num_channels: int = 8):
         """Initializes the CSL-HDEMG driver.
 
         Args:
             file_path: Path to the NumPy (.npy) or raw binary float data file.
             fs: Sample rate of the recording.
             loop: Boolean representing whether to loop the data when EOF is reached.
+            num_channels: Number of channels in the raw binary file (ignored for .npy, which encodes shape).
         """
         self.file_path = os.path.abspath(file_path)
         self.fs = fs
         self.loop = loop
+        self._num_channels = num_channels
 
         self._connected = False
         self._index = 0
@@ -238,10 +242,9 @@ class CSLHDEMGDriver(HardwareSource):
             if self.file_path.endswith(".npy"):
                 self._data = np.load(self.file_path)
             else:
-                # Read raw binary floats (float32, 8 channels default format)
+                # Read raw binary floats (float32, num_channels channels)
                 raw_floats = np.fromfile(self.file_path, dtype=np.float32)
-                # Reshape to 8 channels
-                self._data = raw_floats.reshape(-1, 8)
+                self._data = raw_floats.reshape(-1, num_channels)
         except Exception as e:
             raise ValueError(f"Failed to load CSL-HDEMG dataset array: {e}")
 
