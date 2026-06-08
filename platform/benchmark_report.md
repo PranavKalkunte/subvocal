@@ -1,6 +1,6 @@
 # Automated Performance Benchmark Report
 
-**Generated on:** Mon Jun  8 10:35:09 CDT 2026  
+**Generated on:** Mon Jun  8 10:51:05 CDT 2026  
 **Version:** v0.3.0-alpha (Automated release run)
 
 ---
@@ -10,8 +10,8 @@ These metrics profile real-time execution speeds, computational footprint, and e
 
 | Model Type | Mean Latency | Median Latency | Disk Footprint | Params Size | Est. FLOPs | Est. Energy |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1D CNN** | 1.99 ms | 1.70 ms | 409.7 KB | 102,053 | 3,678,336 | 367.834 µJ |
-| **GRU** | 9.29 ms | 9.04 ms | 420.5 KB | 105,669 | 30,190,912 | 3019.091 µJ |
+| **1D CNN** | 1.66 ms | 1.64 ms | 409.7 KB | 102,053 | 3,678,336 | 367.834 µJ |
+| **GRU** | 8.27 ms | 8.25 ms | 420.5 KB | 105,669 | 30,190,912 | 3019.091 µJ |
 | **SVM Baseline** | 0.00 ms | 0.00 ms | 0.0 KB | 0 | 0 | 0.000 µJ |
 
 ---
@@ -36,8 +36,8 @@ BENCHMARK RESULTS SUMMARY
 ================================================================================
 Decoder / Provider        | Accuracy   | Avg Latency    
 --------------------------------------------------------------------------------
-HEURISTIC                 |     74.0% |       0.96 ms
-SIMULATED-LLM             |     96.0% |       2.38 ms
+HEURISTIC                 |     74.0% |       0.70 ms
+SIMULATED-LLM             |     96.0% |       0.70 ms
 
 ================================================================================
 FAILURE PROFILE DETAILS

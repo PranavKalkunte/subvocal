@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subvocal SDK — Physiological Silent Speech Interface Middleware</title>
+  <style>
+    :root {
+      /* Dark Theme (Default) */
+      --color-background: #09090b;
+      --color-background-weak: #18181b;
+      --color-background-weak-hover: #27272a;
+      --color-background-strong: #fafafa;
+      --color-background-strong-hover: #f4f4f5;
+      --color-background-interactive: #3f3f46;
+      --color-text: #a1a1aa;
+      --color-text-weak: #71717a;
+      --color-text-strong: #fafafa;
+      --color-text-inverted: #09090b;
+      --color-border: #27272a;
+      --color-border-weak: #18181b;
+      --color-icon: #71717a;
+      --font-mono: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        /* Light Theme Fallback */
+        --color-background: #fafafa;
+        --color-background-weak: #f4f4f5;
+        --color-background-weak-hover: #e4e4e7;
+        --color-background-strong: #09090b;
+        --color-background-strong-hover: #18181b;
+        --color-background-interactive: #e4e4e7;
+        --color-text: #52525b;
+        --color-text-weak: #71717a;
+        --color-text-strong: #09090b;
+        --color-text-inverted: #fafafa;
+        --color-border: #e4e4e7;
+        --color-border-weak: #f4f4f5;
+        --color-icon: #71717a;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--color-background);
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.8;
+      padding: 0 1.5rem;
+    }
+
+    a {
+      color: var(--color-text-strong);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1px;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: var(--color-text-weak);
+    }
+
+    strong {
+      color: var(--color-text-strong);
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 65rem;
+      margin: 0 auto;
+      border-left: 1px solid var(--color-border);
+      border-right: 1px solid var(--color-border);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (max-width: 65rem) {
+      .container {
+        border-left: none;
+        border-right: none;
+      }
+    }
+
+    header {
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-text-strong);
+      letter-spacing: -0.02em;
+    }
+
+    header .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    header .nav-links a {
+      text-decoration: none;
+      color: var(--color-text-weak);
+    }
+
+    header .nav-links a:hover {
+      color: var(--color-text-strong);
+      text-decoration: underline;
+    }
+
+    main {
+      flex-grow: 1;
+    }
+
+    section {
+      padding: 3.5rem 2rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-title {
+      margin-bottom: 2rem;
+    }
+
+    .section-title h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text-strong);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title p {
+      max-width: 45rem;
+      color: var(--color-text);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 4.5rem 2rem;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      line-height: 1.3;
+      color: var(--color-text-strong);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p.subtitle {
+      font-size: 1.1rem;
+      max-width: 46rem;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    /* Tabs Component */
+    .tabs-container {
+      max-width: 38rem;
+    }
+
+    .tabs-header {
+      display: flex;
+      border: 1px solid var(--color-border);
+      border-bottom: none;
+      background: var(--color-background-weak);
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--color-text-weak);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 0.8rem 1.5rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .tab-btn.active {
+      color: var(--color-text-strong);
+      border-bottom-color: var(--color-text-strong);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tabs-content {
+      background: var(--color-background-weak);
+      border: 1px solid var(--color-border);
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      padding: 1.25rem;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .code-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .code-line span.highlight {
+      color: var(--color-text-strong);
+      font-weight: 500;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--color-icon);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .copy-btn:hover {
+      color: var(--color-text-strong);
+    }
+
+    /* Hypothesis Box */
+    .hypothesis-box {
+      border: 1px solid var(--color-border);
+      background: rgba(255, 255, 255, 0.01);
+      padding: 1.75rem;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .hypothesis-box h3 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-weak);
+      margin-bottom: 0.75rem;
+    }
+
+    .hypothesis-box p {
+      font-style: italic;
+      line-height: 1.8;
+      color: var(--color-text-strong);
+    }
+
+    /* Bullet List Layout (From Opencode Template) */
+    .feature-list {
+      list-style: none;
+    }
+
+    .feature-list li {
+      display: flex;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .feature-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    .feature-list li span.bullet {
+      color: var(--color-icon);
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .feature-list li div.content {
+      flex-grow: 1;
+    }
+
+    .feature-list li div.content strong {
+      margin-right: 0.5rem;
+    }
+
+    /* Scope Grid */
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+
+    @media (max-width: 48rem) {
+      .scope-grid {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
+      }
+    }
+
+    .scope-card {
+      border: 1px solid var(--color-border);
+      background: var(--color-background-weak);
+      padding: 1.5rem;
+    }
+
+    .scope-card h3 {
+      font-size: 1.05rem;
+      color: var(--color-text-strong);
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .scope-card ul {
+      list-style: none;
+    }
+
+    .scope-card ul li {
+      margin-bottom: 0.75rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .scope-card ul li span.bullet {
+      color: var(--color-text-weak);
+    }
+
+    /* Code Snippet Box */
+    pre.code-block {
+      background: var(--color-background-weak);
+      border: 1px solid var(--color-border);
+      padding: 1.25rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      color: var(--color-text-strong);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    footer {
+      border-top: 1px solid var(--color-border);
+      padding: 3rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--color-text-weak);
+    }
+
+    @media (max-width: 48rem) {
+      footer {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: flex-start;
+      }
+    }
+
+    footer .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    footer .links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    footer .links a {
+      text-decoration: none;
+      color: var(--color-text-weak);
+    }
+
+    footer .links a:hover {
+      color: var(--color-text-strong);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>SUBVOCAL SDK</h1>
+      <ul class="nav-links">
+        <li><a href="https://github.com/PranavKalkunte/subvocal">GitHub</a></li>
+        <li><a href="https://github.com/PranavKalkunte/subvocal/issues">Issues</a></li>
+      </ul>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section class="hero">
+        <h1>Silent Speech Interface Middleware Rails</h1>
+        <p class="subtitle">
+          An open-source, hardware-agnostic SDK connecting surface electromyography (sEMG) biosignals to LLM-driven AI agents via compressed articulatory phonetic shorthand decoders.
+        </p>
+
+        <!-- Command Installation Box -->
+        <div class="tabs-container">
+          <div class="tabs-header">
+            <button class="tab-btn active" onclick="openTab(event, 'pip')">pip</button>
+            <button class="tab-btn" onclick="openTab(event, 'git')">git clone</button>
+            <button class="tab-btn" onclick="openTab(event, 'test')">verify</button>
+          </div>
+          <div class="tabs-content">
+            <div id="pip" class="tab-panel active">
+              <div class="code-line" onclick="copyText('pip install subvocal-sdk')">
+                <code>pip install <span class="highlight">subvocal-sdk</span></code>
+                <button class="copy-btn">
+                  <span class="btn-text">copy</span>
+                </button>
+              </div>
+            </div>
+            <div id="git" class="tab-panel">
+              <div class="code-line" onclick="copyText('git clone https://github.com/PranavKalkunte/subvocal.git')">
+                <code>git clone <span class="highlight">https://github.com/PranavKalkunte/subvocal.git</span></code>
+                <button class="copy-btn">
+                  <span class="btn-text">copy</span>
+                </button>
+              </div>
+            </div>
+            <div id="test" class="tab-panel">
+              <div class="code-line" onclick="copyText('PYTHONPATH=sdk python3 -m unittest discover -s sdk')">
+                <code>PYTHONPATH=sdk python3 -m <span class="highlight">unittest discover -s sdk</span></code>
+                <button class="copy-btn">
+                  <span class="btn-text">copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scientific Hypothesis -->
+      <section>
+        <div class="section-title">
+          <h2>Core Thesis</h2>
+          <p>Overcoming the physiological constraints of surface EMG through software translation layer decoupling.</p>
+        </div>
+        <div class="hypothesis-box">
+          <h3>Falsifiable Scientific Claim</h3>
+          <p>
+            "A low-bandwidth, physiological input channel (such as silent subvocalizations mapped to compressed articulatory phonetic shorthands) can be expanded using context-aware phonetic decoders to trigger complex, arbitrary agentic tasks with >90% intent resolution accuracy and <200ms latency, bypassing the whole-word vocabulary ceiling of silent speech interfaces."
+          </p>
+        </div>
+      </section>
+
+      <!-- Key Capabilities -->
+      <section>
+        <div class="section-title">
+          <h2>Technical Architecture Features</h2>
+          <p>Built for direct offline processing, high noise-tolerance, and low-velocity articulatory gestures.</p>
+        </div>
+        <ul class="feature-list">
+          <li>
+            <span class="bullet">[*]</span>
+            <div class="content">
+              <strong>Articulatory Shorthand Decoder</strong>
+              Bypasses the typical 5-8 whole-word vocabulary limit of standard sEMG classifiers. Accepts compressed phonetic consonant sequences (e.g. <code>g gl</code>) and expands them to high-order intents.
+            </div>
+          </li>
+          <li>
+            <span class="bullet">[*]</span>
+            <div class="content">
+              <strong>Asymmetric Levenshtein Metric</strong>
+              A dynamic programming alignment distance configured with physiological confusion matrices. It discounts common consonant omission bursts while heavily penalizing random insertions.
+            </div>
+          </li>
+          <li>
+            <span class="bullet">[*]</span>
+            <div class="content">
+              <strong>Command-Aware Context Gating</strong>
+              Dynamically queries active workspace context (focused browser URL, app state, calendars, on-screen UI buttons) to filter candidate matching targets based on resolved intents.
+            </div>
+          </li>
+          <li>
+            <span class="bullet">[*]</span>
+            <div class="content">
+              <strong>Physiological Signal Preprocessing</strong>
+              Digital signal processing pipeline offering AlterEgo-inspired <code>1.3–50.0 Hz</code> bandpass filtering defaults (optimized for low-velocity articulatory gestures) alongside standard <code>20.0–450.0 Hz</code> configurations.
+            </div>
+          </li>
+          <li>
+            <span class="bullet">[*]</span>
+            <div class="content">
+              <strong>Modular Classifier Training Skeletons</strong>
+              Out-of-the-box infrastructure to train Random Forest (scikit-learn), 1D CNN (PyTorch), and GRU (PyTorch) model topologies locally, with ONNX serializing exporters.
+            </div>
+          </li>
+          <li>
+            <span class="bullet">[*]</span>
+            <div class="content">
+              <strong>Model Context Protocol (MCP) Server</strong>
+              Exposes intent-reconstruction decoders as standard MCP tools. Allows any MCP-compatible agent framework (e.g., Claude Desktop) to natively ingest low-bandwidth silent speech inputs.
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Scope Specifications -->
+      <section>
+        <div class="section-title">
+          <h2>v0.1.0-alpha Release Scope</h2>
+          <p>Decoupling sensor hardware from cognitive agents. We build the rails, not the train.</p>
+        </div>
+        <div class="scope-grid">
+          <div class="scope-card">
+            <h3>In-Scope</h3>
+            <ul>
+              <li><span class="bullet">[+]</span> Core Decoder Python Library</li>
+              <li><span class="bullet">[+]</span> Asymmetric Levenshtein Aligner</li>
+              <li><span class="bullet">[+]</span> Pluggable Local/API LLM Adapters</li>
+              <li><span class="bullet">[+]</span> OpenBCI & SpikerShield HAL Drivers</li>
+              <li><span class="bullet">[+]</span> Stdio-based Model Context Protocol Server</li>
+              <li><span class="bullet">[+]</span> Zero-dependency Offline TTS Audio Feedback</li>
+            </ul>
+          </div>
+          <div class="scope-card">
+            <h3>Out-of-Scope</h3>
+            <ul>
+              <li><span class="bullet">[-]</span> Proprietary Enclosure/PCB Neckband Manufacturing</li>
+              <li><span class="bullet">[-]</span> Clinical Human Trials or FDA Approvals</li>
+              <li><span class="bullet">[-]</span> Cloud Telemetry Dashboard or Managed Authentication</li>
+              <li><span class="bullet">[-]</span> Microcontroller Firmware Edge Code Generation</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Code Example Walkthrough -->
+      <section>
+        <div class="section-title">
+          <h2>Pipeline Initialization</h2>
+          <p>Initialize raw sEMG ingestion, digital filtering, gesture classification, and context-aware intent resolution.</p>
+        </div>
+        <pre class="code-block">
+from core.pipeline import SubvocalPipeline
+from core.security import PolicyEngine, ConfidenceThresholdPolicy
+from hardware.drivers import SyntheticSignalGenerator
+
+# 1. Initialize biopotential signal source
+hardware = SyntheticSignalGenerator()
+hardware.start()
+
+# 2. Configure classification gate (jaw clenches mapping to 'clk' token)
+def classify_step(frame):
+    rms = frame.get_rms_amplitude(channel=0)
+    return CommandToken("clk") if rms > 15.0 else None
+
+# 3. Establish strict execution policy (e.g. gate intent confidence)
+policy_engine = PolicyEngine([
+    ConfidenceThresholdPolicy(threshold=0.85)
+])
+
+# 4. Spin up orchestrator
+pipeline = SubvocalPipeline(
+    hardware=hardware,
+    classify_fn=classify_step,
+    policy_engine=policy_engine,
+    phrase_timeout_seconds=1.2
+)
+
+# 5. Run real-time event loop
+pipeline.start_loop()</pre>
+      </section>
+    </main>
+
+    <footer>
+      <div class="left-col">
+        <span>Subvocal Middleware Platform</span>
+        <span>Released under the MIT License</span>
+      </div>
+      <ul class="links">
+        <li><a href="https://github.com/PranavKalkunte/subvocal">GitHub</a></li>
+        <li><a href="https://github.com/PranavKalkunte/subvocal/issues">Issues</a></li>
+      </ul>
+    </footer>
+  </div>
+
+  <script>
+    function openTab(evt, tabId) {
+      // Hide all panels
+      const panels = document.querySelectorAll('.tab-panel');
+      panels.forEach(panel => panel.classList.remove('active'));
+
+      // Remove active class from buttons
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      // Show specific panel and mark active
+      document.getElementById(tabId).classList.add('active');
+      evt.currentTarget.classList.add('active');
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const activePanel = document.querySelector('.tab-panel.active');
+        const btnText = activePanel.querySelector('.btn-text');
+        
+        btnText.innerText = 'copied';
+        setTimeout(() => {
+          btnText.innerText = 'copy';
+        }, 1200);
+      });
+    }
+  </script>
+</body>
+</html>
