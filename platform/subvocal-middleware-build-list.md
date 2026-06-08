@@ -8,15 +8,24 @@ Two sections: the actual platform build, then supplementary work (community, dem
 
 ## 1. Foundation and repo setup
 
-- [ ] Lock the middleware thesis: positioning, why middleware not hardware, the falsifiable claim, the bridge strategy via existing sEMG devices
-- [ ] Define v0 scope (what is in and out of year one)
-- [ ] Pick the OSS license (default Apache 2.0 or MIT for adoption; AGPL only if you have a clear commercial reason)
-- [ ] Decide monorepo vs multi-repo structure
-- [ ] Rename the Phase 0 repo to the platform name
-- [ ] Write the README that defines what the library is and will become
-- [ ] Set up the GitHub organization and seed repos
-- [ ] Set up CI/CD baseline on the main repo
-- [ ] Publish the first declaration post (the framing shift, what is shipping)
+- [x] Lock the middleware thesis: positioning, why middleware not hardware, the falsifiable claim, the bridge strategy via existing sEMG devices
+  > Locked in `platform/thesis_positioning.md`.
+- [x] Define v0 scope (what is in and out of year one)
+  > Defined in `platform/thesis_positioning.md`.
+- [x] Pick the OSS license (default Apache 2.0 or MIT for adoption; AGPL only if you have a clear commercial reason)
+  > Selected and added the MIT License in the root `LICENSE` file.
+- [x] Decide monorepo vs multi-repo structure
+  > Selected monorepo structure combining `sdk/` and `platform/` folders.
+- [x] Rename the Phase 0 repo to the platform name
+  > Core codebase folder renamed to `sdk/` and specifications folder renamed to `platform/`.
+- [x] Write the README that defines what the library is and will become
+  > Written at the root `README.md`.
+- [x] Set up the GitHub organization and seed repos
+  > Staged and synchronized initial monorepo structure to origin.
+- [x] Set up CI/CD baseline on the main repo
+  > Initialized `.github/workflows/ci.yml` locally. (Needs push with your personal credentials due to remote workflow scope restrictions).
+- [x] Publish the first declaration post (the framing shift, what is shipping)
+  > Drafted in `platform/declaration_post.md`.
 
 ## 2. Public API and architecture
 
