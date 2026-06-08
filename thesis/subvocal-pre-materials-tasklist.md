@@ -95,9 +95,9 @@ Two sections: product engineering and design, then everything supplementary (com
 - [x] Tune prompt against failures
 - [ ] Record a demo video
   > Treehacks has one (https://www.youtube.com/watch?v=v-DJEQgKm-A). Record a new one that shows the improvements.
-- [ ] Write up Phase 0 method and results
-- [ ] Push code to public repo with README
-  > Treehacks repo is at https://github.com/ansht3/treehacks-2026. Push a cleaned, documented fork.
+- [x] Write up Phase 0 method and results
+- [x] Push code to public repo with README
+  > Treehacks repo is at https://github.com/ansht3/treehacks-2026. Cleaned and pushed this custom implementation.
 
 ## 6. Bench experiment design and code (writable now, used post-purchase)
 *Status: mostly done. DSP filters, serial acquisition, real-time plotting, data logging, RF training skeleton, PTT calibration routine are all implemented. Main gaps: classifier skeleton only covers RF (CNN/GRU variants not written), BOM not finalized with part numbers, ADS1115 not used (treehacks used direct ESP32 ADC which has poor linearity). The filter parameters also diverge — treehacks uses 1.3–50 Hz (AlterEgo spec) rather than the 20–450 Hz listed here; the AlterEgo parameters are more appropriate for subvocal signals and should be adopted.*
