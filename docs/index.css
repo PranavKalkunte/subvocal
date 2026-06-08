@@ -754,7 +754,7 @@ body {
 
   [data-slot="installation"] {
     width: 100%;
-    max-width: 100%;
+    max-width: 600px;
     overflow: hidden;
 
     @media (max-width: 550px) {
@@ -818,7 +818,7 @@ body {
       display: block;
       margin: 0;
       overflow: auto;
-      white-space: pre-wrap;
+      white-space: normal;
       transition: opacity 0.18s ease;
       font-size: 16px;
       font-family: var(--font-mono);
