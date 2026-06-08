@@ -4,14 +4,15 @@ import sys
 import json
 import time
 import uuid
-from typing import Dict, Any, List, Optional, Union
+import threading
+from typing import Dict, Any, List, Optional
 
 # Add SDK paths to import core modules
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.models import Frame, CommandToken, Intent, Action
-from core.interfaces import HardwareSource, LLMProvider, ActionExecutor, ContextProvider
+from core.models import CommandToken, Intent, Action
+from core.interfaces import LLMProvider, ActionExecutor, ContextProvider
 from core.pipeline import SubvocalPipeline
 from context.schema import UserContext
 from emg_core.ml.train import calibrate_model
@@ -23,7 +24,7 @@ from emg_core.ml.train import calibrate_model
 
 class MockLLMProvider(LLMProvider):
     """Fallback LLM Provider that maps command abbreviations to intents."""
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
         shorthand = " ".join([t.text for t in tokens])
         # Simple heuristic mappings
         command = "GOTO"
@@ -71,7 +72,7 @@ class MockActionExecutor(ActionExecutor):
         self.history.append(action)
         return {"status": "SUCCESS", "action_id": action.intent_id}
 
-    def can_execute(self, action: Action) -> bool:
+    def can_execute(self, action: Action) -> bool:  # noqa: ARG002
         return True
 
 
@@ -153,6 +154,9 @@ class SubvocalMCPServer:
             }
 
         # Handle tool calling
+        if method in ("tools/call", "tools/list", "resources/list", "resources/read") and not self.initialized:
+            return self._error_response(msg_id, -32002, "Server not initialized. Send 'initialize' and await 'notifications/initialized' first.")
+
         if method == "tools/call":
             tool_name = params.get("name")
             tool_args = params.get("arguments", {})
@@ -260,13 +264,15 @@ class SubvocalMCPServer:
 
             elif name == "inject_mock_token":
                 token_text = args.get("token")
+                if not isinstance(token_text, str) or not token_text:
+                    return self._error_response(msg_id, -32602, "Invalid params: 'token' must be a non-empty string")
                 confidence = float(args.get("confidence", 0.95))
                 token_obj = CommandToken(
                     text=token_text,
                     confidence=confidence,
                     timestamp=time.time()
                 )
-                self.pipeline._token_buffer.append(token_obj)
+                self.pipeline.token_buffer.append(token_obj)
                 self.pipeline._last_token_time = time.time()
                 return self._success_response(msg_id, f"Successfully injected token '{token_text}' with confidence {confidence:.2f}")
 
@@ -282,8 +288,16 @@ class SubvocalMCPServer:
             elif name == "trigger_calibration":
                 user_id = args.get("user_id")
                 model_type = args.get("model_type")
-                res = calibrate_model(user_id, model_type)
-                return self._success_response(msg_id, f"Calibration completed successfully:\n{json.dumps(res, indent=2)}")
+                if not isinstance(user_id, str) or not isinstance(model_type, str):
+                    return self._error_response(msg_id, -32602, "Invalid params: 'user_id' and 'model_type' must be strings")
+                # Run calibration in a background thread so the stdio loop stays responsive
+                def _run_calibration(uid: str, mtype: str) -> None:
+                    try:
+                        calibrate_model(uid, mtype)
+                    except Exception as exc:
+                        sys.stderr.write(f"[calibration] {uid}/{mtype} failed: {exc}\n")
+                threading.Thread(target=_run_calibration, args=(user_id, model_type), daemon=True).start()
+                return self._success_response(msg_id, f"Calibration started for user '{user_id}' model '{model_type}'. Running in background.")
 
             else:
                 return self._error_response(msg_id, -32602, f"Unknown tool: {name}")

@@ -43,13 +43,17 @@ class InferenceEngine(Classifier):
             num_classes = len(self._labels)
             segment_length = model_data["segment_length"]
 
+            cfg = model_data.get("config", {})
+            hidden_size = cfg.get("hidden_size", 64)
+            num_layers = cfg.get("num_layers", 2)
+
             base_model_type = model_type.replace("_quantized", "")
             if base_model_type == "cnn":
                 self._model = EMG1DCNN(num_channels, num_classes, segment_length=segment_length)
             elif base_model_type == "gru":
-                self._model = EMGGRU(num_channels, num_classes)
+                self._model = EMGGRU(num_channels, num_classes, hidden_size=hidden_size, num_layers=num_layers)
             elif base_model_type == "transformer":
-                self._model = EMGTransformer(num_channels, num_classes, segment_length=segment_length)
+                self._model = EMGTransformer(num_channels, num_classes, segment_length=segment_length, d_model=hidden_size, num_layers=num_layers)
             else:
                 raise ValueError(f"Unknown PyTorch model type '{model_type}'")
 

@@ -205,7 +205,9 @@ def train_model(
     torch.manual_seed(config_obj.seed)
 
     raw_segs, labels_raw = load_dataset(user_id)
-    unique_labels = [str(l) for l in sorted(set(labels_raw))]
+    # Decode bytes labels (e.g. from real public datasets saved with numpy bytes dtype)
+    labels_raw = [l.decode("utf-8") if isinstance(l, (bytes, np.bytes_)) else l for l in labels_raw]
+    unique_labels = sorted(set(labels_raw))
     num_classes = len(unique_labels)
     label_to_idx = {l: i for i, l in enumerate(unique_labels)}
     y = np.array([label_to_idx[l] for l in labels_raw], dtype=np.int64)
@@ -241,7 +243,7 @@ def train_model(
         X_train_f, X_test_f = X_feats[idx_train], X_feats[idx_test]
 
         # Build pipeline
-        steps = [('scaler', StandardScaler())]
+        steps: List[Any] = [('scaler', StandardScaler())]
         if num_classes > 2:
             lda_c = config_obj.lda_components or config.LDA_COMPONENTS
             lda_comp = min(lda_c, num_classes - 1)
@@ -256,7 +258,7 @@ def train_model(
         else: # svm
             steps.append(('clf', SVC(
                 C=config_obj.svm_c,
-                kernel=config_obj.svm_kernel,
+                kernel=config_obj.svm_kernel,  # type: ignore[arg-type]
                 probability=True,
                 random_state=config_obj.seed
             )))
@@ -386,7 +388,8 @@ def calibrate_model(
 
     # Load dataset for user
     raw_segs, labels_raw = load_dataset(user_id)
-    unique_labels = [str(l) for l in sorted(set(labels_raw))]
+    labels_raw = [l.decode("utf-8") if isinstance(l, (bytes, np.bytes_)) else l for l in labels_raw]
+    unique_labels = sorted(set(labels_raw))
     num_classes = len(unique_labels)
     label_to_idx = {l: i for i, l in enumerate(unique_labels)}
     y = np.array([label_to_idx[l] for l in labels_raw], dtype=np.int64)
@@ -487,9 +490,9 @@ def calibrate_model(
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=1e-4)
 
-    # Fine-tune classification head for 15 epochs
+    # Fine-tune classification head
     model.train()
-    for epoch in range(15):
+    for epoch in range(config_obj.epochs):
         for xb, yb in train_loader:
             xb, yb = xb.to(device), yb.to(device)
             optimizer.zero_grad()
