@@ -33,7 +33,7 @@ subvocal/
 │           ├── train.py    # Random Forest, 1D CNN, and GRU PyTorch models
 │           ├── infer.py    # Unified InferenceEngine with confidence & cooldown gating
 │           └── model_io.py # Model serialization (.pth and .joblib)
-├── platform/               # Thesis positioning, playbooks, and specifications
+├── platform/               # Publishable specifications (thesis positioning & declaration post)
 ├── LICENSE                 # MIT License
 └── README.md               # This file
 ```

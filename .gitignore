@@ -55,4 +55,5 @@ treehacks-2026-main/silentpilot/models/*.joblib
 # Personal workspace & local reference caches
 scratch/
 reference/
+thesis/
 
