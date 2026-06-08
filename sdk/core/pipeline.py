@@ -21,6 +21,8 @@ class SubvocalPipeline:
         context_provider: ContextProvider,
         executor: ActionExecutor,
         phrase_timeout_seconds: float = 1.5,
+        policy_engine: Optional[Any] = None,
+        dry_run: bool = False,
     ):
         """Initializes the subvocal pipeline.
 
@@ -31,6 +33,8 @@ class SubvocalPipeline:
             context_provider: The active user context source.
             executor: The device or tool action dispatcher.
             phrase_timeout_seconds: Duration of silence (no tokens) to wait before triggering intent reconstruction.
+            policy_engine: Optional authorization and security policy checker.
+            dry_run: If True, resolves intents and compiles actions but does not run them.
         """
         self.hardware = hardware
         self.classify_fn = classify_fn
@@ -38,6 +42,8 @@ class SubvocalPipeline:
         self.context_provider = context_provider
         self.executor = executor
         self.phrase_timeout_seconds = phrase_timeout_seconds
+        self.policy_engine = policy_engine
+        self.dry_run = dry_run
 
         self._token_buffer: List[CommandToken] = []
         self._last_token_time: float = 0.0
@@ -86,6 +92,17 @@ class SubvocalPipeline:
 
         return None
 
+    def _write_trace(self, trace_entry: Dict[str, Any]) -> None:
+        """Appends a structured trace record to the local JSONL log file."""
+        import os
+        import json
+        from emg_core import config
+        
+        os.makedirs(config.DATA_DIR, exist_ok=True)
+        trace_path = os.path.join(config.DATA_DIR, "pipeline_traces.jsonl")
+        with open(trace_path, "a") as f:
+            f.write(json.dumps(trace_entry) + "\n")
+
     def process_phrase(self) -> Optional[Action]:
         """Forces immediate decoding and execution of the accumulated tokens.
 
@@ -101,27 +118,67 @@ class SubvocalPipeline:
         # 1. Retrieve context snapshot
         context = self.context_provider.get_context()
 
+        # Initialize trace variables
+        intent = None
+        action = None
+        authorized = True
+        status = "PENDING"
+        execution_error = None
+
         # 2. Reconstruct intent via LLM
         try:
             intent = self.llm_provider.reconstruct_intent(tokens_to_process, context)
-        except Exception:
-            return None
 
-        # 3. Create Action from Intent
-        action = Action(
-            action_type=intent.command.lower(),
-            params={
-                "arguments": intent.arguments,
-                "resolved_text": intent.resolved_text,
-                "confidence": intent.confidence,
-            },
-            intent_id=str(uuid.uuid4()),
-            timestamp=time.time(),
-        )
+            # 3. Create Action from Intent
+            action = Action(
+                action_type=intent.command.lower(),
+                params={
+                    "arguments": intent.arguments,
+                    "resolved_text": intent.resolved_text,
+                    "confidence": intent.confidence,
+                },
+                intent_id=str(uuid.uuid4()),
+                timestamp=time.time(),
+            )
 
-        # 4. Execute action
-        if self.executor.can_execute(action):
-            self.executor.execute(action)
+            # 4. Check Policy Engine authorization
+            if self.policy_engine:
+                authorized = self.policy_engine.is_authorized(action, context)
+
+            if not authorized:
+                status = "REJECTED_UNAUTHORIZED"
+            elif self.dry_run:
+                status = "DRY_RUN"
+            else:
+                # 5. Execute action
+                if self.executor.can_execute(action):
+                    self.executor.execute(action)
+                    status = "SUCCESS"
+                else:
+                    status = "FAILED_CANNOT_EXECUTE"
+
+        except Exception as e:
+            status = "ERROR"
+            execution_error = str(e)
+
+        # Log structured trace
+        trace_entry = {
+            "trace_id": str(uuid.uuid4()),
+            "timestamp": time.time(),
+            "tokens": [t.model_dump() for t in tokens_to_process],
+            "context": context.model_dump() if context else None,
+            "intent": intent.model_dump() if intent else None,
+            "action": action.model_dump() if action else None,
+            "authorized": authorized,
+            "dry_run": self.dry_run,
+            "status": status,
+            "error": execution_error
+        }
+        self._write_trace(trace_entry)
+
+        # Return action if success or dry run
+        if status in ["SUCCESS", "DRY_RUN"] and action:
             return action
 
         return None
+
