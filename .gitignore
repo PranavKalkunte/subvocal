@@ -59,7 +59,10 @@ thesis/
 
 # Local logs and model checkpoints
 sdk/data/*.jsonl
+sdk/data/*.npz
 sdk/models/*.pth
 sdk/models/*.joblib
+sdk/models/*.onnx
+
 
 

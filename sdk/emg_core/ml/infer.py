@@ -1,34 +1,21 @@
-"""Real-time inference engine for sEMG classifications.
-
-Loads scikit-learn or PyTorch models and classifies incoming raw segments
-with confidence gating and command cooldowns.
-"""
-
 import time
 import numpy as np
 import torch
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, Union
 
 from emg_core import config
 from emg_core.dsp.features import extract_features
 from emg_core.dsp.filters import preprocess_multichannel
 from emg_core.ml.model_io import load_model
+from core.interfaces import Classifier
+from core.models import Frame, CommandToken
 
 
-class EMGPrediction:
-    """Lightweight prediction object representing a successfully classified command."""
-    def __init__(self, t: float, cmd: str, p: float, cooldown_ms: int):
-        self.t = t
-        self.cmd = cmd
-        self.p = p
-        self.cooldown_ms = cooldown_ms
+class InferenceEngine(Classifier):
+    """Inference engine with debounce and confidence thresholding.
 
-    def __repr__(self) -> str:
-        return f"EMGPrediction(cmd={self.cmd}, p={self.p:.3f}, t={self.t:.3f})"
-
-
-class InferenceEngine:
-    """Inference engine with debounce and confidence thresholding."""
+    Implements the core.interfaces.Classifier interface.
+    """
 
     def __init__(
         self,
@@ -46,22 +33,34 @@ class InferenceEngine:
         model_data = load_model(user_id, model_type)
         self._labels: List[str] = model_data["labels"]
 
-        if model_type == "rf":
+        if model_type in ["rf", "svm"]:
             self._model = model_data["model"]
         else:
             # Reconstruct PyTorch model
-            from emg_core.ml.train import EMG1DCNN, EMGGRU
+            from emg_core.ml.train import EMG1DCNN, EMGGRU, EMGTransformer
 
             num_channels = model_data["num_channels"]
             num_classes = len(self._labels)
             segment_length = model_data["segment_length"]
 
-            if model_type == "cnn":
+            base_model_type = model_type.replace("_quantized", "")
+            if base_model_type == "cnn":
                 self._model = EMG1DCNN(num_channels, num_classes, segment_length=segment_length)
-            elif model_type == "gru":
+            elif base_model_type == "gru":
                 self._model = EMGGRU(num_channels, num_classes)
+            elif base_model_type == "transformer":
+                self._model = EMGTransformer(num_channels, num_classes, segment_length=segment_length)
             else:
                 raise ValueError(f"Unknown PyTorch model type '{model_type}'")
+
+
+            # Handle dynamically quantized weights loading
+            if model_data.get("quantized", False):
+                self._model = torch.quantization.quantize_dynamic(
+                    self._model,
+                    {torch.nn.Linear, torch.nn.GRU},
+                    dtype=torch.qint8
+                )
 
             self._model.load_state_dict(model_data["state_dict"])
             self._model.eval()
@@ -75,17 +74,17 @@ class InferenceEngine:
     def labels(self) -> List[str]:
         return self._labels
 
-    def predict(self, segment: np.ndarray) -> Optional[EMGPrediction]:
+    def predict(self, frame: Union[Frame, np.ndarray]) -> Optional[CommandToken]:
         """Classify a segment and apply gating logic.
 
         Args:
-            segment: 2D array of shape (segment_length, num_channels)
+            frame: A Frame object or 2D array of shape (segment_length, num_channels)
 
         Returns:
-            EMGPrediction if successful, else None.
+            CommandToken if successful, else None.
         """
         now = time.time()
-        cmd, prob, proba = self.predict_raw(segment)
+        cmd, prob, proba = self.predict_raw(frame)
 
         # Confidence gate
         if prob < self._threshold:
@@ -97,20 +96,26 @@ class InferenceEngine:
             return None
 
         self._last_fired[cmd] = now
-        return EMGPrediction(
-            t=now,
-            cmd=cmd,
-            p=prob,
-            cooldown_ms=self._cooldown_ms
+        return CommandToken(
+            text=cmd,
+            confidence=prob,
+            timestamp=now,
+            metadata={"cooldown_ms": self._cooldown_ms, "probabilities": proba}
         )
 
-    def predict_raw(self, segment: np.ndarray) -> Tuple[str, float, List[float]]:
-        """Classify a segment without debounce gates.
+    def predict_raw(self, frame: Union[Frame, np.ndarray]) -> Tuple[str, float, List[float]]:
+        """Classify a segment/frame without debounce gates.
 
         Returns:
             (best_command, probability, all_probabilities)
         """
-        # 1. Preprocess
+        # 1. Convert Frame to NumPy array if needed
+        if isinstance(frame, Frame):
+            segment = frame.to_numpy()
+        else:
+            segment = frame
+
+        # 2. Preprocess
         seg_pre = preprocess_multichannel(
             segment,
             fs=config.SAMPLE_RATE,
@@ -118,8 +123,8 @@ class InferenceEngine:
             high=config.BANDPASS_HIGH
         )
 
-        if self._model_type == "rf":
-            # Extract features for RF
+        if self._model_type in ["rf", "svm"]:
+            # Extract features for scikit-learn models
             features = extract_features(seg_pre, sample_rate=config.SAMPLE_RATE).reshape(1, -1)
             proba = self._model.predict_proba(features)[0]
         else:
@@ -138,3 +143,4 @@ class InferenceEngine:
 
         best_idx = int(np.argmax(proba))
         return self._labels[best_idx], float(proba[best_idx]), proba.tolist()
+

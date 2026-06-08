@@ -8,7 +8,7 @@ Enables pluggable integration of various:
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Any
+from typing import List, Any, Optional, Tuple, Dict, Union
 from context.schema import UserContext
 from .models import Frame, CommandToken, Intent, Action
 
@@ -103,3 +103,28 @@ class ContextProvider(ABC):
     def get_provider_name(self) -> str:
         """Returns the name/identifier of this context provider."""
         pass
+
+
+class Classifier(ABC):
+    """Abstract interface for classifying physiological raw signals into command tokens."""
+
+    @abstractmethod
+    def predict(self, frame: Union[Frame, Any]) -> Optional[CommandToken]:
+        """Classifies a Frame of raw signals into a CommandToken (applies gating/cooldown if configured)."""
+        pass
+
+    @abstractmethod
+    def predict_raw(self, frame: Union[Frame, Any]) -> Tuple[str, float, List[float]]:
+        """Predicts the probability distribution for a Frame of raw signals.
+
+        Returns:
+            (predicted_class_label, max_probability, all_probabilities_list)
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def labels(self) -> List[str]:
+        """Returns the list of output labels/classes supported by the classifier."""
+        pass
+

@@ -2,14 +2,17 @@
 
 Supports:
 1. RandomForest (Standard ML baseline using TD10 aggregated features).
-2. 1D CNN (Deep learning model operating on raw time-series segments).
-3. GRU (Bidirectional temporal RNN operating on raw time-series segments).
+2. SVM (Feature-based Support Vector Machine baseline).
+3. 1D CNN (Deep learning model operating on raw time-series segments).
+4. GRU (Bidirectional temporal RNN operating on raw time-series segments).
+5. Transformer (Attention-based sequential encoder operating on raw segments).
 """
 
 import os
 import numpy as np
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, Tuple, List, Optional
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
@@ -23,7 +26,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from emg_core import config
 from emg_core.dsp.features import extract_features
 from emg_core.dsp.filters import preprocess_multichannel
-from emg_core.ml.model_io import save_model
+from emg_core.ml.model_io import save_model, load_model
+from emg_core.ml.config_schema import TrainingConfig
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -97,6 +101,40 @@ class EMGGRU(nn.Module):
         return self.fc(out)
 
 
+class EMGTransformer(nn.Module):
+    """Small Transformer encoder for raw multichannel sEMG sequence classification."""
+    def __init__(self, num_channels: int, num_classes: int, segment_length: int = 150, d_model: int = 64, nhead: int = 4, num_layers: int = 2, dim_feedforward: int = 128):
+        super().__init__()
+        self.input_projection = nn.Linear(num_channels, d_model)
+        
+        # Positional encodings parameter
+        self.pos_encoder = nn.Parameter(torch.zeros(1, segment_length, d_model))
+        
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_feedforward,
+            dropout=0.2,
+            batch_first=True
+        )
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.fc = nn.Sequential(
+            nn.Linear(d_model, 32),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(32, num_classes)
+        )
+
+    def forward(self, x):
+        # Input shape: (B, C, T) -> Transpose to (B, T, C)
+        x = x.transpose(1, 2)
+        x = self.input_projection(x)  # (B, T, d_model)
+        x = x + self.pos_encoder  # Broadcasted positional encoding
+        out = self.transformer_encoder(x)  # (B, T, d_model)
+        out = torch.mean(out, dim=1)  # Temporal mean pooling
+        return self.fc(out)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Helper Functions
 # ══════════════════════════════════════════════════════════════════════════════
@@ -138,17 +176,34 @@ def preprocess_segments(
 # Training Routines
 # ══════════════════════════════════════════════════════════════════════════════
 
-def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) -> Dict[str, Any]:
+def train_model(
+    user_id: str,
+    model_type: str = "rf",
+    test_size: float = 0.2,
+    config_obj: Optional[TrainingConfig] = None
+) -> Dict[str, Any]:
     """Train a sEMG model for a user and save it to disk.
 
     Args:
         user_id: The ID of the user.
-        model_type: "rf" (RandomForest), "cnn" (1D CNN), or "gru" (GRU).
+        model_type: "rf", "svm", "cnn", "gru", or "transformer".
         test_size: Split ratio for testing/validation.
+        config_obj: Optional TrainingConfig parameters object.
 
     Returns:
         A dictionary containing training metrics and results.
     """
+    # Enforce Pydantic config-driven configuration
+    if config_obj is None:
+        config_obj = TrainingConfig(model_type=model_type, test_size=test_size)
+    else:
+        model_type = config_obj.model_type
+        test_size = config_obj.test_size
+
+    # Reproducibility seed setup
+    np.random.seed(config_obj.seed)
+    torch.manual_seed(config_obj.seed)
+
     raw_segs, labels_raw = load_dataset(user_id)
     unique_labels = [str(l) for l in sorted(set(labels_raw))]
     num_classes = len(unique_labels)
@@ -167,20 +222,18 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
     indices = np.arange(len(raw_segs))
     try:
         idx_train, idx_test, y_train, y_test = train_test_split(
-            indices, y, test_size=test_size, stratify=y, random_state=42
+            indices, y, test_size=test_size, stratify=y, random_state=config_obj.seed
         )
     except ValueError:
         # Handle cases where stratification is impossible
         idx_train, idx_test, y_train, y_test = train_test_split(
-            indices, y, test_size=test_size, random_state=42
+            indices, y, test_size=test_size, random_state=config_obj.seed
         )
 
-    if model_type == "rf":
-        # RandomForest uses 1D TD10 feature vectors
-        # Extract features for all preprocessed segments
+    if model_type in ["rf", "svm"]:
+        # Classical models use 1D TD10 feature vectors
         X_feats = []
         for i in range(len(raw_segs)):
-            # extract_features expects (T, C)
             feat = extract_features(X_pre[i].T, sample_rate=config.SAMPLE_RATE)
             X_feats.append(feat)
         X_feats = np.array(X_feats)
@@ -190,14 +243,24 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
         # Build pipeline
         steps = [('scaler', StandardScaler())]
         if num_classes > 2:
-            lda_comp = min(config.LDA_COMPONENTS, num_classes - 1)
+            lda_c = config_obj.lda_components or config.LDA_COMPONENTS
+            lda_comp = min(lda_c, num_classes - 1)
             steps.append(('lda', LinearDiscriminantAnalysis(n_components=lda_comp)))
 
-        steps.append(('clf', RandomForestClassifier(
-            n_estimators=config.RF_N_ESTIMATORS,
-            random_state=42,
-            n_jobs=-1
-        )))
+        if model_type == "rf":
+            steps.append(('clf', RandomForestClassifier(
+                n_estimators=config_obj.rf_n_estimators,
+                random_state=config_obj.seed,
+                n_jobs=-1
+            )))
+        else: # svm
+            steps.append(('clf', SVC(
+                C=config_obj.svm_c,
+                kernel=config_obj.svm_kernel,
+                probability=True,
+                random_state=config_obj.seed
+            )))
+
         pipeline = Pipeline(steps)
         pipeline.fit(X_train_f, y_train)
 
@@ -210,12 +273,13 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
         model_data = {
             "model": pipeline,
             "labels": unique_labels,
-            "model_type": "rf"
+            "model_type": model_type,
+            "config": config_obj.model_dump()
         }
-        save_model(model_data, user_id, model_type="rf")
+        save_model(model_data, user_id, model_type=model_type)
 
     else:
-        # Deep learning models (CNN / GRU)
+        # Deep learning models (CNN / GRU / Transformer)
         X_train_p = X_pre[idx_train].astype(np.float32)
         X_test_p = X_pre[idx_test].astype(np.float32)
 
@@ -226,7 +290,7 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
         X_train_p = (X_train_p - mean) / std
         X_test_p = (X_test_p - mean) / std
 
-        # Setup PyTorch model on CPU to avoid MPS pooling compatibility issues
+        # Setup PyTorch model on CPU
         device = torch.device("cpu")
         segment_len = X_pre.shape[2]
         num_channels = X_pre.shape[1]
@@ -234,7 +298,15 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
         if model_type == "cnn":
             model = EMG1DCNN(num_channels, num_classes, segment_length=segment_len)
         elif model_type == "gru":
-            model = EMGGRU(num_channels, num_classes)
+            model = EMGGRU(num_channels, num_classes, hidden_size=config_obj.hidden_size, num_layers=config_obj.num_layers)
+        elif model_type == "transformer":
+            model = EMGTransformer(
+                num_channels=num_channels,
+                num_classes=num_classes,
+                segment_length=segment_len,
+                d_model=config_obj.hidden_size,
+                num_layers=config_obj.num_layers
+            )
         else:
             raise ValueError(f"Unknown model type '{model_type}'")
 
@@ -242,15 +314,14 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
 
         # Datasets
         train_ds = TensorDataset(torch.tensor(X_train_p), torch.tensor(y_train))
-        train_loader = DataLoader(train_ds, batch_size=16, shuffle=True)
+        train_loader = DataLoader(train_ds, batch_size=config_obj.batch_size, shuffle=True)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=config_obj.lr, weight_decay=config_obj.weight_decay)
 
         # Optimization loop
-        epochs = 40
         model.train()
-        for epoch in range(epochs):
+        for epoch in range(config_obj.epochs):
             for xb, yb in train_loader:
                 xb, yb = xb.to(device), yb.to(device)
                 optimizer.zero_grad()
@@ -276,7 +347,8 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
             "std": std,
             "model_type": model_type,
             "num_channels": num_channels,
-            "segment_length": segment_len
+            "segment_length": segment_len,
+            "config": config_obj.model_dump()
         }
         save_model(model_data, user_id, model_type=model_type)
 
@@ -296,3 +368,195 @@ def train_model(user_id: str, model_type: str = "rf", test_size: float = 0.2) ->
         "labels": unique_labels,
         "num_samples": len(raw_segs),
     }
+
+
+def calibrate_model(
+    user_id: str,
+    pretrained_model_type: str,
+    calibration_config: Optional[TrainingConfig] = None
+) -> Dict[str, Any]:
+    """Calibrate / fine-tune a pre-trained model for a new user.
+
+    For PyTorch models (CNN, GRU, Transformer), it loads pre-trained weights,
+    replaces/adjusts the classification head to match the user's classes,
+    freezes base layers (optionally), and fine-tunes on user calibration data.
+    For classical models (RF, SVM), it fits a new pipeline on user data.
+    """
+    config_obj = calibration_config or TrainingConfig(model_type=pretrained_model_type)
+
+    # Load dataset for user
+    raw_segs, labels_raw = load_dataset(user_id)
+    unique_labels = [str(l) for l in sorted(set(labels_raw))]
+    num_classes = len(unique_labels)
+    label_to_idx = {l: i for i, l in enumerate(unique_labels)}
+    y = np.array([label_to_idx[l] for l in labels_raw], dtype=np.int64)
+
+    # 1. Preprocess
+    X_pre = preprocess_segments(
+        raw_segs,
+        fs=config.SAMPLE_RATE,
+        low=config.BANDPASS_LOW,
+        high=config.BANDPASS_HIGH
+    )  # Shape: (N, C, T)
+
+    indices = np.arange(len(raw_segs))
+    try:
+        idx_train, idx_test, y_train, y_test = train_test_split(
+            indices, y, test_size=config_obj.test_size, stratify=y, random_state=config_obj.seed
+        )
+    except ValueError:
+        idx_train, idx_test, y_train, y_test = train_test_split(
+            indices, y, test_size=config_obj.test_size, random_state=config_obj.seed
+        )
+
+    # Classical Calibration (no backpropagation transfer learning)
+    if pretrained_model_type in ["rf", "svm"]:
+        return train_model(user_id, model_type=pretrained_model_type, config_obj=config_obj)
+
+    # PyTorch Calibration
+    from emg_core.ml.model_io import get_model_path
+    pretrained_path = get_model_path("pretrained", pretrained_model_type)
+    if not os.path.exists(pretrained_path):
+        # Fall back to training from scratch if pre-trained weights do not exist
+        return train_model(user_id, model_type=pretrained_model_type, config_obj=config_obj)
+
+    pretrained_data = load_model("pretrained", pretrained_model_type)
+    pretrained_classes = len(pretrained_data["labels"])
+    num_channels = pretrained_data["num_channels"]
+    segment_len = pretrained_data["segment_length"]
+    hidden_size = config_obj.hidden_size
+    num_layers = config_obj.num_layers
+
+    # Reconstruct pre-trained structure
+    if pretrained_model_type == "cnn":
+        model = EMG1DCNN(num_channels, pretrained_classes, segment_length=segment_len)
+    elif pretrained_model_type == "gru":
+        model = EMGGRU(num_channels, pretrained_classes, hidden_size=hidden_size, num_layers=num_layers)
+    elif pretrained_model_type == "transformer":
+        model = EMGTransformer(num_channels, pretrained_classes, segment_length=segment_len, d_model=hidden_size, num_layers=num_layers)
+    else:
+        raise ValueError(f"Unknown pre-trained model type '{pretrained_model_type}'")
+
+    model.load_state_dict(pretrained_data["state_dict"])
+
+    # Replace classification head targeting the user's custom classes
+    if pretrained_model_type == "cnn":
+        model.fc = nn.Sequential(
+            nn.Linear(128 * 8, 64),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(64, num_classes)
+        )
+    elif pretrained_model_type == "gru":
+        model.fc = nn.Sequential(
+            nn.Linear(hidden_size * 2, 32),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(32, num_classes)
+        )
+    elif pretrained_model_type == "transformer":
+        model.fc = nn.Sequential(
+            nn.Linear(hidden_size, 32),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(32, num_classes)
+        )
+
+    # Freeze base layers for fine-tuning
+    for name, param in model.named_parameters():
+        if not name.startswith("fc"):
+            param.requires_grad = False
+
+    # Deep learning data setup
+    X_train_p = X_pre[idx_train].astype(np.float32)
+    X_test_p = X_pre[idx_test].astype(np.float32)
+
+    # Standardize representation consistency using pre-trained stats
+    mean = pretrained_data["mean"]
+    std = pretrained_data["std"]
+
+    X_train_p = (X_train_p - mean) / std
+    X_test_p = (X_test_p - mean) / std
+
+    device = torch.device("cpu")
+    model = model.to(device)
+
+    train_ds = TensorDataset(torch.tensor(X_train_p), torch.tensor(y_train))
+    train_loader = DataLoader(train_ds, batch_size=config_obj.batch_size, shuffle=True)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=1e-4)
+
+    # Fine-tune classification head for 15 epochs
+    model.train()
+    for epoch in range(15):
+        for xb, yb in train_loader:
+            xb, yb = xb.to(device), yb.to(device)
+            optimizer.zero_grad()
+            outputs = model(xb)
+            loss = criterion(outputs, yb)
+            loss.backward()
+            optimizer.step()
+
+    # Evaluate fine-tuned model
+    model.eval()
+    with torch.no_grad():
+        test_tensor = torch.tensor(X_test_p).to(device)
+        outputs = model(test_tensor)
+        y_pred = outputs.argmax(dim=1).cpu().numpy()
+        acc = accuracy_score(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred, labels=list(range(num_classes)))
+
+    # Save fine-tuned model under user ID
+    model_data = {
+        "state_dict": model.state_dict(),
+        "labels": unique_labels,
+        "mean": mean,
+        "std": std,
+        "model_type": pretrained_model_type,
+        "num_channels": num_channels,
+        "segment_length": segment_len,
+        "config": config_obj.model_dump(),
+        "calibrated": True
+    }
+    save_model(model_data, user_id, model_type=pretrained_model_type)
+
+    per_class_acc = {}
+    for i, label in enumerate(unique_labels):
+        mask = y_test == i
+        if mask.sum() > 0:
+            per_class_acc[label] = float(accuracy_score(y_test[mask], y_pred[mask]))
+        else:
+            per_class_acc[label] = 0.0
+
+    return {
+        "accuracy": float(acc),
+        "per_class_accuracy": per_class_acc,
+        "confusion_matrix": cm.tolist(),
+        "labels": unique_labels,
+        "num_samples": len(raw_segs),
+    }
+
+
+if __name__ == "__main__":
+    import argparse
+    import json
+
+    parser = argparse.ArgumentParser(description="Train sEMG command classifiers.")
+    parser.add_argument("--user_id", type=str, default="test_user", help="User ID to train for")
+    parser.add_argument("--config", type=str, help="Path to JSON config file")
+    args = parser.parse_args()
+
+    config_obj = None
+    if args.config and os.path.exists(args.config):
+        with open(args.config, "r") as f:
+            config_data = json.load(f)
+            config_obj = TrainingConfig(**config_data)
+            model_type = config_obj.model_type
+    else:
+        model_type = "rf"
+
+    results = train_model(args.user_id, model_type=model_type, config_obj=config_obj)
+    print(f"Training Results for user {args.user_id} ({model_type}):")
+    print(json.dumps(results, indent=2))
+
