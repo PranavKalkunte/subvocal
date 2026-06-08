@@ -51,3 +51,8 @@ out/
 # Data and models (large binary artifacts)
 treehacks-2026-main/silentpilot/data/*.npz
 treehacks-2026-main/silentpilot/models/*.joblib
+
+# Personal workspace & local reference caches
+scratch/
+reference/
+
