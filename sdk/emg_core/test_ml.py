@@ -12,8 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from emg_core import config
 from emg_core.dsp.filters import preprocess_multichannel
 from emg_core.dsp.features import extract_features
-from emg_core.ml.train import train_model
+from emg_core.ml.train import train_model, calibrate_model
 from emg_core.ml.infer import InferenceEngine
+from emg_core.ml.export import export_to_onnx, quantize_model_int8
+from emg_core.ml.benchmark import run_benchmark
 
 
 class TestEMGCoreML(unittest.TestCase):
@@ -56,14 +58,23 @@ class TestEMGCoreML(unittest.TestCase):
         if os.path.exists(cls.data_path):
             os.remove(cls.data_path)
 
+        # Clean up files for calibration user
+        calib_user_data = os.path.join(config.DATA_DIR, "test_user_calib_calib.npz")
+        if os.path.exists(calib_user_data):
+            os.remove(calib_user_data)
+
         # Remove models
-        for m_type in ["rf", "cnn", "gru"]:
-            model_path = os.path.join(config.MODELS_DIR, f"{cls.user_id}_model_{m_type}.joblib")
-            if os.path.exists(model_path):
-                os.remove(model_path)
-            model_path_pth = os.path.join(config.MODELS_DIR, f"{cls.user_id}_model_{m_type}.pth")
-            if os.path.exists(model_path_pth):
-                os.remove(model_path_pth)
+        for m_type in ["rf", "svm", "cnn", "gru", "transformer", "cnn_quantized", "gru_quantized", "transformer_quantized"]:
+            for uid in [cls.user_id, "test_user_calib"]:
+                for ext in ["joblib", "pth"]:
+                    model_path = os.path.join(config.MODELS_DIR, f"{uid}_model_{m_type}.{ext}")
+                    if os.path.exists(model_path):
+                        os.remove(model_path)
+
+        # Remove ONNX files
+        onnx_path = os.path.join(config.MODELS_DIR, f"{cls.user_id}_model_cnn.onnx")
+        if os.path.exists(onnx_path):
+            os.remove(onnx_path)
 
     def test_01_dsp_pipeline(self):
         """Test preprocessing and feature extraction."""
@@ -123,6 +134,104 @@ class TestEMGCoreML(unittest.TestCase):
         self.assertTrue(0.0 <= prob <= 1.0)
         self.assertEqual(len(proba), len(self.commands))
 
+    def test_05_svm_pipeline(self):
+        """Train and evaluate SVM baseline model."""
+        res = train_model(self.user_id, model_type="svm", test_size=0.25)
+        self.assertIn("accuracy", res)
+        self.assertIn("confusion_matrix", res)
+        self.assertEqual(res["labels"], sorted(self.commands))
+
+        # Verify inference
+        engine = InferenceEngine(self.user_id, model_type="svm")
+        test_seg = np.random.normal(0.0, 1.0, (150, 4))
+        cmd, prob, proba = engine.predict_raw(test_seg)
+        self.assertIn(cmd, self.commands)
+        self.assertTrue(0.0 <= prob <= 1.0)
+        self.assertEqual(len(proba), len(self.commands))
+
+    def test_06_transformer_pipeline(self):
+        """Train and evaluate PyTorch Transformer model."""
+        res = train_model(self.user_id, model_type="transformer", test_size=0.25)
+        self.assertIn("accuracy", res)
+        self.assertIn("confusion_matrix", res)
+
+        # Verify inference
+        engine = InferenceEngine(self.user_id, model_type="transformer")
+        test_seg = np.random.normal(0.0, 1.0, (150, 4))
+        cmd, prob, proba = engine.predict_raw(test_seg)
+        self.assertIn(cmd, self.commands)
+        self.assertTrue(0.0 <= prob <= 1.0)
+        self.assertEqual(len(proba), len(self.commands))
+
+    def test_07_calibration_pipeline(self):
+        """Test per-user calibration / fine-tuning routine."""
+        # Create a calibration user dataset
+        calib_user = "test_user_calib"
+        calib_data_path = os.path.join(config.DATA_DIR, f"{calib_user}_calib.npz")
+        
+        # 10 segments per class = 40 segments total
+        segments = []
+        labels = []
+        for i, cmd in enumerate(self.commands):
+            for _ in range(10):
+                seg = np.random.normal(0.0, 1.0, (150, 4))
+                t = np.linspace(0, 2*np.pi, 150)
+                freq = (i + 1) * 5.0
+                pattern = np.sin(t * freq)[:, np.newaxis]
+                seg += pattern * 2.0
+                segments.append(seg)
+                labels.append(cmd)
+        np.savez(calib_data_path, segments=segments, labels=labels)
+
+        # Calibrate a model (fine-tunes base model pretrained on pretrained baseline dataset)
+        res = calibrate_model(calib_user, pretrained_model_type="cnn")
+        self.assertIn("accuracy", res)
+        self.assertEqual(res["labels"], sorted(self.commands))
+        
+        # Verify inference of calibrated model
+        engine = InferenceEngine(calib_user, model_type="cnn")
+        test_seg = np.random.normal(0.0, 1.0, (150, 4))
+        cmd, prob, proba = engine.predict_raw(test_seg)
+        self.assertIn(cmd, self.commands)
+        
+        # Clean up calibration dataset file
+        if os.path.exists(calib_data_path):
+            os.remove(calib_data_path)
+
+    def test_08_onnx_export(self):
+        """Test model export to ONNX."""
+        onnx_path = os.path.join(config.MODELS_DIR, f"{self.user_id}_model_cnn.onnx")
+        if os.path.exists(onnx_path):
+            os.remove(onnx_path)
+            
+        try:
+            export_to_onnx(self.user_id, "cnn", onnx_path)
+            self.assertTrue(os.path.exists(onnx_path))
+        except (ImportError, ModuleNotFoundError) as e:
+            self.skipTest(f"Skipping ONNX export test due to missing packages: {e}")
+
+    def test_09_quantization(self):
+        """Test int8 dynamic quantization with accuracy regression checks."""
+        res = quantize_model_int8(self.user_id, "cnn", threshold=0.1)
+        self.assertIn(res["status"], ["APPROVED", "SKIPPED_NO_ENGINE"])
+        
+        # Test inference loading the quantized model if approved
+        if res["status"] == "APPROVED":
+            engine = InferenceEngine(self.user_id, model_type="cnn_quantized")
+            test_seg = np.random.normal(0.0, 1.0, (150, 4))
+            cmd, prob, proba = engine.predict_raw(test_seg)
+            self.assertIn(cmd, self.commands)
+
+    def test_10_benchmarking_harness(self):
+        """Test inference benchmarking harness (latency, params, flops, energy)."""
+        metrics = run_benchmark(self.user_id, model_type="cnn", num_runs=10)
+        self.assertEqual(metrics["model_type"], "cnn")
+        self.assertGreater(metrics["latency_mean_ms"], 0.0)
+        self.assertGreater(metrics["parameter_count"], 0)
+        self.assertGreater(metrics["estimated_flops"], 0)
+        self.assertGreater(metrics["estimated_energy_uj"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
+
