@@ -69,55 +69,129 @@
         <aside class="docs-sidebar">
           <h4>Getting Started</h4>
           <ul>
-            <li><a href="#overview"><span>[*]</span> Overview</a></li>
-            <li><a href="#installation"><span>[*]</span> Installation</a></li>
-            <li><a href="#verification"><span>[*]</span> Verification</a></li>
-            <li><a href="#benchmarks"><span>[*]</span> Benchmarks</a></li>
-          </ul>
-          
-          <h4>SDK Core Modules</h4>
-          <ul>
-            <li><a href="#structure"><span>[*]</span> Repository Layout</a></li>
-            <li><a href="#dsp"><span>[*]</span> Preprocessing (DSP)</a></li>
-            <li><a href="#classifiers"><span>[*]</span> ML Classifiers</a></li>
-            <li><a href="#shorthand"><span>[*]</span> Shorthand Decoder</a></li>
-            <li><a href="#tts"><span>[*]</span> Zero-Dependency TTS</a></li>
+            <li><a href="#introduction" aria-current="page"><span>[*]</span> Introduction</a></li>
+            <li><a href="#quickstart"><span>[*]</span> Quickstart Guide</a></li>
+            <li><a href="#development"><span>[*]</span> Local Development</a></li>
           </ul>
         </aside>
 
         <!-- Right Content Area -->
         <article class="docs-body">
           
-          <!-- Overview -->
-          <section id="overview" class="docs-section">
-            <h2>Overview</h2>
+          <!-- Introduction Section -->
+          <section id="introduction" class="docs-section-page">
+            <h2>Introduction</h2>
             <p>
-              The <strong>Subvocal SDK</strong> is an open-source, hardware-agnostic middleware platform designed to connect surface electromyography (sEMG) biosensors directly to LLM-driven AI agents.
+              Welcome to the <strong>Subvocal SDK</strong> documentation. Subvocal SDK is an open-source, hardware-agnostic middleware platform designed to connect surface electromyography (sEMG) biosensors directly to LLM-driven AI agents.
             </p>
             <p>
               Traditional silent speech interfaces lock developers into proprietary neckbands or restricted, pre-trained whole-word vocabularies. Subvocal SDK overcomes these limits by providing the software infrastructure (digital signal preprocessing, deep learning training skeletons, articulatory phonetic shorthand simulators, and context-aware decoders) to enable open-vocabulary control with high accuracy and low execution latency.
             </p>
+
+            <h3>Setting up</h3>
+            <p>
+              Get your development pipeline or documentation environment up and running in minutes.
+            </p>
+
+            <div class="docs-card-grid">
+              <a href="#quickstart" class="docs-card">
+                <div class="docs-card-header">
+                  <span class="docs-card-icon">🚀</span>
+                  <span class="docs-card-title">Start here</span>
+                </div>
+                <p>Follow our three-step quickstart guide to install the SDK, run local packaging tests, and verify performance benchmarks.</p>
+              </a>
+            </div>
+
+            <h3>Make it yours</h3>
+            <p>
+              Design a customizable silent speech input system that matches your hardware setup, custom training models, and intent prioritization rules.
+            </p>
+
+            <div class="docs-card-grid">
+              <a href="#development" class="docs-card">
+                <div class="docs-card-header">
+                  <span class="docs-card-icon">⚡</span>
+                  <span class="docs-card-title">Configure DSP Filters</span>
+                </div>
+                <p>Edit notch and bandpass frequencies in filters.py to match your sEMG electrode placement constraints.</p>
+              </a>
+              <a href="#development" class="docs-card">
+                <div class="docs-card-header">
+                  <span class="docs-card-icon">🧠</span>
+                  <span class="docs-card-title">Train Classifiers</span>
+                </div>
+                <p>Train Random Forest, 1D CNN, or sequence-based GRU architectures on your custom sEMG gesture recordings.</p>
+              </a>
+              <a href="#development" class="docs-card">
+                <div class="docs-card-header">
+                  <span class="docs-card-icon">📝</span>
+                  <span class="docs-card-title">Shorthand Decoder</span>
+                </div>
+                <p>Adapt the phonetic consonant confusion cost matrix and vocabulary mappings for high-accuracy intent resolution.</p>
+              </a>
+              <a href="#development" class="docs-card">
+                <div class="docs-card-header">
+                  <span class="docs-card-icon">🔊</span>
+                  <span class="docs-card-title">TTS Feedback</span>
+                </div>
+                <p>Configure local macOS native say/afplay utilities or OpenAI Audio endpoints to provide zero-latency speech feedback.</p>
+              </a>
+            </div>
+
+            <h3>Repository Structure</h3>
+            <p>
+              The Subvocal SDK is structured as a monorepo containing modular packages:
+            </p>
+            <pre><code>subvocal/
+├── sdk/
+│   ├── shorthand/          # Compressed shorthand simulator & intent reconstructor
+│   │   ├── vocab.py        # 17-command phonetic target vocabulary
+│   │   ├── spec.py         # Shorthand grammar and sEMG phonetic clusters
+│   │   ├── simulator.py    # Physiological sEMG noise channel simulator
+│   │   ├── decoder.py      # Asymmetric Levenshtein & hybrid LLM decoder
+│   │   └── eval_runner.py  # 50-case benchmark execution harness
+│   ├── context/            # Pydantic schemas and search manager for user context
+│   │   ├── schema.py       # Contacts, Calendar, and AppState context models
+│   │   └── manager.py      # Phonetic context matching
+│   ├── tts/                # Zero-dependency local TTS audio feedback engine
+│   │   └── engine.py       # macOS native CLI say/afplay fallback + OpenAI Audio
+│   └── emg_core/           # Digital Signal Processing (DSP) & ML classifiers
+│       ├── config.py       # Central hardware and training configurations
+│       ├── dsp/
+│       │   ├── filters.py  # Reconciled 1.3-50 Hz bandpass and notch filters
+│       │   └── features.py # TD10 segment feature extraction (840 dims)
+│       └── ml/
+│           ├── train.py    # Random Forest, 1D CNN, and GRU PyTorch models
+│           ├── infer.py    # Unified InferenceEngine with confidence & cooldown gating
+│           └── model_io.py # Model serialization (.pth and .joblib)
+├── platform/               # Publishable specifications & documentation config
+├── LICENSE                 # MIT License
+└── README.md               # Monorepo overview</code></pre>
           </section>
 
-          <!-- Installation -->
-          <section id="installation" class="docs-section">
-            <h2>Installation</h2>
+          <!-- Quickstart Section -->
+          <section id="quickstart" class="docs-section-page" style="display: none;">
+            <h2>Quickstart Guide</h2>
             <p>
-              The Subvocal SDK runs fully offline and does not require heavy runtime dependencies. You only need a standard python environment with packaging for data modeling:
+              Get your physiological signal pipeline running locally and execute intent-reconstruction tests in three steps.
+            </p>
+
+            <h3>Step 1: Set up your local environment</h3>
+            <p>
+              The Subvocal SDK operates fully offline and runs on standard Python environments. Install the modeling and deep learning packages:
             </p>
             <pre><code>pip install pydantic scikit-learn joblib torch</code></pre>
-            <p>
-              <em>Note: PyTorch models are configured by default to run on CPU threads. This avoids MPS device-pooling overhead on Apple Silicon, keeping gesture inference latencies under 1 millisecond.</em>
-            </p>
-          </section>
+            <div class="docs-callout tip">
+              <div class="docs-callout-title">Tip: CPU Inference Gating</div>
+              PyTorch sequence models are configured by default to run on CPU threads. This avoids MPS device-pooling overhead on Apple Silicon, keeping gesture inference latencies under 1 millisecond.
+            </div>
 
-          <!-- Verification -->
-          <section id="verification" class="docs-section">
-            <h2>Verification</h2>
+            <h3>Step 2: Run verification tests</h3>
             <p>
-              To confirm that the ML classifiers, DSP pipelines, and decoders compile and run correctly, run the integration test suites:
+              Verify that the classifiers, DSP conditioning filters, and context managers compile and resolve correctly by running the test suite:
             </p>
-            <pre><code># Test 1: ML Classifiers (RF, CNN, GRU)
+            <pre><code># Test 1: ML Core Classifiers (RF, CNN, GRU)
 python3 sdk/emg_core/test_ml.py
 
 # Test 2: Shorthand Phonetic Alignment
@@ -125,77 +199,71 @@ python3 sdk/shorthand/test_shorthand.py
 
 # Test 3: Context-Aware Intent Resolution
 python3 sdk/context/test_context.py</code></pre>
-          </section>
 
-          <!-- Benchmarks -->
-          <section id="benchmarks" class="docs-section">
-            <h2>Benchmarks</h2>
+            <h3>Step 3: Execute target reconstruction benchmarks</h3>
             <p>
-              The SDK comes pre-packaged with an evaluation harness that simulates muscle biopotential noise and executes intent-reconstruction tests across 50 realistic shorthand command scenarios:
+              Run the evaluation harness to measure spelling shorthand reconstruction accuracy and execution latency under simulated physiological noise:
             </p>
             <pre><code>python3 sdk/shorthand/eval_runner.py</code></pre>
-            <p>
-              Running this script will output overall classification heuristics, word error rates, and average classification latencies.
-            </p>
+            <div class="docs-callout note">
+              <div class="docs-callout-title">Expected Results</div>
+              The evaluation harness simulates muscle-movement biopotential noise across 50 realistic shorthand command scenarios (e.g. <code>g gl</code> -> <code>Google</code>), returning a baseline heuristic accuracy of <strong>74.0%</strong> at <strong>&lt;0.72 ms execution latency</strong>.
+            </div>
           </section>
 
-          <!-- Structure -->
-          <section id="structure" class="docs-section">
-            <h2>Repository Structure</h2>
+          <!-- Local Development Section -->
+          <section id="development" class="docs-section-page" style="display: none;">
+            <h2>Local Development & Integration</h2>
             <p>
-              The codebase is organized in a clean, modular structure:
+              Configure the signal preprocessing pipeline, train models on your own raw biopotentials, and customize shorthand alignment costs.
             </p>
-            <ul>
-              <li><strong>sdk/emg_core/</strong>: Signal preprocessing (notch and bandpass filtering) and classifier architectures (Random Forest, GRU, 1D CNN).</li>
-              <li><strong>sdk/shorthand/</strong>: Compressed phonetic consonant simulators, dictionary vocabs, and the Asymmetric Levenshtein decoder.</li>
-              <li><strong>sdk/context/</strong>: Pydantic context schemas and search priorities (calendar events, focused browser URL, contacts).</li>
-              <li><strong>sdk/tts/</strong>: Local zero-dependency Text-to-Speech audio confirmations.</li>
-            </ul>
-          </section>
 
-          <!-- Preprocessing (DSP) -->
-          <section id="dsp" class="docs-section">
-            <h2>Digital Signal Preprocessing (DSP)</h2>
+            <h3>1. Custom Signal Preprocessing (DSP)</h3>
             <p>
               Physiological raw signals ingest at 250 Hz. Signal conditioning routines are located in <code>sdk/emg_core/dsp/filters.py</code> and apply:
             </p>
             <ul>
               <li>An AlterEgo-inspired <strong>1.3–50.0 Hz bandpass filter</strong> designed to capture slow, low-velocity articulatory gestures.</li>
-              <li>A **50 Hz notch filter** to remove local AC line noise.</li>
-              <li>Time-domain feature extraction yielding **TD10 segment features** (840-dimensional representations per segment).</li>
+              <li>A <strong>50 Hz notch filter</strong> to remove local AC line noise.</li>
+              <li>Time-domain feature extraction in <code>sdk/emg_core/dsp/features.py</code> yielding <strong>TD10 segment features</strong> (840-dimensional representations per segment window).</li>
             </ul>
-          </section>
 
-          <!-- ML Classifiers -->
-          <section id="classifiers" class="docs-section">
-            <h2>ML Classifier Models</h2>
+            <h3>2. Training Custom Classifiers</h3>
             <p>
               Custom pipeline training skeletons are located in <code>sdk/emg_core/ml/train.py</code>. The SDK supports:
             </p>
             <ul>
               <li><strong>Random Forest</strong>: Standard lightweight heuristic baseline.</li>
-              <li><strong>GRU (Gated Recurrent Unit)</strong>: Sequence model trained on temporal sEMG feature frames.</li>
               <li><strong>1D CNN</strong>: Temporal convolutional model mapping multi-channel muscle traces.</li>
+              <li><strong>GRU (Gated Recurrent Unit)</strong>: Sequence model trained on temporal sEMG feature frames.</li>
             </ul>
-            <p>
-              Inference is managed by a unified <code>InferenceEngine</code> in <code>sdk/emg_core/ml/infer.py</code> utilizing confidence thresholds and adaptive cooldown gating to prevent duplicate gesture triggers.
-            </p>
-          </section>
+            <pre><code># Example skeleton to train all models
+from sdk.emg_core.ml.train import train_all_models
+train_all_models(data_path="data/raw_gestures.pkl", save_dir="models/")</code></pre>
 
-          <!-- Shorthand Intent Decoder -->
-          <section id="shorthand" class="docs-section">
-            <h2>Articulatory Shorthand Decoder</h2>
+            <h3>3. Live Inference & Cooldown Gating</h3>
+            <p>
+              Inference is managed by a unified <code>InferenceEngine</code> in <code>sdk/emg_core/ml/infer.py</code>. It applies confidence thresholds and adaptive cooldown gating (e.g., ignoring predictions within 500ms of a successful trigger) to prevent duplicate gesture triggers in real time.
+            </p>
+
+            <h3>4. Articulatory Shorthand Decoder Customization</h3>
             <p>
               Rather than classifying whole words (which degrades rapidly beyond small vocabularies), users speak compressed phonetic consonant shorthand (e.g. <code>g gl</code> for <code>Google</code>).
             </p>
             <p>
-              The decoder in <code>sdk/shorthand/decoder.py</code> aligns shorthand strings using a custom dynamic programming cost matrix (Asymmetric Levenshtein) configured with biological muscle confusion groups (Labial, Alveolar, Velar, Rhotic). Vowels are ignored, and consonant omissions are weighted by physical gesture overlap.
+              The decoder in <code>sdk/shorthand/decoder.py</code> aligns shorthand strings using a custom dynamic programming cost matrix (Asymmetric Levenshtein) configured with biological muscle confusion groups in <code>sdk/shorthand/spec.py</code>:
             </p>
-          </section>
+            <ul>
+              <li><strong>Labial</strong>: physical gestures overlap (`p`, `b`, `m`, `f`, `v`).</li>
+              <li><strong>Alveolar</strong>: tongue placement overlap (`t`, `d`, `s`, `z`, `n`, `l`).</li>
+              <li><strong>Velar</strong>: back-of-tongue overlap (`k`, `g`, `ng`).</li>
+              <li><strong>Rhotic</strong>: throat muscle movement (`r`).</li>
+            </ul>
+            <p>
+              Consonant omissions are weighted based on biological gesture overlap. Update the target vocabulary directly in <code>sdk/shorthand/vocab.py</code> to adapt command priorities.
+            </p>
 
-          <!-- TTS -->
-          <section id="tts" class="docs-section">
-            <h2>Zero-Dependency TTS Engine</h2>
+            <h3>5. Zero-Dependency TTS Engine</h3>
             <p>
               Located in <code>sdk/tts/engine.py</code>, the speech feedback system operates offline with zero external service requirements. It defaults to macOS system commands (<code>say</code> and <code>afplay</code>) to provide local audio confirmations.
             </p>
@@ -252,26 +320,48 @@ python3 sdk/context/test_context.py</code></pre>
       }
     }
 
-    // Scroll highlighting logic for sidebar
-    const sections = document.querySelectorAll('.docs-section');
-    const navLinks = document.querySelectorAll('.docs-sidebar a');
+    // Docs page router
+    function initRouter() {
+      const pages = ['introduction', 'quickstart', 'development'];
+      const sidebarLinks = document.querySelectorAll('.docs-sidebar a');
+      const sections = document.querySelectorAll('.docs-section-page');
 
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        if (scrollY >= sectionTop - 150) {
-          current = section.getAttribute('id');
-        }
-      });
+      function showPage(pageId) {
+        if (!pages.includes(pageId)) pageId = 'introduction';
+        
+        sections.forEach(sec => {
+          if (sec.id === pageId) {
+            sec.style.display = 'block';
+          } else {
+            sec.style.display = 'none';
+          }
+        });
 
-      navLinks.forEach(link => {
-        link.removeAttribute('aria-current');
-        if (link.getAttribute('href') === `#${current}`) {
-          link.setAttribute('aria-current', 'page');
-        }
+        sidebarLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === `#${pageId}`) {
+            link.setAttribute('aria-current', 'page');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+
+        // Scroll window to top when page changes
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+
+      // Handle initial page load
+      const hash = window.location.hash.replace('#', '');
+      showPage(hash || 'introduction');
+
+      // Handle hash change events
+      window.addEventListener('hashchange', () => {
+        const newHash = window.location.hash.replace('#', '');
+        showPage(newHash || 'introduction');
       });
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initRouter);
   </script>
 </body>
 </html>
