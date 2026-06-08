@@ -57,3 +57,9 @@ scratch/
 reference/
 thesis/
 
+# Local logs and model checkpoints
+sdk/data/*.jsonl
+sdk/models/*.pth
+sdk/models/*.joblib
+
+
