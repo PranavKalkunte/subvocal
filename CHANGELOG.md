@@ -11,7 +11,6 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 *   **Documentation Site**: Full Docusaurus site configuration under `docs/` containing detailed guides for getting-started, custom agents, hardware abstractions, LLM systems, context, MCP integration, and model calibration.
 *   **API Auto-Generation**: AST-based python docstring parser in `tools/generate_api_docs.py` to compile Markdown pages directly from code.
 *   **Walkthrough Notebook**: Google Colab-compatible Jupyter notebook `notebooks/subvocal_walkthrough.ipynb` demonstrating the end-to-end signal-to-intent pipeline.
-*   **Hosted Demo**: Responsive, client-side cybernetic simulator `demo/index.html` featuring real-time Canvas sEMG visuals, contraction buttons, and simulated OS pointer actions.
 *   **E2E Smoke Tests**: Added `sdk/core/test_smoke.py` simulating full pipelines.
 
 ### Changed

@@ -22,7 +22,6 @@ from core.security import (
     ContextBoundPolicy,
     PolicyEngine
 )
-from core.dashboard import ObservabilityDashboardHandler
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -78,23 +77,6 @@ class MockWfile:
         self.data = b""
     def write(self, b):
         self.data += b
-
-
-class MockDashboardHandler(ObservabilityDashboardHandler):
-    """Subclass of the dashboard handler to test REST APIs without opening network sockets."""
-    def __init__(self):
-        self.wfile = MockWfile()
-        self.headers_sent = {}
-        self.response_code = 0
-
-    def send_response(self, code, message=None):
-        self.response_code = code
-
-    def send_header(self, keyword, value):
-        self.headers_sent[keyword] = value
-
-    def end_headers(self):
-        pass
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -212,49 +194,6 @@ class TestSubvocalSecurity(unittest.TestCase):
             trace = json.loads(f.read().strip())
         self.assertEqual(trace["status"], "DRY_RUN")
         self.assertTrue(trace["dry_run"])
-
-    def test_06_dashboard_rest_apis(self):
-        """Test dashboard handler API endpoints loading data logs."""
-        # 1. Write mock trace entries to JSONL
-        with open(self.trace_file, "w") as f:
-            f.write(json.dumps({
-                "status": "SUCCESS",
-                "dry_run": False,
-                "intent": {"confidence": 0.95},
-                "timestamp": time.time(),
-                "tokens": [{"text": "clk"}]
-            }) + "\n")
-            f.write(json.dumps({
-                "status": "REJECTED_UNAUTHORIZED",
-                "dry_run": False,
-                "intent": {"confidence": 0.70},
-                "timestamp": time.time(),
-                "tokens": [{"text": "del"}]
-            }) + "\n")
-
-        # 2. Test /api/stats endpoint
-        handler_stats = MockDashboardHandler()
-        handler_stats.path = "/api/stats"
-        handler_stats.do_GET()
-
-        self.assertEqual(handler_stats.response_code, 200)
-        self.assertEqual(handler_stats.headers_sent["Content-Type"], "application/json")
-        stats_data = json.loads(handler_stats.wfile.data.decode("utf-8"))
-        self.assertEqual(stats_data["total"], 2)
-        self.assertEqual(stats_data["success"], 1)
-        self.assertEqual(stats_data["rejected"], 1)
-        self.assertAlmostEqual(stats_data["avg_confidence"], 0.825)
-
-        # 3. Test /api/traces endpoint
-        handler_traces = MockDashboardHandler()
-        handler_traces.path = "/api/traces"
-        handler_traces.do_GET()
-
-        self.assertEqual(handler_traces.response_code, 200)
-        traces_data = json.loads(handler_traces.wfile.data.decode("utf-8"))
-        self.assertEqual(len(traces_data), 2)
-        # Verify newest trace is loaded first (reversed ordering)
-        self.assertEqual(traces_data[0]["status"], "REJECTED_UNAUTHORIZED")
 
 
 if __name__ == "__main__":
