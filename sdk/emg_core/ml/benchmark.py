@@ -3,7 +3,6 @@
 import os
 import time
 import numpy as np
-import torch
 from typing import Dict, Any
 
 from emg_core.ml.infer import InferenceEngine
@@ -77,19 +76,26 @@ def run_benchmark(user_id: str, model_type: str, num_runs: int = 200) -> Dict[st
     """
     engine = InferenceEngine(user_id=user_id, model_type=model_type)
     num_classes = len(engine.labels)
-    
-    # Generate dummy input matching normal segment size
-    dummy_input = np.random.normal(0.0, 1.0, (150, 4))
+
+    # Derive shape from the loaded model so it works for any channel count
+    num_channels = getattr(engine, "_mean", None)
+    if num_channels is not None:
+        num_channels = engine._mean.shape[1]  # mean shape is (1, C, 1)
+    else:
+        num_channels = 4  # classical models don't store mean; 4 is the synthetic default
+    segment_length = 150
+
+    dummy_input = np.random.normal(0.0, 1.0, (segment_length, num_channels))
     
     # Warmup runs to stabilize CPU cache / thread pool
     for _ in range(20):
-        _ = engine.predict_raw(dummy_input)
-        
+        engine.predict_raw(dummy_input)
+
     # Benchmark loop
     latencies = []
     for _ in range(num_runs):
         start = time.perf_counter()
-        _ = engine.predict_raw(dummy_input)
+        engine.predict_raw(dummy_input)
         latencies.append((time.perf_counter() - start) * 1000.0) # in ms
 
     # Latency stats

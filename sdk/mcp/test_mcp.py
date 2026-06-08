@@ -16,8 +16,10 @@ from core.models import CommandToken
 class TestSubvocalMCPServer(unittest.TestCase):
 
     def setUp(self):
-        """Initialize server instance before each test."""
+        """Initialize server instance and complete MCP handshake before each test."""
         self.server = SubvocalMCPServer()
+        self.server.handle_request({"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {}})
+        self.server.handle_request({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
     def test_01_initialize_handshake(self):
         """Test initialize handshake request and notification lifecycle."""

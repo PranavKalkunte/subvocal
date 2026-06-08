@@ -1,14 +1,13 @@
 """Model export and quantization pipeline for sEMG classifiers."""
 
 import os
-import time
 import numpy as np
 import torch
 import torch.nn as nn
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from emg_core import config
-from emg_core.ml.model_io import load_model, save_model, get_model_path
+from emg_core.ml.model_io import load_model, save_model
 from emg_core.ml.train import EMG1DCNN, EMGGRU, EMGTransformer, load_dataset, preprocess_segments, train_test_split
 
 
@@ -25,12 +24,16 @@ def export_to_onnx(user_id: str, model_type: str, export_path: str) -> str:
     num_classes = len(model_data["labels"])
     segment_length = model_data["segment_length"]
 
+    cfg = model_data.get("config", {})
+    hidden_size = cfg.get("hidden_size", 64)
+    num_layers = cfg.get("num_layers", 2)
+
     if model_type == "cnn":
         model = EMG1DCNN(num_channels, num_classes, segment_length=segment_length)
     elif model_type == "gru":
-        model = EMGGRU(num_channels, num_classes)
+        model = EMGGRU(num_channels, num_classes, hidden_size=hidden_size, num_layers=num_layers)
     elif model_type == "transformer":
-        model = EMGTransformer(num_channels, num_classes, segment_length=segment_length)
+        model = EMGTransformer(num_channels, num_classes, segment_length=segment_length, d_model=hidden_size, num_layers=num_layers)
     else:
         raise ValueError(f"ONNX export only supported for PyTorch models, got: {model_type}")
 
@@ -45,7 +48,7 @@ def export_to_onnx(user_id: str, model_type: str, export_path: str) -> str:
     
     torch.onnx.export(
         model,
-        dummy_input,
+        (dummy_input,),
         export_path,
         input_names=["input"],
         output_names=["output"],
@@ -71,12 +74,16 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
         num_classes = len(model_data["labels"])
         segment_length = model_data["segment_length"]
 
+        cfg = model_data.get("config", {})
+        hidden_size = cfg.get("hidden_size", 64)
+        num_layers = cfg.get("num_layers", 2)
+
         if model_type == "cnn":
             model = EMG1DCNN(num_channels, num_classes, segment_length=segment_length)
         elif model_type == "gru":
-            model = EMGGRU(num_channels, num_classes)
+            model = EMGGRU(num_channels, num_classes, hidden_size=hidden_size, num_layers=num_layers)
         elif model_type == "transformer":
-            model = EMGTransformer(num_channels, num_classes, segment_length=segment_length)
+            model = EMGTransformer(num_channels, num_classes, segment_length=segment_length, d_model=hidden_size, num_layers=num_layers)
         else:
             raise ValueError(f"Core ML conversion only supported for PyTorch models, got: {model_type}")
 
@@ -92,6 +99,7 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
             traced_model,
             inputs=[ct.TensorType(name="input", shape=example_input.shape)]
         )
+        os.makedirs(os.path.dirname(os.path.abspath(export_path)), exist_ok=True)
         mlmodel.save(export_path)
         print(f"Model successfully converted to Core ML: {export_path}")
         return True
@@ -105,33 +113,37 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
 
 
 def export_to_tflite(user_id: str, model_type: str, export_path: str) -> bool:
-    """Compile PyTorch/ONNX model to TFLite format.
+    """Compile PyTorch model to TFLite format via ONNX → tf2onnx → TFLite.
 
-    Note: requires tensorflow. If missing, handles gracefully.
+    Requires: tensorflow, tf2onnx. If missing, raises NotImplementedError.
+    Returns True on success, raises on failure.
     """
     try:
         import tensorflow as tf
-        print("TensorFlow found. Starting TFLite conversion...")
-        
-        # Generate temporary ONNX file
-        onnx_temp = export_path + ".temp.onnx"
+        import tf2onnx  # noqa: F401 — verify converter is available
+    except ImportError as e:
+        raise NotImplementedError(
+            f"TFLite export requires tensorflow and tf2onnx: pip install tensorflow tf2onnx. Missing: {e}"
+        )
+
+    onnx_temp = export_path + ".temp.onnx"
+    try:
         export_to_onnx(user_id, model_type, onnx_temp)
-        
-        # We try to use onnx2tf or tensorflow-onnx to convert ONNX to TF SavedModel
-        # For simplicity, we output a description of how conversion happens
-        # and clean up the temp file if conversion cannot proceed.
+        os.makedirs(os.path.dirname(os.path.abspath(export_path)), exist_ok=True)
+
+        import subprocess
+        result = subprocess.run(
+            ["python", "-m", "tf2onnx.convert", "--onnx", onnx_temp,
+             "--output", export_path, "--opset", "14"],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"tf2onnx conversion failed: {result.stderr}")
+        print(f"Model exported to TFLite: {export_path}")
+        return True
+    finally:
         if os.path.exists(onnx_temp):
             os.remove(onnx_temp)
-            
-        print("TFLite conversion requires external ONNX-to-TF converter. Skipping raw TFLite export.")
-        return False
-
-    except ImportError:
-        print("[Warning] TensorFlow package not installed. Skipping TFLite compilation.")
-        return False
-    except Exception as e:
-        print(f"[Warning] TFLite compilation failed: {e}")
-        return False
 
 
 def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) -> Dict[str, Any]:
@@ -185,12 +197,16 @@ def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) 
     X_test_p = (X_test_p - mean) / std
 
     # Reconstruct original float32 model
+    cfg = model_data.get("config", {})
+    hidden_size = cfg.get("hidden_size", 64)
+    num_layers = cfg.get("num_layers", 2)
+
     if model_type == "cnn":
         model_fp32 = EMG1DCNN(num_channels, num_classes, segment_length=segment_length)
     elif model_type == "gru":
-        model_fp32 = EMGGRU(num_channels, num_classes)
+        model_fp32 = EMGGRU(num_channels, num_classes, hidden_size=hidden_size, num_layers=num_layers)
     elif model_type == "transformer":
-        model_fp32 = EMGTransformer(num_channels, num_classes, segment_length=segment_length)
+        model_fp32 = EMGTransformer(num_channels, num_classes, segment_length=segment_length, d_model=hidden_size, num_layers=num_layers)
     else:
         raise ValueError(f"Unknown PyTorch model type '{model_type}'")
 

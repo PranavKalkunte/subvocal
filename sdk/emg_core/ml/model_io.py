@@ -11,17 +11,17 @@ from emg_core import config
 def get_model_path(user_id: str, model_type: str = "rf") -> str:
     """Get the path to a user's model file.
 
-    Saves RF models as joblib, and CNN/GRU models as .pth.
+    Saves RF/SVM models as joblib, and CNN/GRU/Transformer models as .pth.
     """
     os.makedirs(config.MODELS_DIR, exist_ok=True)
-    ext = "joblib" if model_type == "rf" else "pth"
+    ext = "joblib" if model_type in ("rf", "svm") else "pth"
     return os.path.join(config.MODELS_DIR, f"{user_id}_model_{model_type}.{ext}")
 
 
 def save_model(model_data: Dict[str, Any], user_id: str, model_type: str = "rf") -> str:
     """Save a model and its associated metadata to disk."""
     path = get_model_path(user_id, model_type)
-    if model_type == "rf":
+    if model_type in ("rf", "svm"):
         joblib.dump(model_data, path)
     else:
         # Save PyTorch model dictionary
@@ -35,7 +35,7 @@ def load_model(user_id: str, model_type: str = "rf") -> Dict[str, Any]:
     if not os.path.exists(path):
         raise FileNotFoundError(f"No model found for user '{user_id}' at {path}")
 
-    if model_type == "rf":
+    if model_type in ("rf", "svm"):
         return joblib.load(path)
     else:
         # Load PyTorch model dictionary
