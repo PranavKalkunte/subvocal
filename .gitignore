@@ -59,11 +59,12 @@ reference/
 thesis/
 
 # Local logs and model checkpoints
-sdk/data/*.jsonl
-sdk/data/*.npz
-sdk/models/*.pth
-sdk/models/*.joblib
-sdk/models/*.onnx
+data/*.jsonl
+data/*.npz
+models/*.pth
+models/*.joblib
+models/*.onnx
+audio_output/
 
 
 
