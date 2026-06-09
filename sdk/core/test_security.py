@@ -1,4 +1,4 @@
-"""Unit tests for safety, policies, dry-run, tracing, and dashboard APIs."""
+"""Unit tests for safety, policies, dry-run, and tracing APIs."""
 
 import os
 import sys

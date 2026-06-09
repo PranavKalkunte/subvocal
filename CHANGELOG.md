@@ -16,6 +16,9 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 ### Changed
 *   Stabilized core class constructors and public interface signatures.
 
+### Removed
+*   **Observability Dashboard**: Removed the local HTTP dashboard (`sdk/core/dashboard.py`) in favor of the static landing page; JSONL trace logs remain the observability surface.
+
 ---
 
 ## [0.3.0] - 2026-06-08

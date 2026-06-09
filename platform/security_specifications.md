@@ -16,7 +16,6 @@ graph TD
     D -->|Proposed Action| E{Policy Engine / Gate}
     E -->|Approved| F[Action Executor / OS Native APIs]
     E -->|Rejected| G[Audit Trace Log]
-    H[Observability Dashboard] -->|Local HTTP Read| G
 ```
 
 ### 1.1 Sensor Spoofing and Physical Signal Tampering
