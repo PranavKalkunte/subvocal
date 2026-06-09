@@ -33,7 +33,7 @@ from .paths import get_data_dir, get_models_dir
 from .hardware.brainflow_compat import BoardShim, BoardIds, BrainFlowInputParams
 from .emg_core.dsp.brainflow_filter import DataFilter
 
-__version__ = "1.0.0rc1"
+__version__ = "2.0.0"
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 

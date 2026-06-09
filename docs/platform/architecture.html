@@ -308,6 +308,10 @@
 <li><strong>Dynamic Ingress/Egress Managers</strong>: </li>
 <li>The <code>IngressManager</code> unifies acquisition feeds ( simulated generator, file replays, physical board drivers) and automates fallback switching (failover) to simulation mode when hardware connection dropouts occur.</li>
 <li>The <code>EgressManager</code> coordinates text-to-speech audio feedback playouts, trace databases, and raw sEMG dataset recordings.</li>
+<li><strong>Zero-Dependency BrainFlow Compatibility</strong>: To support lightweight edge nodes (e.g., Raspberry Pi) where compiled C++ libraries cannot be easily run or compiled, the SDK includes a pure-Python fallback for the BrainFlow driver and DSP layers:</li>
+<li><em>Dynamic Proxying</em>: Checks for the official C++ BrainFlow module; if missing, falls back to the native Python compatibility layer transparently.</li>
+<li><em>Cyton Serial Parser</em>: Integrates a direct parser that reads raw 33-byte binary packets from OpenBCI Cyton USB serial ports.</li>
+<li><em>SciPy DSP Library</em>: Re-implements causal and zero-phase filtering, Welch PSD estimation, and bandpower integration using standard SciPy and NumPy functions.</li>
 </ul>
 <hr />
 <h2>8. The One Ask: Beta Program Call to Action</h2>
