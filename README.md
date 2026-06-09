@@ -45,10 +45,11 @@ def classify(frame):
 pipeline = SubvocalPipeline(
     hardware=hardware,
     classify_fn=classify,
-    llm_provider=MockLLMProvider(),       # or ClaudeProvider(), OpenAIProvider(), ...
+    llm_provider=MockLLMProvider(),       # or resolve_provider() / ClaudeProvider() ...
     context_provider=MockContextProvider(),
     executor=MockActionExecutor(),
     phrase_timeout_seconds=0.5,
+    on_action=lambda action, status: print("observed:", action.action_type, status),
 )
 
 hardware.start()
@@ -62,7 +63,14 @@ for _ in range(30):
     time.sleep(0.05)  # real-time pacing: the phrase ends after 0.5 s of silence
 ```
 
-Swap in a real LLM provider (`subvocal.core.llm_providers.ClaudeProvider`, `OpenAIProvider`, `GeminiProvider`, `LlamaProvider`), a real driver (`OpenBCICytonDriver`, `DelsysTrignoDriver`, `FileReplayDriver`), and a trained classifier (`subvocal.emg_core.ml.infer.InferenceEngine`) without changing the pipeline code.
+Swap in a real LLM provider (`subvocal.core.llm_providers.ClaudeProvider`, `OpenAIProvider`, `GeminiProvider`, `LlamaProvider`), a real driver (`OpenBCICytonDriver`, `DelsysTrignoDriver`, `FileReplayDriver`), and a trained classifier (`subvocal.emg_core.ml.infer.InferenceEngine`) without changing the pipeline code. `subvocal.resolve_provider()` picks the best provider for the environment automatically — a real LLM when an API key is present, the offline `HeuristicProvider` otherwise.
+
+### Production behavior
+
+- **Typed errors**: everything the SDK raises derives from `subvocal.SubvocalError` (`HardwareError`, `ProviderError`, `ConfigurationError`, `PolicyViolationError`, ...), each compatible with the builtin exception type it replaces.
+- **Resilient providers**: configurable per-request timeouts and exponential-backoff retries for transient failures (connection errors, HTTP 408/429/5xx); non-retryable statuses fail fast.
+- **Observability**: `pipeline.stats` exposes running counters (frames, tokens, intents, executed/blocked actions, errors, uptime), and `on_token` / `on_intent` / `on_action` / `on_error` observer callbacks stream pipeline lifecycle events without ever breaking the pipeline. Every phrase is JSONL-traced for audit.
+- **Safety**: pluggable policy engine with dry-run mode; set `raise_on_policy_violation=True` to turn rejections into `PolicyViolationError`.
 
 ### MCP server
 
