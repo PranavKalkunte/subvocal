@@ -190,6 +190,10 @@ class BoardShim:
             self._thread.daemon = True
             self._thread.start()
         elif self.board_id == BoardIds.CYTON_BOARD.value:
+            try:
+                import serial  # noqa: F401
+            except ImportError:
+                raise BrainFlowError("pyserial is required to connect to a physical CYTON_BOARD serial port.", 16)
             self._thread = threading.Thread(target=self._run_cyton_serial_thread)
             self._thread.daemon = True
             self._thread.start()
