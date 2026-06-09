@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Positioning | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html" aria-current="page"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal Middleware Thesis &amp; Positioning</h1>
+<p>This document defines the core positioning, technical hypothesis, bridge strategy, and Year 1 scope of the <strong>Subvocal SDK</strong> platform.</p>
+<hr />
+<h2>1. Positioning Rationale: Software Middleware vs. Hardware</h2>
+<p>The central venture pivot is positional: rather than manufacturing and shipping a proprietary physical neckband, we focus entirely on the <strong>connective software layer (middleware)</strong> that sits between sEMG hardware and LLM-driven agents.</p>
+<h3>Rationale:</h3>
+<ol>
+<li><strong>Capital and Supply Chain De-risking</strong>: Hardware manufacturing requires extensive funding, assembly logistics, inventory costs, and a multi-disciplinary hardware engineering team. Software runs locally on standard setups and requires minimal overhead.</li>
+<li><strong>Regulatory Bypass</strong>: Medical-grade and assistive speech hardware devices are subject to complex FDA Class I/II and CE/MDR reviews. Middleware escapes immediate regulatory oversight in Year 1.</li>
+<li><strong>Connective Rails Moat</strong>: Hardware players will rise and fall, but they all need to connect to LLM agents. By becoming the standard interface, we capture value regardless of which physical hardware wins (e.g., consumer neckbands, smart earbuds, wristbands, or accessibility rigs).</li>
+<li><strong>Adjacency Hedging</strong>: If silent speech sEMG adoption is slow, the same intent-reconstruction core works for other low-bandwidth inputs: lip-camera silent speech, throat microphones, wrist sEMG (Meta), and acoustic speech in high-noise environments.</li>
+</ol>
+<hr />
+<h2>2. The Falsifiable Claim</h2>
+<blockquote>
+<p><strong>Hypothesis</strong>: <em>A low-bandwidth, physiological input channel (such as silent subvocalizations mapped to compressed articulatory phonetic shorthands) can be expanded using context-aware phonetic decoders to trigger complex, arbitrary agentic tasks with &gt;90% intent resolution accuracy and &lt;200ms latency, bypassing the whole-word vocabulary ceiling of silent speech interfaces.</em></p>
+</blockquote>
+<hr />
+<h2>3. The Bridge Strategy: Target Incumbents</h2>
+<p>To resolve the chicken-and-egg hardware dependency, we target existing sEMG hardware and public datasets immediately:
+* <strong>Existing Hardware Adaptations</strong>: Reference driver interfaces for <strong>OpenBCI Cyton</strong> (widely used in university biosignal research labs), <strong>Backyard Brains SpikerShield</strong> (hobbyist/educational communities), and general consumer developer boards.
+* <strong>Public Datasets</strong>: Benchmarks built on continuous silent/audible corpora (EMG-UKA, CSL-HDEMG) to establish platform performance baseline.
+* <strong>Synthetic Generation</strong>: A built-in mock channel simulator allowing developers to test agent integration fully offline without needing any physical sEMG hardware.</p>
+<hr />
+<h2>4. v0 Scope Definition (Year One)</h2>
+<h3>In-Scope (Year 1):</h3>
+<ol>
+<li><strong>Core Decoder SDK</strong>: An installable Python library providing:
+   - Physiological noise simulators.
+   - Asymmetric Levenshtein distance matching.
+   - Command-aware context filtering (Calendar, Contacts, App UI elements).</li>
+<li><strong>Multi-Model LLM Adapters</strong>: Modular REST connections to OpenAI GPT-4o, Anthropic Claude, Google Gemini, and local Llama (via Ollama).</li>
+<li><strong>Hardware Abstraction Layer (HAL)</strong>: Pluggable drivers for OpenBCI Cyton, SpikerShield, and synthetic signals.</li>
+<li><strong>Classifier Infrastructure</strong>: Local training skeletons for Random Forest, 1D CNN, and GRU models, with ONNX/CoreML model export workflows.</li>
+<li><strong>Model Context Protocol (MCP)</strong>: Exposing subvocal commands as MCP tools that Claude Desktop or any MCP-compliant client can invoke.</li>
+<li><strong>Reference Application</strong>: A hands-free agentic application (e.g. warehouse inventory controller).</li>
+</ol>
+<h3>Out-of-Scope (Year 1):</h3>
+<ol>
+<li><strong>First-Party Neckband Manufacturing</strong>: Designing or ordering custom mechanical enclosures or printed circuit boards.</li>
+<li><strong>Clinical Regulatory Clearance</strong>: FDA submissions or clinical human trials.</li>
+<li><strong>Hosted Commercial Cloud Platform</strong>: Managed SSO, enterprise RBAC, hosted database storage, or dashboard telemetry.</li>
+<li><strong>Microcontroller Firmware Edge Inference</strong>: Compiling models for low-power bare-metal MCUs.</li>
+</ol>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

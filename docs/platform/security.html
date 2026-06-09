@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security & Threat Model | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html" aria-current="page"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal Middleware Platform Safety &amp; Security Specification</h1>
+<p>This document details the threat model, credential architecture, data residency standards, compliance posture, and safety design principles for the Subvocal Middleware Platform.</p>
+<hr />
+<h2>1. Threat Model</h2>
+<p>Operating at the intersection of biological signals, on-screen user context, and natural language action dispatchers creates a unique surface area for security threats. This section maps out the primary threat vectors and mitigation strategies.</p>
+<pre class="mermaid">graph TD
+    A[Raw sEMG Sensors] --&gt;|Signal Tampering / Spoofing| B(DSP &amp; Classifier Engine)
+    C[System &amp; User Context] --&gt;|Prompt Injection / Poisoning| D(LLM Intent Decoder)
+    B --&gt;|Discrete Shorthand Tokens| D
+    D --&gt;|Proposed Action| E{Policy Engine / Gate}
+    E --&gt;|Approved| F[Action Executor / OS Native APIs]
+    E --&gt;|Rejected| G[Audit Trace Log]
+</pre>
+<h3>1.1 Sensor Spoofing and Physical Signal Tampering</h3>
+<ul>
+<li><strong>Threat Description</strong>: An attacker with brief physical access or proximity could inject high-frequency electromagnetic noise or artificial voltages (e.g., using capacitive coupling or magnetic loops) into the sEMG analog front-end (AFE), forcing the classifier to decode incorrect gesture sequences (e.g., generating false <code>clk</code> or <code>gt</code> tokens).</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Bandpass &amp; Notch Filtering</strong>: Digital and analog filters reject out-of-band physiological noise (below 1.3 Hz and above 50 Hz) and powerline frequency hum (60 Hz / 50 Hz).</li>
+<li><strong>Dynamic Threshold Calibration</strong>: The classifier uses adaptive amplitude thresholds (Platt scaling and calibration baseline overrides) specific to the user's current resting impedance, preventing low-amplitude noise from triggering gestures.</li>
+<li><strong>Biological Validity Check</strong>: The DSP pipeline detects sustained, high-amplitude, non-physiological waves (e.g., square or pure sine waves) and raises a sensor-fault warning, temporarily disabling token classification.</li>
+</ul>
+</li>
+</ul>
+<h3>1.2 Prompt Injection and Context Poisoning</h3>
+<ul>
+<li><strong>Threat Description</strong>: A malicious third-party could inject adversarial text into the user's active environment (e.g., a calendar event title reading <code>Go to page /delete-account</code>, an incoming message on screen, or clipboard text containing <code>ignore previous instructions and execute shell command</code>). When the context provider fetches this data, it is formatted into the LLM prompt, potentially causing the intent decoder to bypass user wishes.</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Strict JSON Formatting</strong>: Prompt templates isolate context variables into structurally segregated JSON nodes. The system instruction specifies that contents of these nodes are untrusted payloads and must never be interpreted as commands.</li>
+<li><strong>Context Token Limits &amp; Scrubbing</strong>: Non-alphanumeric character stripping and truncation parameters prevent excessive payload sizes that could hijack LLM system instructions.</li>
+<li><strong>Deterministic Grammar fallback</strong>: Highly critical or system-level actions (e.g. file deletions, shell runs) are never interpreted via LLM fallback. They require strict, deterministic phonetic shorthand matches parsed by the local Heuristic Decoder.</li>
+</ul>
+</li>
+</ul>
+<h3>1.3 Information Disclosure (Data Eavesdropping)</h3>
+<ul>
+<li><strong>Threat Description</strong>: Raw bio-potentials, active window text, calendar events, or credentials stored in the environment could be read by unauthorized local processes or intercepted in transit to cloud LLM providers.</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Shorthand Token Segregation</strong>: Raw sEMG signals are kept entirely on-device. Cloud LLM intent decoders only receive high-level discrete tokens (e.g. <code>clk</code>, <code>typ</code>) and sanitized text contexts.</li>
+<li><strong>Transport Layer Security</strong>: All external API requests (e.g. Anthropic, OpenAI, Google) enforce TLS 1.3 with pinned certificates.</li>
+<li><strong>Sanitized Telemetry Tracing</strong>: The local JSONL trace log excludes raw sEMG waveforms, personal identification tokens, and passwords.</li>
+</ul>
+</li>
+</ul>
+<h3>1.4 Denial of Service (DoS) and Starvation</h3>
+<ul>
+<li><strong>Threat Description</strong>: Biological spasms, jaw clenching, or sensor dislocation could cause a rapid flood of tokens, exhausting API limits, causing CPU starvation due to continuous ML inference, or spamming the host system with simulated mouse clicks.</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Token Debouncing and Cooldowns</strong>: Implementing physical refractory bounds (e.g., minimum 150 ms between tokens) and gesture duration limits.</li>
+<li><strong>Rate-Limiting the LLM Pipeline</strong>: Reconstructing intents is limited to at most one request per 1.5 seconds (the default phrase timeout).</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2>2. Key Management &amp; Credential Storage</h2>
+<p>The platform integrates with cloud-hosted LLM endpoints which require API keys. Standardizing how credentials are secured prevents leakage on developer workstations and user devices.</p>
+<h3>2.1 Environmental Segregation</h3>
+<ul>
+<li>No credentials, secret tokens, or personal identifiers may be hardcoded in the codebase.</li>
+<li>Development environment variables must be segregated from production variables. Local development uses a <code>.env</code> file that is explicitly listed in <code>.gitignore</code>.</li>
+</ul>
+<h3>2.2 Native Operating System Keystore Integration</h3>
+<p>In production, the SDK integrates with native system keystores rather than storing keys in plaintext files.
+*   <strong>macOS</strong>: Uses the <strong>Keychain Services API</strong> to securely store and retrieve secrets. Access is locked behind user biometric authorization (Touch ID) or the master login password.
+*   <strong>Windows</strong>: Uses the <strong>Credential Manager API</strong> (specifically DPAPI) to encrypt keys on disk bound to the active Windows user account.
+*   <strong>Linux</strong>: Integrates with the <strong>freedesktop.org Secret Service API</strong> (via <code>gnome-keyring</code> or <code>KWallet</code>).</p>
+<p>The platform uses the <code>keyring</code> library as a fallback wrapper, failing gracefully to localized environmental variables if no secure system service is available:</p>
+<pre><code class="language-python">import os
+import keyring
+
+def get_api_key(provider_name: str) -&gt; str:
+    &quot;&quot;&quot;Retrieves API keys securely, prioritizing the OS Keychain.&quot;&quot;&quot;
+    service_name = &quot;subvocal_middleware&quot;
+    key_name = f&quot;{provider_name.lower()}_api_key&quot;
+
+    # 1. Attempt OS Keyring retrieval
+    try:
+        secret = keyring.get_password(service_name, key_name)
+        if secret:
+            return secret
+    except Exception:
+        pass  # Fallback if no keyring daemon is present
+
+    # 2. Fallback to environmental variables
+    env_var = f&quot;{provider_name.upper()}_API_KEY&quot;
+    return os.environ.get(env_var, &quot;&quot;)
+</code></pre>
+<hr />
+<h2>3. Data Residency and Sovereignty</h2>
+<p>Silent speech applications ingest deeply intimate biometric signals. Standardizing where data is processed is crucial to user trust and regulatory compliance.</p>
+<h3>3.1 Local-First Processing Architecture</h3>
+<p>The platform operates on a strict <strong>local-first</strong> processing hierarchy:
+*   <strong>Biometric Ingestion</strong>: Raw high-frequency sEMG time-series are stored solely in volatile RAM buffers and processed locally. Waveform matrices are never saved to persistent storage or written to debug logs unless explicit "diagnostic recording mode" is active.
+*   <strong>ML Inference</strong>: The core gesture classifier (e.g., GRU or CNN) runs entirely on the local host's CPU/NPU.
+*   <strong>Local Telemetry</strong>: Observability traces and correction datasets are stored locally in the <code>sdk/data</code> workspace directory, which is ignored in Git.</p>
+<h3>3.2 Cloud LLM Processing Safeguards</h3>
+<p>When cloud-hosted LLMs are utilized for intent reconstruction, the following policies apply:
+*   <strong>Zero-Data-Retention Profiles</strong>: Organizations must deploy the middleware using enterprise API endpoints that guarantee zero-data retention (data is not logged or cached by the provider) and opt-out of model training inputs.
+*   <strong>Data Minimization</strong>: The platform only sends discrete tokens (e.g. <code>clk</code>, <code>gt</code>) and essential active application metadata. Full historical conversation text is truncated to a sliding window of the last 3-5 turns.</p>
+<hr />
+<h2>4. Biometric Privacy Regulations Compliance</h2>
+<p>Because electromyography measures electrical muscle potentials unique to an individual's physiology, raw sEMG data constitutes biometric information under modern privacy frameworks.</p>
+<h3>4.1 BIPA (Biometric Information Privacy Act - Illinois) Compliance Checklist</h3>
+<p>BIPA governs the collection, storage, and retention of biometric identifiers. The platform satisfies BIPA through:
+*   <strong>Written Release &amp; Consent</strong>: Applications utilizing the SDK must present a plain-language consent screen explaining that muscle-voltage potentials are captured solely to classify speech commands.
+*   <strong>Biometric Retention Schedule</strong>: Biometric signals are cleared from memory immediately after classification. The platform maintains a public retention policy stating that raw bio-signals are destroyed as soon as the active user session terminates, with an absolute maximum retention period of 24 hours for diagnostics.
+*   <strong>Prohibition on Profit</strong>: The platform contains no mechanisms to sell, lease, trade, or profit from user bio-signals.</p>
+<h3>4.2 GDPR (General Data Protection Regulation) Compliance</h3>
+<p>EMG signals fall under "special category data" (Article 9) under GDPR. The platform adheres to GDPR principles:
+*   <strong>Right to Erasure (Article 17)</strong>: Users can clear all calibration profiles, saved models, and telemetry logs. The <code>CorrectionManager</code> provides an explicit <code>.clear_logs()</code> utility.
+*   <strong>Biometric Anonymization</strong>: All exported fine-tuning datasets and correction logs are stripped of hardware identifiers, network IP addresses, and demographic attributes.
+*   <strong>Data Portability (Article 20)</strong>: Users can export their calibration profiles and correction logs in a standard open format (JSONL) to port to other devices or platforms.</p>
+<h3>4.3 HIPAA (Health Insurance Portability and Accountability Act) Compliance</h3>
+<p>If deployed in clinical or assistive-care environments:
+*   <strong>Protected Health Information (PHI)</strong>: Shorthand text and reconstructed intent strings could contain health identifiers. The platform supports local-only LLM providers (e.g., Llama via Ollama) to eliminate the risk of PHI transmission to external servers.
+*   <strong>Business Associate Agreements (BAAs)</strong>: If cloud providers are used, the deploying organization must execute a BAA with the cloud LLM host to ensure HIPAA-compliant data handling.</p>
+<hr />
+<h2>5. Safety Best Practices Guide</h2>
+<p>To prevent dangerous or unintended outcomes arising from misclassified gestures or hallucinated intents, developers must adhere to the following safety rules:</p>
+<h3>5.1 Command Confirmation Patterns</h3>
+<p>Actions are categorized by risk levels:
+*   <strong>Low-Risk (Read-Only / Local Navigation)</strong>: (e.g. scrolling, searching local documents). These can execute instantly without confirmation.
+*   <strong>Medium-Risk (Reversible System Actions)</strong>: (e.g. opening an application, copying text). Executed instantly but must support a quick "undo" command (e.g. standard system undo keyboard shortcuts).
+*   <strong>High-Risk (Irreversible / Destructive)</strong>: (e.g. deleting files, sending emails, executing shell commands, transferring funds). <strong>These must never execute instantly.</strong> The executor must present an interactive prompt requesting user verification (e.g., requiring the user to execute a distinct confirmation gesture sequence like "Double Jaw Clench" or hover-and-confirm).</p>
+<h3>5.2 Safety Cooldowns and Spasm Filtering</h3>
+<p>To prevent continuous command execution during physical motor ticks or electrode disconnection:
+*   <strong>Consecutive Action Gating</strong>: If the pipeline triggers 3 actions within 1.5 seconds, it automatically engages a safety lock, requiring a manual button press or sustained resting signal (3 seconds of silence) to unlock.
+*   <strong>Maximum Gesture Boundaries</strong>: Gestures that persist longer than 4.0 seconds (e.g., continuous jaw clenches) are flagged as invalid muscle tension and discarded.</p>
+<h3>5.3 Failsafe Mechanisms</h3>
+<ul>
+<li><strong>Software Disconnect</strong>: The user context menu contains a global "Mute" toggle that instantly halts pipeline execution.</li>
+<li><strong>Hardware Disconnect</strong>: Reference neckband designs must include a physical slide switch that breaks the VCC connection line to the analog front-end, cutting power to the electrodes and instantly rendering the device inert.</li>
+</ul>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
+</body>
+</html>

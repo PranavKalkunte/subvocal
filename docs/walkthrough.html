@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>End-to-End Walkthrough | Subvocal SDK</title>
+  <link rel="stylesheet" href="./index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="./index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./platform/index.html">Platform</a></li>
+            <li><a href="./api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="./platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="./platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="./platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="./platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="./platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="./platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="./platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="./platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="./platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="./platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="./platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="./platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="./platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="./walkthrough.html" aria-current="page"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal Middleware Platform Walkthrough</h1>
+<p>Welcome to the end-to-end interactive notebook walkthrough for the Subvocal Middleware SDK. This notebook will guide you through:
+1. <strong>Synthetic sEMG Generation</strong>: Simulating biometric sensor data.
+2. <strong>DSP Filtering &amp; Extraction</strong>: Applying bandpass filters and calculating TD10 features.
+3. <strong>Gesture Classification</strong>: Training and evaluating an SVM classifier.
+4. <strong>Context collation</strong>: Building active user application states.
+5. <strong>Intent Reconstruction</strong>: Translating noisy phonetic tokens to semantic system actions.</p>
+<p>Let's get started!</p>
+<h2>1. Environment Setup</h2>
+<p>Install the SDK from PyPI (or from the repository checkout with <code>pip install -e ".[ml]"</code>).</p>
+<pre><code class="language-python">%pip install &quot;subvocal[ml]&quot; matplotlib --quiet
+
+import numpy as np
+import time
+import matplotlib.pyplot as plt
+
+import subvocal
+print(f&quot;Subvocal SDK {subvocal.__version__} loaded!&quot;)
+</code></pre>
+<h2>2. Physiological Bio-Signal Simulation</h2>
+<p>We use the <code>SyntheticSignalGenerator</code> to mimic multi-channel electromyography muscle potentials (Gaussian white noise + powerline notch shape) and inject contractions.</p>
+<pre><code class="language-python">from subvocal.hardware.drivers import SyntheticSignalGenerator
+
+# 1. Initialize synthetic generator (8 channels, 250Hz sample rate)
+hardware = SyntheticSignalGenerator(fs=250.0, num_channels=8)
+hardware.start()
+
+# 2. Read a 500ms frame of data
+frame = hardware.read_frame(window_ms=500)
+data = frame.to_numpy()
+
+print(f&quot;Frame shape (samples x channels): {data.shape}&quot;)
+
+# 3. Plot signal trace
+plt.figure(figsize=(10, 4))
+plt.plot(data[:, 0], label='Channel 0')
+plt.plot(data[:, 1], label='Channel 1')
+plt.title(&quot;Raw Simulated sEMG Waveforms&quot;)
+plt.xlabel(&quot;Sample Index&quot;)
+plt.ylabel(&quot;Micro-Volts (uV)&quot;)
+plt.legend()
+plt.grid(True)
+plt.show()
+
+hardware.stop()
+</code></pre>
+<h2>3. DSP and Bandpass Filtering</h2>
+<p>We apply the reconciled bandpass filter (1.3Hz to 50Hz) designed for silent speech to strip powerline noise and biological drift.</p>
+<pre><code class="language-python">from subvocal.emg_core.dsp.filters import BandpassFilter
+
+# 1. Initialize physiological filter
+bp_filter = BandpassFilter(low_cutoff=1.3, high_cutoff=50.0, fs=250.0, order=4)
+
+# 2. Filter raw data
+filtered_data = bp_filter.apply(data)
+
+plt.figure(figsize=(10, 4))
+plt.plot(data[:, 0], alpha=0.5, label='Raw Channel 0')
+plt.plot(filtered_data[:, 0], label='Filtered Channel 0')
+plt.title(&quot;Physiological Bandpass Filtering Verification&quot;)
+plt.xlabel(&quot;Sample Index&quot;)
+plt.ylabel(&quot;Micro-Volts (uV)&quot;)
+plt.legend()
+plt.grid(True)
+plt.show()
+</code></pre>
+<h2>4. Feature Extraction (TD10 Segment Pool)</h2>
+<p>We extract TD10 temporal-domain features (Mean Absolute Value, Waveform Length, Zero Crossings, Slope Sign Changes) across channels to create model inputs.</p>
+<pre><code class="language-python">from subvocal.emg_core.dsp.features import extract_td10_features
+
+# Extract features over the filtered frame
+features = extract_td10_features(filtered_data)
+print(f&quot;Extracted feature vector length: {len(features)}&quot;)
+print(f&quot;Features preview (first 10 items): {features[:10]}&quot;)
+</code></pre>
+<h2>5. Machine Learning Classifier Training</h2>
+<p>We train an SVM gesture classifier on synthetic data and calibrate probabilities.</p>
+<pre><code class="language-python">from sklearn.svm import SVC
+from sklearn.calibration import CalibratedClassifierCV
+
+# Generate mock training dataset (3 classes: rest, clench, LipMove)
+np.random.seed(42)
+num_samples = 60
+X_train = np.random.randn(num_samples, len(features))
+# Inject higher amplitude in clench class features
+y_train = np.random.choice([0, 1, 2], size=num_samples)
+X_train[y_train == 1] *= 5.5
+
+# Fit calibrated baseline SVM model
+base_svc = SVC(kernel='rbf', probability=True, C=1.0)
+classifier = CalibratedClassifierCV(base_svc)
+classifier.fit(X_train, y_train)
+
+# Perform inference test
+test_feat = X_train[0].reshape(1, -1)
+pred_label = classifier.predict(test_feat)[0]
+probs = classifier.predict_proba(test_feat)[0]
+
+print(f&quot;Predicted Gesture Label Index: {pred_label}&quot;)
+print(f&quot;Calibrated Probabilities: {probs}&quot;)
+</code></pre>
+<h2>6. End-to-End Context-Aware Intent Reconstruction</h2>
+<p>We set up the full <code>SubvocalPipeline</code> leveraging user contexts and simulated LLM decoders.</p>
+<pre><code class="language-python">from subvocal.context.schema import UserContext, AppState
+from subvocal.core.models import CommandToken, Action, Intent
+from subvocal.core.interfaces import ActionExecutor, ContextProvider, LLMProvider
+from subvocal.core.pipeline import SubvocalPipeline
+
+# Define mock client executor
+class MyExecutor(ActionExecutor):
+    def execute(self, action: Action):
+        print(f&quot;\n[⚡ EXECUTOR DISPATCH] Action Executed: {action.action_type.upper()}&quot;)
+        print(f&quot;Arguments: {action.params.get('arguments')}&quot;)
+
+    def can_execute(self, action: Action) -&gt; bool:
+        return True
+
+# Define mock LLM intent decoder
+class MyLLM(LLMProvider):
+    def reconstruct_intent(self, tokens: list, context: UserContext) -&gt; Intent:
+        shorthand = &quot; &quot;.join([t.text for t in tokens])
+        # Perform translation based on shorthand token content
+        if &quot;clk&quot; in shorthand:
+            return Intent(
+                command=&quot;CLICK&quot;,
+                arguments=[&quot;link: Getting Started&quot;],
+                resolved_text=&quot;Click the link&quot;,
+                raw_shorthand=shorthand,
+                confidence=0.96,
+                timestamp=time.time()
+            )
+        return Intent(
+            command=&quot;SCROLL&quot;,
+            arguments=[&quot;down&quot;],
+            resolved_text=&quot;Scroll page&quot;,
+            raw_shorthand=shorthand,
+            confidence=0.85,
+            timestamp=time.time()
+        )
+
+    def get_provider_name(self) -&gt; str:
+        return &quot;my_mock_llm&quot;
+
+# Define static context provider
+class MyContext(ContextProvider):
+    def get_context(self) -&gt; UserContext:
+        return UserContext(app_state=AppState(current_app=&quot;Terminal&quot;))
+    def get_provider_name(self) -&gt; str:
+        return &quot;my_mock_context&quot;
+
+# Setup Pipeline with synthetic signal source
+hw_source = SyntheticSignalGenerator()
+hw_source.start()
+
+pipeline = SubvocalPipeline(
+    hardware=hw_source,
+    classify_fn=lambda frame: CommandToken(text=&quot;clk&quot;, confidence=0.95, timestamp=time.time()),
+    llm_provider=MyLLM(),
+    context_provider=MyContext(),
+    executor=MyExecutor(),
+    phrase_timeout_seconds=0.5
+)
+
+# Inject mock token and process phrase
+pipeline._token_buffer.append(CommandToken(text=&quot;clk&quot;, confidence=0.95, timestamp=time.time()))
+action = pipeline.process_phrase()
+
+hw_source.stop()
+print(&quot;\nPipeline execution successfully demonstrated!&quot;)
+</code></pre>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="./docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

@@ -13,7 +13,7 @@ from typing import Any
 
 # Paths
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPORT_PATH = os.path.join(REPO_ROOT, "platform", "benchmark_report.md")
+REPORT_PATH = os.path.join(REPO_ROOT, "docs", "content", "benchmark-report.md")
 
 
 def run_ml_benchmark(model_type: str) -> dict[str, Any]:

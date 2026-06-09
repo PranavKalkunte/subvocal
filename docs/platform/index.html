@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Corpus | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Platform Corpus</h1>
+<p>The complete public specification set behind the Subvocal SDK: positioning, architecture, benchmarks, security, and the MCP intent-profile proposal.</p>
+<div class="docs-card-grid">
+<a href="./positioning.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Platform Positioning</span></div><p>The middleware thesis: why software rails, not proprietary hardware.</p></a>
+<a href="./declaration.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Declaration Post</span></div><p>The framing shift and what is shipping.</p></a>
+<a href="./architecture.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Architecture</span></div><p>Anatomical, engineering, and systems-level design of the platform.</p></a>
+<a href="./intent-layer.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Intent Layer</span></div><p>Shorthand-to-intent reconstruction: providers, prompts, corrections.</p></a>
+<a href="./intent-benchmark.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Intent Reconstruction Benchmark</span></div><p>The open 50-case shorthand-to-intent evaluation specification.</p></a>
+<a href="./benchmark-report.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Benchmark Report</span></div><p>Latest generated benchmark results across providers and models.</p></a>
+<a href="./hardware-drivers.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Hardware Drivers</span></div><p>The hardware abstraction layer: replay, synthetic, OpenBCI, Delsys, datasets.</p></a>
+<a href="./classifiers.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Classifier Infrastructure</span></div><p>Reference models, training pipeline, calibration, export, quantization.</p></a>
+<a href="./security.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Security & Threat Model</span></div><p>Authorization policies, threat model, data residency, biometric compliance.</p></a>
+<a href="./mcp-profile.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">MCP Intent Profile (RFC)</span></div><p>Proposed Model Context Protocol profile for low-bandwidth intent inputs.</p></a>
+<a href="./release-process.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Release Process</span></div><p>Semantic versioning policy, cadence, and changelog format.</p></a>
+<a href="./reference-bom.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Reference Hardware BOM</span></div><p>Minimum and full bill-of-materials for a DIY sEMG capture rig.</p></a>
+<a href="./phase0-results.html" class="docs-card"><div class="docs-card-header"><span class="docs-card-icon">[*]</span><span class="docs-card-title">Phase 0: Method & Results</span></div><p>The original feasibility study that seeded the SDK.</p></a>
+</div>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

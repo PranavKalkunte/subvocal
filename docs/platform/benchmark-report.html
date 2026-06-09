@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benchmark Report | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html" aria-current="page"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Automated Performance Benchmark Report</h1>
+<p><strong>Generated on:</strong> Mon Jun  8 10:51:05 CDT 2026<br />
+<strong>Version:</strong> v0.3.0-alpha (Automated release run)</p>
+<hr />
+<h2>1. sEMG Classifier Inference Benchmarks</h2>
+<p>These metrics profile real-time execution speeds, computational footprint, and energy consumption estimates.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Model Type</th>
+<th style="text-align: left;">Mean Latency</th>
+<th style="text-align: left;">Median Latency</th>
+<th style="text-align: left;">Disk Footprint</th>
+<th style="text-align: left;">Params Size</th>
+<th style="text-align: left;">Est. FLOPs</th>
+<th style="text-align: left;">Est. Energy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>1D CNN</strong></td>
+<td style="text-align: left;">1.66 ms</td>
+<td style="text-align: left;">1.64 ms</td>
+<td style="text-align: left;">409.7 KB</td>
+<td style="text-align: left;">102,053</td>
+<td style="text-align: left;">3,678,336</td>
+<td style="text-align: left;">367.834 µJ</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GRU</strong></td>
+<td style="text-align: left;">8.27 ms</td>
+<td style="text-align: left;">8.25 ms</td>
+<td style="text-align: left;">420.5 KB</td>
+<td style="text-align: left;">105,669</td>
+<td style="text-align: left;">30,190,912</td>
+<td style="text-align: left;">3019.091 µJ</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SVM Baseline</strong></td>
+<td style="text-align: left;">0.00 ms</td>
+<td style="text-align: left;">0.00 ms</td>
+<td style="text-align: left;">0.0 KB</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0.000 µJ</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Shorthand Intent Reconstruction Benchmark</h2>
+<p>These metrics profile shorthand-to-intent phonetic alignment and LLM resolution loops evaluated over 50 gold-standard phrases.</p>
+<ul>
+<li><strong>Intent Resolution Accuracy</strong>: N/A</li>
+<li><strong>Intent Resolution Latency</strong>: N/A</li>
+</ul>
+<h3>Full Intent Runner Output</h3>
+<pre><code class="language-text">================================================================================
+SUBVOCAL SDK INTENT-RECONSTRUCTION BENCHMARK RUNNER
+================================================================================
+Live LLM Providers Detected: NONE (Running in Simulated mode)
+Total Test Cases: 50
+--------------------------------------------------------------------------------
+
+================================================================================
+BENCHMARK RESULTS SUMMARY
+================================================================================
+Decoder / Provider        | Accuracy   | Avg Latency    
+--------------------------------------------------------------------------------
+HEURISTIC                 |     74.0% |       0.70 ms
+SIMULATED-LLM             |     96.0% |       0.70 ms
+
+================================================================================
+FAILURE PROFILE DETAILS
+================================================================================
+Provider HEURISTIC: 13 failures
+  Noisy Input     : 'srch nrl ntwk'
+  Expected Intent : 'SEARCH neural networks'
+  Received Output : 'SEARCH Neural network'
+
+  Noisy Input     : 'srch fgt calb'
+  Expected Intent : 'SEARCH Figma calibration'
+  Received Output : 'SEARCH logout confirm'
+
+  Noisy Input     : 'srch emguka cp'
+  Expected Intent : 'SEARCH EMG-UKA corpus'
+  Received Output : 'SEARCH EMG-UKA copy'
+
+  Noisy Input     : 'srch snt spch'
+  Expected Intent : 'SEARCH silent speech'
+  Received Output : 'SEARCH send Speech'
+
+  Noisy Input     : 'srch flyt scdl'
+  Expected Intent : 'SEARCH flight schedule'
+  Received Output : 'SEARCH Flight seconds'
+
+  ... and 8 more failures.
+--------------------------------------------------------------------------------
+Provider SIMULATED-LLM: 2 failures
+  Noisy Input     : 'gt ggl.cm'
+  Expected Intent : 'GOTO google.com'
+  Received Output : 'GOTO error.com'
+
+  Noisy Input     : 'srch bsnl'
+  Expected Intent : 'SEARCH BioSignals'
+  Received Output : 'GOTO error.com'
+
+--------------------------------------------------------------------------------
+
+</code></pre>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

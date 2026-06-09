@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hardware Drivers | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html" aria-current="page"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal SDK: Hardware Abstraction Layer (HAL)</h1>
+<p><strong>Status:</strong> Draft Spec<br />
+<strong>Version:</strong> v0.1.0-alpha<br />
+<strong>Date:</strong> June 2026<br />
+<strong>Audience:</strong> Wearable Device Engineers, BCI Software Developers  </p>
+<hr />
+<h2>1. Overview and Interface Lifecycle</h2>
+<p>The <strong>Hardware Abstraction Layer (HAL)</strong> provides a uniform, vendor-agnostic interface between electromyographical (EMG) sensor sources and downstream digital signal processing (DSP) and classification pipelines. </p>
+<p>Every sensor driver, dataset replayer, and signal simulator in the Subvocal SDK inherits from the abstract base class <code>HardwareSource</code> defined in <code>sdk/core/interfaces.py</code>:</p>
+<pre><code>                       [ HardwareSource Interface ]
+                                    │
+       ┌───────────────┬────────────┼──────────────┬──────────────┐
+       ▼               ▼            ▼              ▼              ▼
+ [ FileReplay ]  [ Synthetic ]  [ OpenBCI ]  [ Delsys Trigno ] [ Datasets ]
+</code></pre>
+<h3>The Driver Lifecycle:</h3>
+<ol>
+<li><strong>Instantiation:</strong> Configure ports, files, or parameters (e.g., sample rate <code>fs</code>, channels).</li>
+<li><strong><code>start()</code>:</strong> Connects to the device (serially, via BLE, or socket), opens resources, and arms the hardware data acquisition buffer.</li>
+<li><strong><code>is_connected()</code>:</strong> Returns connection health state.</li>
+<li><strong><code>read_frame(window_ms)</code>:</strong> Reads a sliding temporal window of data from the internal buffer, returns a Pydantic <code>Frame</code> containing Pydantic <code>Sample</code>s.</li>
+<li><strong><code>stop()</code>:</strong> Stops streaming, releases connections, and clean-closes file/socket handlers.</li>
+</ol>
+<hr />
+<h2>2. Core Drivers</h2>
+<p>The SDK implements four baseline drivers under <code>sdk/hardware/drivers.py</code>:</p>
+<h3>1. <code>FileReplayDriver</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Reads multi-channel sEMG data from a local CSV file, simulating a real-time hardware stream.</li>
+<li><strong>Mechanism:</strong> Slices continuous numeric columns. Uses the current system clock to generate system timestamps, simulating live inputs.</li>
+<li><strong>Options:</strong> Supports configuring the sample rate <code>fs</code> and toggling <code>loop</code> at End-Of-File (EOF).</li>
+</ul>
+<h3>2. <code>SyntheticSignalGenerator</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Simulates clean and noisy muscle signals for offline software development without physical hardware.</li>
+<li><strong>Signal Components:</strong></li>
+<li>Baseline physiological muscle noise (Gaussian white noise).</li>
+<li>60 Hz powerline hum (notch noise).</li>
+<li>High-amplitude transient muscle contraction envelopes injected when commands (e.g., <code>"clk"</code>, <code>"gt"</code>) are triggered via <code>trigger_command()</code>.</li>
+</ul>
+<h3>3. <code>OpenBCICytonDriver</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Acquires sEMG signals from OpenBCI Cyton boards (8-channel EEG/EMG research hardware).</li>
+<li><strong>Mechanism:</strong> Imports the <code>brainflow</code> library dynamically. Supports reading from a real USB dongle serial port or a synthetic board simulation.</li>
+<li><strong>EXG Mapping:</strong> Extracts the primary ExG analog channels (channels 1 to 8) at a fixed sample rate of 250 Hz.</li>
+</ul>
+<h3>4. <code>DelsysTrignoDriver</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Zero-dependency TCP socket client connecting to the Delsys Trigno wireless base station.</li>
+<li><strong>Mechanism:</strong> Connects directly to the Delsys Trigno Control Utility over standard TCP sockets, avoiding large vendor DLLs or custom wrappers.</li>
+</ul>
+<hr />
+<h2>3. Delsys Trigno TCP Protocol Reference</h2>
+<p>The Delsys Trigno base station streams data over native TCP sockets. The SDK driver connects using two ports:</p>
+<h3>1. Command Socket (Port 50040)</h3>
+<p>Communicates control commands to the base station as ASCII strings terminated by <code>\r\n\r\n</code>:
+* <strong><code>START</code>:</strong> Commands the utility to begin sampling sensors and streaming data over port 50043.
+* <strong><code>STOP</code>:</strong> Ends data sampling and closes active data connections.</p>
+<h3>2. Data Socket (Port 50043)</h3>
+<p>Streams raw binary single-precision floats (32-bit little-endian, <code>&lt;f</code> in struct). 
+* <strong>Payload Structure:</strong>
+  Each sampling cycle packet contains $N$ floats (where $N$ is the number of active channels, typically 8 or 16).</p>
+<pre><code>  [ Sample 1, Channel 1 ] (4 bytes) ──&gt; [ Ch 1 Float ]
+  [ Sample 1, Channel 2 ] (4 bytes) ──&gt; [ Ch 2 Float ]
+  ...
+  [ Sample 1, Channel N ] (4 bytes) ──&gt; [ Ch N Float ]
+</code></pre>
+<ul>
+<li><strong>Sample Rate:</strong> Default sEMG data streams at 2000 Hz.</li>
+<li><strong>Buffering:</strong> The driver uses non-blocking socket reads and byte arrays to partition incoming chunks into precise frame sizes based on requested window durations.</li>
+</ul>
+<hr />
+<h2>4. Public Dataset Streams</h2>
+<p>The SDK implements custom subject-file readers under <code>sdk/hardware/datasets.py</code> to stream standard public electromyographical datasets:</p>
+<ol>
+<li><strong>Ninapro (<code>NinaproDriver</code>):</strong> Reads Ninapro subject <code>.mat</code> files (MATLAB format) using <code>scipy.io.loadmat</code> and extracts the <code>'emg'</code> matrix.</li>
+<li><strong>PutEMG (<code>PutEMGDriver</code>):</strong> Reads PutEMG subject <code>.h5</code> files (HDF5 format) by dynamically importing <code>h5py</code> and searching for active muscle channel datasets.</li>
+<li><strong>CSL-HDEMG (<code>CSLHDEMGDriver</code>):</strong> Reads high-density silent speech sEMG recordings stored as NumPy arrays (<code>.npy</code>) or raw binary floats.</li>
+</ol>
+<hr />
+<h2>5. Integration Code Example</h2>
+<p>The following example shows how a developer can instantiate the <code>SyntheticSignalGenerator</code>, trigger simulated commands, and feed raw sEMG frames into the <code>SubvocalPipeline</code>:</p>
+<pre><code class="language-python">import time
+from hardware.drivers import SyntheticSignalGenerator
+from core.pipeline import SubvocalPipeline
+
+# 1. Instantiate the synthetic sEMG source (8 channels, 1000 Hz)
+hardware = SyntheticSignalGenerator(fs=1000.0, num_channels=8)
+
+# 2. Define a dummy classification function
+def classify(frame):
+    # Retrieve channel average amplitudes
+    data = frame.to_numpy()
+    ch_means = np.max(np.abs(data), axis=0)
+
+    # Simple threshold trigger representing command zones
+    if ch_means[2] &gt; 2.0:
+        return CommandToken(text=&quot;clk&quot;, confidence=0.95, timestamp=time.time())
+    return None
+
+# 3. Initialize pipeline with LLM, Context, and Executor mocks
+pipeline = SubvocalPipeline(
+    hardware=hardware,
+    classify_fn=classify,
+    llm_provider=MockLLM(),
+    context_provider=MockContext(),
+    executor=MockExecutor()
+)
+
+# 4. Start streaming
+hardware.start()
+
+# 5. Trigger a simulated &quot;click&quot; command contraction
+hardware.trigger_command(&quot;clk&quot;)
+
+# 6. Stream and process frames
+for _ in range(10):
+    action = pipeline.step(window_ms=50)
+    if action:
+        print(f&quot;Action Executed: {action.action_type}&quot;)
+    time.sleep(0.05)
+
+hardware.stop()
+</code></pre>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

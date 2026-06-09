@@ -44,6 +44,7 @@ PAGE_TOP = """<!DOCTYPE html>
           <ul>
             <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
             <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./platform/index.html">Platform</a></li>
             <li><a href="./api.html" aria-current="page">API</a></li>
           </ul>
         </nav>

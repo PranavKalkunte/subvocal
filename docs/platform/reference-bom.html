@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference Hardware BOM | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html" aria-current="page"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>sEMG Hardware Bill of Materials (BOM)</h1>
+<p>This document outlines the detailed hardware specifications, target part numbers, pricing, and suppliers for the Subvocal neckband physiological silent speech interface.</p>
+<p>It covers two hardware options:
+1. <strong>$25 Minimum BOM</strong>: A low-cost, off-the-shelf breadboard-ready prototype designed to test basic multi-channel acquisition using standard gel electrodes.
+2. <strong>$227 Full BOM</strong>: A custom, battery-powered wearable neckband frontend with a custom PCB, high-CMRR analog instrumentation amplifiers, active analog filters, differential ADC, dry bio-compatible electrodes, and integrated bone conduction audio output.</p>
+<hr />
+<h2>1. The $25 Minimum BOM</h2>
+<p>Designed for rapid bench validation and testing the code stack without custom PCB assembly.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Component Description</th>
+<th style="text-align: center;">Quantity</th>
+<th style="text-align: left;">Target Part Number</th>
+<th style="text-align: left;">Primary Supplier</th>
+<th style="text-align: center;">Primary Unit Cost</th>
+<th style="text-align: left;">Backup Supplier</th>
+<th style="text-align: center;">Est. Total Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>ESP32 NodeMCU Development Board</strong> (ESP-WROOM-32, Micro-USB)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">ESP32-DevKitC-32D</td>
+<td style="text-align: left;">DigiKey (356-ESP32-DEVKITC-32D)</td>
+<td style="text-align: center;">$4.80</td>
+<td style="text-align: left;">Mouser / Amazon</td>
+<td style="text-align: center;">$4.80</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ADS1115 16-Bit 4-Channel I2C ADC Module</strong> (Mini breakout board)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Adafruit 1085 (ADS1115)</td>
+<td style="text-align: left;">Adafruit (1085)</td>
+<td style="text-align: center;">$5.95</td>
+<td style="text-align: left;">Amazon / AliExpress</td>
+<td style="text-align: center;">$5.95</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Ag/AgCl Gel Electrode Pads</strong> (Liquid gel, snap connection, pack of 50)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Covidien Kendall 133</td>
+<td style="text-align: left;">DigiKey (Covidien 133)</td>
+<td style="text-align: center;">$11.00</td>
+<td style="text-align: left;">Bio-Medical / Amazon</td>
+<td style="text-align: center;">$11.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Snap Electrode Lead Wires</strong> (3.5mm snap to female dupont headers, pack of 10)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Generic 1m sEMG Leads</td>
+<td style="text-align: left;">Amazon / AliExpress</td>
+<td style="text-align: center;">$3.50</td>
+<td style="text-align: left;">Adafruit</td>
+<td style="text-align: center;">$3.50</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Solderless Mini Breadboard &amp; Jumper Wires</strong></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">generic-bb-jumpers</td>
+<td style="text-align: left;">Amazon</td>
+<td style="text-align: center;">$2.50</td>
+<td style="text-align: left;">Adafruit</td>
+<td style="text-align: center;">$2.50</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TOTAL MINIMUM BOM</strong></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"><strong>$27.75</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. The $227 Full Wearable BOM</h2>
+<p>Designed for a stand-alone, rechargeable wireless neckband form-factor featuring low-noise differential sEMG amplifiers and bone conduction audio feedback.</p>
+<h3>A. Integrated Circuit Components (PCB Assembly)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Component Description</th>
+<th style="text-align: center;">Qty</th>
+<th style="text-align: left;">Target Part Number</th>
+<th style="text-align: left;">Primary Supplier</th>
+<th style="text-align: center;">Unit Cost</th>
+<th style="text-align: left;">Backup Supplier</th>
+<th style="text-align: center;">Total Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Main Microcontroller</strong>: ESP32-S3 Module (Dual-core, BLE 5.0, 8MB Flash)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">ESP32-S3-WROOM-1-N8</td>
+<td style="text-align: left;">Mouser (356-ESP32-S3-WROOM-1-N8)</td>
+<td style="text-align: center;">$4.20</td>
+<td style="text-align: left;">DigiKey</td>
+<td style="text-align: center;">$4.20</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Precision Differential ADC</strong>: 16-Bit, 4-Channel, I2C, Delta-Sigma</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">ADS1115IDGSR</td>
+<td style="text-align: left;">DigiKey (296-38852-1-ND)</td>
+<td style="text-align: center;">$4.80</td>
+<td style="text-align: left;">Mouser</td>
+<td style="text-align: center;">$4.80</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Analog Frontend Instrumentation Amplifier</strong>: Low-noise, G=100, &gt;120dB CMRR</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">INA128UA/2K5</td>
+<td style="text-align: left;">DigiKey (296-12204-5-ND)</td>
+<td style="text-align: center;">$7.20</td>
+<td style="text-align: left;">Mouser</td>
+<td style="text-align: center;">$28.80</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Active Filtering Op-Amps</strong>: Quad low-power operational amplifier (Notch/HPF)</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">OPA4348AIPWR</td>
+<td style="text-align: left;">DigiKey (296-13481-1-ND)</td>
+<td style="text-align: center;">$1.80</td>
+<td style="text-align: left;">Mouser</td>
+<td style="text-align: center;">$3.60</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>LiPo Battery Charger IC</strong>: Linear charger with status indicator</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">MCP73831T-2ATI/OT</td>
+<td style="text-align: left;">DigiKey (MCP73831T-2ATI/OTCT-ND)</td>
+<td style="text-align: center;">$0.85</td>
+<td style="text-align: left;">Mouser</td>
+<td style="text-align: center;">$0.85</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Low-Noise LDO Regulator</strong>: 3.3V, 250mA, ultra low-noise for analog rails</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">LP5907MFX-3.3/NOPB</td>
+<td style="text-align: left;">DigiKey (296-39049-1-ND)</td>
+<td style="text-align: center;">$0.75</td>
+<td style="text-align: left;">Mouser</td>
+<td style="text-align: center;">$0.75</td>
+</tr>
+</tbody>
+</table>
+<h3>B. Discrete Hardware &amp; Electrodes</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Component Description</th>
+<th style="text-align: center;">Qty</th>
+<th style="text-align: left;">Target Part Number</th>
+<th style="text-align: left;">Primary Supplier</th>
+<th style="text-align: center;">Unit Cost</th>
+<th style="text-align: left;">Backup Supplier</th>
+<th style="text-align: center;">Total Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Dry Bio-compatible Electrodes</strong>: Medical-grade stainless steel domed contacts</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: left;">Stainless Steel Domed Studs</td>
+<td style="text-align: left;">Bio-medical (SS-12MM)</td>
+<td style="text-align: center;">$3.50</td>
+<td style="text-align: left;">Wearable Sensing</td>
+<td style="text-align: center;">$35.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Dry Contact Cable Assembly</strong>: Flexible flat cable (FFC) with spring locks</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Custom 10-ch FFC</td>
+<td style="text-align: left;">JLCPCB</td>
+<td style="text-align: center;">$12.00</td>
+<td style="text-align: left;">DigiKey</td>
+<td style="text-align: center;">$12.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Bone Conduction Audio Module</strong>: 8 Ohm, 1W Transducer for local TTS feedback</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Daymax Bone Conduction 1674</td>
+<td style="text-align: left;">Adafruit (1674)</td>
+<td style="text-align: center;">$9.95</td>
+<td style="text-align: left;">Amazon</td>
+<td style="text-align: center;">$9.95</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Mono Class-D Audio Amplifier</strong>: For driving the bone conduction module</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">PAM8302A Mono Amp</td>
+<td style="text-align: left;">Adafruit (1552)</td>
+<td style="text-align: center;">$4.95</td>
+<td style="text-align: left;">DigiKey</td>
+<td style="text-align: center;">$4.95</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Rechargeable Battery</strong>: LiPo Battery (3.7V, 500mAh, JST-PH connector)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Lithium Ion Polymer 500mAh</td>
+<td style="text-align: left;">Adafruit (1578)</td>
+<td style="text-align: center;">$7.95</td>
+<td style="text-align: left;">SparkFun</td>
+<td style="text-align: center;">$7.95</td>
+</tr>
+</tbody>
+</table>
+<h3>C. PCB Fabrication, Enclosure, and Assembly</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Component Description</th>
+<th style="text-align: center;">Qty</th>
+<th style="text-align: left;">Target Part Number</th>
+<th style="text-align: left;">Primary Supplier</th>
+<th style="text-align: center;">Unit Cost</th>
+<th style="text-align: left;">Backup Supplier</th>
+<th style="text-align: center;">Total Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Passives &amp; Connectors</strong>: SMD resistors, capacitors, USB-C jack, JST headers</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">passives-kit-smd</td>
+<td style="text-align: left;">DigiKey</td>
+<td style="text-align: center;">$15.00</td>
+<td style="text-align: left;">Mouser</td>
+<td style="text-align: center;">$15.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>4-Layer PCB Manufacture &amp; Assembly</strong>: High-density impedance matching</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">Custom AFE Board</td>
+<td style="text-align: left;">JLCPCB / PCBA</td>
+<td style="text-align: center;">$55.00</td>
+<td style="text-align: left;">PCBWay</td>
+<td style="text-align: center;">$55.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SLS Nylon Neckband Enclosure</strong>: Flexible TPU and PA12 structural casing</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">TPU/PA12 Neckband CAD</td>
+<td style="text-align: left;">Shapeways / Protolabs</td>
+<td style="text-align: center;">$40.00</td>
+<td style="text-align: left;">Hubs (3D Hubs)</td>
+<td style="text-align: center;">$40.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Enclosure hardware</strong>: Brass inserts, magnetic clasps, assembly screws</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">casing-hardware-kit</td>
+<td style="text-align: left;">McMaster-Carr</td>
+<td style="text-align: center;">$9.15</td>
+<td style="text-align: left;">Amazon</td>
+<td style="text-align: center;">$9.15</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TOTAL FULL WEARABLE BOM</strong></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: center;"><strong>$227.00</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. Component Sourcing and Lead Times</h2>
+<ol>
+<li><strong>Integrated Circuits and Passives</strong> (DigiKey/Mouser): Ships within 24–48 hours. Zero stock risk.</li>
+<li><strong>PCB Production &amp; Assembly</strong> (JLCPCB): Standard turnaround time is 6–9 calendar days (including air shipping).</li>
+<li><strong>Neckband SLS 3D Printing</strong> (Shapeways/Protolabs): TPU/PA12 flexible prints take approximately 5–7 business days.</li>
+</ol>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>
