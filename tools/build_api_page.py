@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from generate_api_docs import SDK_DIR, ModuleParser  # noqa: E402
 
 OUTPUT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs", "api.html"))
-TARGET_PACKAGES = ["core", "context", "hardware", "emg_core", "mcp", "shorthand", "tts"]
+TARGET_PACKAGES = ["core", "context", "hardware", "emg_core", "mcp", "shorthand", "tts", "routing", "runtime", "stream"]
 SKIP_FILES = {"eval_set.py"}
 
 PAGE_TOP = """<!DOCTYPE html>

@@ -2,13 +2,14 @@
 """
 
 import logging
+import threading
 import time
-import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from subvocal.exceptions import PolicyViolationError
+from subvocal.config import load_config
+from subvocal.runtime.session import Session
 
 from .interfaces import ActionExecutor, ContextProvider, HardwareSource, LLMProvider
 from .models import Action, CommandToken, Frame, Intent
@@ -62,77 +63,194 @@ class SubvocalPipeline:
         on_intent: Callable[[Intent], None] | None = None,
         on_action: Callable[[Action, str], None] | None = None,
         on_error: Callable[[Exception], None] | None = None,
+        telemetry_service: Any | None = None,
     ):
-        """Initializes the subvocal pipeline.
+        self.stats = PipelineStats()
+        self._trace_path = trace_path
 
-        Args:
-            hardware: The hardware source to read sEMG frames from.
-            classify_fn: A function that takes a Frame and returns an optional CommandToken.
-            llm_provider: The LLM intent decoder.
-            context_provider: The active user context source.
-            executor: The device or tool action dispatcher.
-            phrase_timeout_seconds: Duration of silence (no tokens) to wait before triggering intent reconstruction.
-            policy_engine: Optional authorization and security policy checker.
-            dry_run: If True, resolves intents and compiles actions but does not run them.
-            trace_path: Destination JSONL file for execution traces. Defaults to
-                ``pipeline_traces.jsonl`` inside the user data directory
-                (see :mod:`subvocal.paths`).
-            raise_on_policy_violation: If True, a policy rejection raises
-                :class:`subvocal.exceptions.PolicyViolationError` instead of
-                being silently traced.
-            on_token: Observer invoked with each classified CommandToken.
-            on_intent: Observer invoked with each reconstructed Intent.
-            on_action: Observer invoked with each terminal (action, status)
-                pair; status is one of SUCCESS, DRY_RUN, REJECTED_UNAUTHORIZED,
-                FAILED_CANNOT_EXECUTE.
-            on_error: Observer invoked with exceptions raised during phrase
-                processing. Observer failures are logged, never propagated.
-        """
-        self.hardware = hardware
-        self.classify_fn = classify_fn
-        self.llm_provider = llm_provider
-        self.context_provider = context_provider
-        self.executor = executor
-        self.phrase_timeout_seconds = phrase_timeout_seconds
-        self.policy_engine = policy_engine
-        self.dry_run = dry_run
-        self.trace_path = trace_path
-        self.raise_on_policy_violation = raise_on_policy_violation
+        # Save callbacks
         self.on_token = on_token
         self.on_intent = on_intent
         self.on_action = on_action
         self.on_error = on_error
-        self.stats = PipelineStats()
 
-        self._token_buffer: list[CommandToken] = []
-        self._last_token_time: float = 0.0
+        # Build config dynamically from constructor parameters
+        config = load_config()
+        config.runtime.phrase_timeout_seconds = phrase_timeout_seconds
+        config.policy.dry_run = dry_run
+        config.policy.raise_on_policy_violation = raise_on_policy_violation
 
-    def _notify(self, callback: Callable | None, *args: Any) -> None:
-        """Invokes an observer callback without letting it break the pipeline."""
-        if callback is None:
-            return
-        try:
-            callback(*args)
-        except Exception:
-            logger.exception("Pipeline observer %r raised; continuing", callback)
+        # Dynamically initialize telemetry service if not provided
+        if telemetry_service is None:
+            if config.telemetry.enabled:
+                from subvocal.telemetry.service import PrometheusTelemetry
+                telemetry_service = PrometheusTelemetry(config)
+            else:
+                from subvocal.telemetry.service import NullTelemetry
+                telemetry_service = NullTelemetry()
+
+        self.telemetry = telemetry_service
+
+        # Define internal callbacks to update stats & forward to user callbacks
+        def internal_on_token(token):
+            self.stats.tokens_classified += 1
+            if self.on_token:
+                self.on_token(token)
+
+        def internal_on_intent(intent):
+            self.stats.intents_resolved += 1
+            if self.on_intent:
+                self.on_intent(intent)
+
+        def internal_on_action(action, status):
+            self.stats.phrases_processed += 1
+            if status == "SUCCESS":
+                self.stats.actions_executed += 1
+            elif status == "REJECTED_UNAUTHORIZED":
+                self.stats.actions_blocked += 1
+            if self.on_action:
+                self.on_action(action, status)
+
+        def internal_on_error(err):
+            self.stats.errors += 1
+            if self.on_error:
+                self.on_error(err)
+
+        # Initialize Session
+        self._session = Session(
+            id="default-pipeline",
+            config=config,
+            hardware=hardware,
+            classify_fn=classify_fn,
+            llm_provider=llm_provider,
+            context_provider=context_provider,
+            executor=executor,
+            policy_engine=policy_engine,
+            trace_path=trace_path,
+            on_token=internal_on_token,
+            on_intent=internal_on_intent,
+            on_action=internal_on_action,
+            on_error=internal_on_error,
+            telemetry=self.telemetry,
+        )
+        self._session.start()
+
+    # Property mappings to underlying Session delegates
+    @property
+    def trace_path(self) -> str | None:
+        if hasattr(self, "_session"):
+            return self._session.trace_path
+        return getattr(self, "_trace_path", None)
+
+    @trace_path.setter
+    def trace_path(self, val: str | None) -> None:
+        self._trace_path = val
+        if hasattr(self, "_session"):
+            self._session.trace_path = val
+    @property
+    def hardware(self) -> HardwareSource:
+        return self._session.hardware
+
+    @hardware.setter
+    def hardware(self, val: HardwareSource) -> None:
+        self._session.hardware = val
+
+    @property
+    def classify_fn(self) -> Callable[[Frame], CommandToken | None]:
+        return self._session.classify_fn
+
+    @classify_fn.setter
+    def classify_fn(self, val: Callable[[Frame], CommandToken | None]) -> None:
+        self._session.classify_fn = val
+
+    @property
+    def llm_provider(self) -> LLMProvider:
+        return self._session.llm_provider
+
+    @llm_provider.setter
+    def llm_provider(self, val: LLMProvider) -> None:
+        self._session.llm_provider = val
+
+    @property
+    def context_provider(self) -> ContextProvider:
+        return self._session.context_provider
+
+    @context_provider.setter
+    def context_provider(self, val: ContextProvider) -> None:
+        self._session.context_provider = val
+
+    @property
+    def executor(self) -> ActionExecutor:
+        return self._session.executor
+
+    @executor.setter
+    def executor(self, val: ActionExecutor) -> None:
+        self._session.executor = val
+
+    @property
+    def policy_engine(self) -> Any:
+        return self._session.policy_engine
+
+    @policy_engine.setter
+    def policy_engine(self, val: Any) -> None:
+        self._session.policy_engine = val
+
+    @property
+    def phrase_timeout_seconds(self) -> float:
+        return self._session.config.runtime.phrase_timeout_seconds
+
+    @phrase_timeout_seconds.setter
+    def phrase_timeout_seconds(self, val: float) -> None:
+        self._session.config.runtime.phrase_timeout_seconds = val
+
+    @property
+    def dry_run(self) -> bool:
+        return self._session.config.policy.dry_run
+
+    @dry_run.setter
+    def dry_run(self, val: bool) -> None:
+        self._session.config.policy.dry_run = val
+
+    @property
+    def raise_on_policy_violation(self) -> bool:
+        return self._session.config.policy.raise_on_policy_violation
+
+    @raise_on_policy_violation.setter
+    def raise_on_policy_violation(self, val: bool) -> None:
+        self._session.config.policy.raise_on_policy_violation = val
 
     @property
     def token_buffer(self) -> list[CommandToken]:
         """Returns the current accumulated tokens in the buffer."""
-        return self._token_buffer
+        return self._session.token_buffer
+
+    @property
+    def _token_buffer(self) -> list[CommandToken]:
+        """Internal token buffer reference for backward compatibility."""
+        return self._session._token_buffer
+
+    @property
+    def _last_token_time(self) -> float:
+        return self._session._last_token_time
+
+    @_last_token_time.setter
+    def _last_token_time(self, val: float) -> None:
+        self._session._last_token_time = val
 
     def clear_buffer(self) -> None:
         """Clears the accumulated command token buffer."""
-        self._token_buffer.clear()
-        self._last_token_time = 0.0
+        event = threading.Event()
+        def clear_op():
+            try:
+                self._session._token_buffer.clear()
+                self._session._last_token_time = 0.0
+            finally:
+                event.set()
+        self._session._ops_queue.enqueue(clear_op)
+        event.wait()
 
     def step(self, window_ms: int = 100) -> Action | None:
         """Performs a single step of the pipeline.
-
-        1. Ingests a new frame of raw sEMG data from the hardware source.
-        2. Classifies the frame into a potential command token.
-        3. Accumulates the token and checks for phrase completion timeout.
-        4. If timed out, reconstructs the intent and executes the action.
 
         Args:
             window_ms: Buffer window duration in milliseconds to acquire.
@@ -147,32 +265,33 @@ class SubvocalPipeline:
         frame = self.hardware.read_frame(window_ms)
         self.stats.frames_processed += 1
 
-        # 2. Run classification
-        token = self.classify_fn(frame)
-        now = time.time()
+        # Synchronously block until OpsQueue processes the frame to maintain step API contract
+        res: dict[str, Any] = {"action": None, "exception": None}
+        event = threading.Event()
 
-        if token is not None:
-            self._token_buffer.append(token)
-            self._last_token_time = now
-            self.stats.tokens_classified += 1
-            self._notify(self.on_token, token)
+        def process_and_signal():
+            try:
+                original_on_action = self._session._on_action
+                def capture_action(action, status):
+                    if status in ("SUCCESS", "DRY_RUN"):
+                        res["action"] = action
+                    self._session._on_action = original_on_action
+                    if original_on_action is not None:
+                        original_on_action(action, status)
 
-        # 3. Check for phrase timeout trigger
-        if self._token_buffer and (now - self._last_token_time) >= self.phrase_timeout_seconds:
-            return self.process_phrase()
+                self._session._on_action = capture_action
+                self._session._process_frame(frame)
+            except Exception as e:
+                res["exception"] = e
+            finally:
+                event.set()
 
-        return None
+        self._session._ops_queue.enqueue(process_and_signal)
+        event.wait()
 
-    def _write_trace(self, trace_entry: dict[str, Any]) -> None:
-        """Appends a structured trace record to the local JSONL log file."""
-        import json
-        import os
-
-        from subvocal.paths import get_data_dir
-
-        trace_path = self.trace_path or os.path.join(get_data_dir(), "pipeline_traces.jsonl")
-        with open(trace_path, "a") as f:
-            f.write(json.dumps(trace_entry) + "\n")
+        if res["exception"]:
+            raise res["exception"]
+        return res["action"]
 
     def process_phrase(self) -> Action | None:
         """Forces immediate decoding and execution of the accumulated tokens.
@@ -180,106 +299,29 @@ class SubvocalPipeline:
         Returns:
             The executed Action if successful, otherwise None.
         """
-        if not self._token_buffer:
-            return None
+        res: dict[str, Any] = {"action": None, "exception": None}
+        event = threading.Event()
 
-        tokens_to_process = list(self._token_buffer)
-        self.clear_buffer()
-        self.stats.phrases_processed += 1
+        def process_and_signal():
+            try:
+                original_on_action = self._session._on_action
+                def capture_action(action, status):
+                    if status in ("SUCCESS", "DRY_RUN"):
+                        res["action"] = action
+                    self._session._on_action = original_on_action
+                    if original_on_action is not None:
+                        original_on_action(action, status)
 
-        # 1. Retrieve context snapshot
-        context = self.context_provider.get_context()
+                self._session._on_action = capture_action
+                self._session.process_phrase()
+            except Exception as e:
+                res["exception"] = e
+            finally:
+                event.set()
 
-        # Initialize trace variables
-        intent = None
-        action = None
-        authorized = True
-        status = "PENDING"
-        execution_error = None
+        self._session._ops_queue.enqueue(process_and_signal)
+        event.wait()
 
-        # 2. Reconstruct intent via LLM
-        try:
-            intent = self.llm_provider.reconstruct_intent(tokens_to_process, context)
-            self.stats.intents_resolved += 1
-            self._notify(self.on_intent, intent)
-
-            # 3. Create Action from Intent
-            action = Action(
-                action_type=intent.command.lower(),
-                params={
-                    "arguments": intent.arguments,
-                    "resolved_text": intent.resolved_text,
-                    "confidence": intent.confidence,
-                },
-                intent_id=str(uuid.uuid4()),
-                timestamp=time.time(),
-            )
-
-            # 4. Check Policy Engine authorization
-            if self.policy_engine:
-                authorized = self.policy_engine.is_authorized(action, context)
-
-            if not authorized:
-                status = "REJECTED_UNAUTHORIZED"
-                self.stats.actions_blocked += 1
-                if self.raise_on_policy_violation:
-                    raise PolicyViolationError(
-                        f"Action '{action.action_type}' rejected by policy engine."
-                    )
-            elif self.dry_run:
-                status = "DRY_RUN"
-            else:
-                # 5. Execute action
-                if self.executor.can_execute(action):
-                    self.executor.execute(action)
-                    status = "SUCCESS"
-                    self.stats.actions_executed += 1
-                else:
-                    status = "FAILED_CANNOT_EXECUTE"
-
-        except PolicyViolationError as e:
-            self.stats.errors += 1
-            self._notify(self.on_error, e)
-            self._write_trace({
-                "trace_id": str(uuid.uuid4()),
-                "timestamp": time.time(),
-                "tokens": [t.model_dump() for t in tokens_to_process],
-                "context": context.model_dump() if context else None,
-                "intent": intent.model_dump() if intent else None,
-                "action": action.model_dump() if action else None,
-                "authorized": False,
-                "dry_run": self.dry_run,
-                "status": "REJECTED_UNAUTHORIZED",
-                "error": str(e),
-            })
-            raise
-        except Exception as e:
-            status = "ERROR"
-            execution_error = str(e)
-            self.stats.errors += 1
-            self._notify(self.on_error, e)
-
-        # Log structured trace
-        trace_entry = {
-            "trace_id": str(uuid.uuid4()),
-            "timestamp": time.time(),
-            "tokens": [t.model_dump() for t in tokens_to_process],
-            "context": context.model_dump() if context else None,
-            "intent": intent.model_dump() if intent else None,
-            "action": action.model_dump() if action else None,
-            "authorized": authorized,
-            "dry_run": self.dry_run,
-            "status": status,
-            "error": execution_error
-        }
-        self._write_trace(trace_entry)
-
-        if action and status in ("SUCCESS", "DRY_RUN", "REJECTED_UNAUTHORIZED", "FAILED_CANNOT_EXECUTE"):
-            self._notify(self.on_action, action, status)
-
-        # Return action if success or dry run
-        if status in ["SUCCESS", "DRY_RUN"] and action:
-            return action
-
-        return None
-
+        if res["exception"]:
+            raise res["exception"]
+        return res["action"]

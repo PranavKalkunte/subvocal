@@ -120,8 +120,16 @@ subvocal/
 3. **Command-Aware Context Prioritization**: Dynamic target matching against active user contacts (`TYPE`), calendar events (`SEARCH`), browser URLs (`GOTO`), and active application screen elements (`CLICK`).
 4. **Physiological Signal Conditioning**: Preprocessing filter configurations defaulting to AlterEgo's `1.3–50.0 Hz` bandpass filter (designed for low-velocity articulatory gestures) with configuration support for standard `20.0–450.0 hz` EMG.
 5. **Classifiers (RF + Deep Learning)**: Custom pipelines to train scikit-learn **Random Forest**, PyTorch **1D CNN**, **GRU**, and **Transformer** architectures on raw multi-channel sEMG traces.
-6. **Pluggable Safety Policies**: `ConfidenceThresholdPolicy`, `CommandWhitelistPolicy`, and `ContextBoundPolicy` gate every action, with dry-run mode and JSONL audit tracing built into the pipeline.
-7. **MCP Integration**: A zero-dependency stdio JSON-RPC server exposing pipeline status, token injection, phrase processing, and calibration as MCP tools.
+6. **Asynchronous Execution (V2 Architecture)**: Low-latency, thread-safe asynchronous pipeline orchestration built on LiveKit's `OpsQueue` and `IncrementalDispatcher` design.
+7. **Physiological Signal Monitoring**: Real-time EMA-smoothed signal level activity detection and MOS-like connection quality scoring (evaluating saturation, drift, and dropouts).
+8. **Prometheus Telemetry**: Integrated Prometheus metric exporter and pre-built Grafana monitoring dashboards for tracking SDK errors, session lifecycles, and action execution statistics.
+9. **HMAC-Signed Capability Grants**: Secure token-based credentials (`ActionGrants`) specifying allowed command scopes, confidence thresholds, and dry-run policies, verified dynamically via the `GrantsPolicy` middleware.
+10. **MCP Integration**: A zero-dependency stdio JSON-RPC server exposing pipeline status, token injection, phrase processing, and calibration as MCP tools.
+11. **Persistent Session Storage**: SQLite and in-memory backends to serialize and reload session configurations, states, and active metrics.
+12. **Real-Time TCP Biometric Streaming**: Dedicated TCP socket server broadcasting live signal attributes (quality, levels, tokens) to visualization dashboards.
+13. **Ingress/Egress Orchestration**: Ingress failover management for primary sensors and simulation streams; egress dispatcher for audio TTS and dataset logs.
+14. **Intelligent Node Routing**: Load-balanced session assignment based on CPU metrics or active session counts using selectors.
+15. **Zero-Dependency BrainFlow & DSP**: A pure-Python fallback for the BrainFlow SDK. Seamlessly emulates `SYNTHETIC_BOARD` and OpenBCI `CYTON_BOARD` (via direct serial packet parsing) and recreates the `DataFilter` signal processing API (filtering, windowing, Welch PSD estimation, bandpower) without requiring native C++ binary dependencies.
 
 ---
 

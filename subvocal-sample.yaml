@@ -1,0 +1,52 @@
+# Subvocal Middleware SDK Default Configuration Template
+
+# Hardware / sEMG sensor data acquisition configuration
+hardware:
+  sample_rate: 250         # Sampling frequency in Hz (default: 250 for Cyton, 1000 for Synthetic/Replay, 2000 for Delsys)
+  num_channels: 4          # Number of channels/electrodes active (default: 4)
+  port: null               # Serial port (e.g. '/dev/ttyUSB0' or 'COM3'). Leave null for simulated/TCP drivers
+  simulated: true          # Set to true to use synthetic/replay simulation instead of physical hardware
+
+# Digital Signal Processing (filtering and smoothing)
+dsp:
+  bandpass_low: 1.3        # Bandpass filter lower cutoff in Hz
+  bandpass_high: 50.0      # Bandpass filter upper cutoff in Hz
+  bandpass_order: 4        # Butterworth filter order
+  notch_freq: 60.0         # notch filter center frequency to cut out US mains hum (use 50.0 for EU/Asia)
+  notch_q: 30.0            # notch filter quality factor
+  smooth_window: 3         # sample count sliding moving average window
+
+# EMG phonetic classifier settings
+classifier:
+  type: "rf"               # Model classifier type ('rf' for random forest, 'svm', 'cnn', 'gru')
+  model_path: null         # Path to trained model weights / serialized classifier state
+  confidence_threshold: 0.75 # Minimum confidence score required to publish a classified CommandToken
+  cooldown_ms: 900         # Silent cooldown window in milliseconds before accepting another token activation
+  rf_n_estimators: 200     # Number of trees (Random Forest type only)
+
+# LLM Intent Decoder configuration
+provider:
+  llm_provider: "mock"     # LLM provider to reconstruct intents ('mock', 'gemini')
+  api_key: null            # API credential key. Set via env SUBVOCAL_PROVIDER__API_KEY for security
+  model_name: null         # Model identity (e.g., 'gemini-1.5-flash' or 'claude-3-5-sonnet')
+  temperature: 0.0         # Decoding temperature
+
+# Security and Action execution policies
+policy:
+  dry_run: false           # If true, resolves semantic intents but bypasses executor dispatch
+  raise_on_policy_violation: false # Raise PolicyViolationError if policy checks fail instead of silent tracing
+
+# Prometeus and Event telemetry setup
+telemetry:
+  enabled: false           # Start prometheus client metrics server
+  prometheus_port: 8000    # Default HTTP port to expose metrics
+  flush_interval_seconds: 30.0 # Time interval in seconds to flush metrics to console/exporter
+
+# Session runtime configuration
+runtime:
+  phrase_timeout_seconds: 1.5 # Timeout duration in seconds of token inactivity before processing intent
+  session_liveness_timeout: 30.0 # Heartbeat watchdog expiration timeout for active streams
+
+# Authentication Grants for external surfaces
+auth:
+  api_key: null            # API key to protect MCP and HTTP control interfaces

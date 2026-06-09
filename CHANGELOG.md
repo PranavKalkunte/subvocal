@@ -6,6 +6,28 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
+## [2.0.0] - 2026-06-09
+### Added
+*   **LiveKit-Inspired Concurrency**: Introduced `subvocal/utils/concurrency.py` implementing `OpsQueue` (serialized thread worker execution), `IncrementalDispatcher` (thread-safe condition-based fan-out), `ChangeNotifier` (async keyed callback registry), and resettable `Debouncer` timers.
+*   **Unified Configuration Management**: Integrated strict Pydantic configurations in `subvocal/config.py` with `extra="forbid"` to reject unknown YAML keys. Added support for double-underscore nested environment variable overrides (e.g. `SUBVOCAL_HARDWARE__SAMPLE_RATE`).
+*   **Physiological Signal Monitoring**: Upgraded stream processing in `subvocal/stream/`:
+    *   `FrameRing` & `StreamStats`: Circular buffer frame ingestion with windowed statistics.
+    *   `SignalLevel`: EMA-smoothed signal activity tracking tailored for sEMG amplitudes.
+    *   `StreamTracker`: Hysteresis-based stream activity and drop tracking.
+    *   `SignalQualityScorer`: MOS-like (Mean Opinion Score) signal quality evaluator factoring saturation, drift, and dropouts.
+*   **Session State Machine & Watchdogs**: Implemented `Session` lifecycle (`STARTING` -> `ACTIVE` -> `DEGRADED` -> `CLOSED`) with liveness watchdogs monitoring hardware stream health, and `SessionWorker` coordinating multi-session capacity.
+*   **Prometheus Telemetry & Observability**: Created `subvocal/telemetry/` package supporting a `TelemetryService` interface, `NullTelemetry` defaults, and a `PrometheusTelemetry` exporter reporting active sessions, intent accuracy, physiological quality, and error rates. Included a ready-to-use Grafana dashboard configuration (`grafana_dashboard.json`).
+*   **HMAC-Signed Auth Grants**: Implemented capability-scoped authorization in `subvocal/auth/` using HMAC-SHA256 signed JSON claims tokens (`ActionGrants`) containing permitted command scopes and dry-run enforcements. Added context propagation helpers (`set_context_grants`) and a `GrantsPolicy` security provider for the `PolicyEngine`.
+*   **Routing & Node Selection**: Added Node selectors (`CPULoadSelector`, `SessionCountSelector`) managing session worker distribution under load.
+*   **Persistent State Storage**: Added SQLite session store (`SQLiteSessionStore`) persisting active states and session configurations to disk with configuration scrubbing.
+*   **Biometric Data Channel**: Added TCP socket server (`BiometricDataChannelServer`) and client broadcasting live sEMG metrics, signal levels, and classifications to visualization dashboards.
+*   **Ingress/Egress Orchestration**: Added Ingress manager supporting sensor registration and automated failovers; egress manager coordinating speech synthesizer queues and trace database logs.
+*   **Zero-Dependency BrainFlow Compatibility Layer**:
+    *   `subvocal/hardware/brainflow_compat.py`: Implemented a pure-Python fallback for `BoardShim`, `BoardIds`, and `BrainFlowInputParams`. Automatically delegates to the official C++ `brainflow` library if installed; otherwise, runs natively. Supports simulated signal generator threads (`SYNTHETIC_BOARD`) and a direct USB dongle serial packet parser (`CYTON_BOARD`) to enable edge node acquisition.
+    *   `subvocal/emg_core/dsp/brainflow_filter.py`: Re-implemented the `DataFilter` signal processing suite in pure Python utilizing NumPy and SciPy. Includes Butterworth, Chebyshev, and Bessel causal/zero-phase filters, environmental notch filtering, moving averages, running medians, downsampling, windowing, Welch PSD estimation, and bandpower integration.
+
+---
+
 ## [1.0.0rc1] - 2026-06-09
 ### Added
 *   **PyPI Packaging**: The SDK is now a proper installable package (`pip install subvocal`) with a src-layout (`src/subvocal/`), hatchling build backend, single-source version (`subvocal.__version__`), PEP 561 `py.typed` marker, and optional extras `[ml]`, `[hardware]`, `[tts]`, `[export]`, `[all]`, `[dev]`.

@@ -219,9 +219,73 @@ pipeline = SubvocalPipeline(
 # Inject mock token and process phrase
 pipeline._token_buffer.append(CommandToken(text=&quot;clk&quot;, confidence=0.95, timestamp=time.time()))
 action = pipeline.process_phrase()
-
 hw_source.stop()
+
 print(&quot;\nPipeline execution successfully demonstrated!&quot;)
+</code></pre>
+<h2>7. Advanced LiveKit Subsystems Usage (v2.0)</h2>
+<p>For multi-device or distributed edge deployments, the SDK provides persistent storage, ingress/egress lifecycles, load selectors, and TCP-based biometric metrics streaming.</p>
+<h3>7.1 Persistent Worker and State Storage</h3>
+<p>Here we initialize a SQLite state database and configure a session worker with persistent tracking:</p>
+<pre><code class="language-python">from subvocal.runtime import SessionWorker, SQLiteSessionStore
+from subvocal.config import load_config
+
+# Initialize configuration
+config = load_config()
+
+# 1. Setup persistent SQLite store
+store = SQLiteSessionStore(&quot;my_sessions.db&quot;)
+
+# 2. Instantiate worker coordinating sessions
+worker = SessionWorker(config, max_sessions=5, store=store)
+
+# Create session (instantly persists config &amp; metadata to database)
+session = worker.create_session(&quot;sess-001&quot;, hw_source, lambda f: None, MyLLM(), MyContext(), MyExecutor())
+print(f&quot;Persisted sessions: {store.list_sessions()}&quot;)
+</code></pre>
+<h3>7.2 Ingress Failover Management</h3>
+<p>Unifies biometric sources and handles dynamic connection drops automatically:</p>
+<pre><code class="language-python">from subvocal.runtime import IngressManager
+from subvocal.hardware.drivers import SyntheticSignalGenerator
+
+ingress = IngressManager()
+primary_collar = SyntheticSignalGenerator(fs=1000.0)
+fallback_replay = SyntheticSignalGenerator(fs=250.0)
+
+# Register sources
+ingress.register_source(&quot;primary_cyton&quot;, primary_collar, is_fallback=False)
+ingress.register_source(&quot;fallback_sim&quot;, fallback_replay, is_fallback=True)
+
+ingress.start()
+print(f&quot;Active sensor: {ingress.active_name}&quot;)
+
+# Simulating a signal dropout failover
+ingress.trigger_failover()
+print(f&quot;Failed over to: {ingress.active_name}&quot;)
+ingress.stop()
+</code></pre>
+<h3>7.3 Real-Time TCP Biometric Data Channel</h3>
+<p>Broadcasts biometric metrics (signal levels, quality scores, classifier outputs) to visualization tools:</p>
+<pre><code class="language-python">from subvocal.stream import BiometricDataChannelServer, BiometricDataChannelClient
+
+# 1. Start TCP streaming server
+server = BiometricDataChannelServer(host=&quot;127.0.0.1&quot;, port=8105)
+server.start()
+
+# 2. Connect visualization client
+client = BiometricDataChannelClient(host=&quot;127.0.0.1&quot;, port=8105)
+client.connect()
+
+# 3. Broadcast metric update
+server.broadcast({&quot;event&quot;: &quot;frame_processed&quot;, &quot;quality_score&quot;: 4.5, &quot;token&quot;: &quot;clk&quot;})
+
+# 4. Receive stream on client
+for msg in client.read_messages():
+    print(&quot;Received Live Biometric Update:&quot;, msg)
+    break
+
+client.close()
+server.close()
 </code></pre>
         </article>
       </div>
