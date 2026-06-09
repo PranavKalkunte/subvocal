@@ -1,16 +1,17 @@
 """Concrete implementations of HardwareSource drivers for the Subvocal SDK.
 """
 
-import time
-import struct
-import socket
-import os
 import csv
-from typing import Any, Dict, List, Optional
+import os
+import socket
+import struct
+import time
+from typing import Any
+
 import numpy as np
 
-from subvocal.core.models import Sample, Frame
 from subvocal.core.interfaces import HardwareSource
+from subvocal.core.models import Frame, Sample
 
 
 class FileReplayDriver(HardwareSource):
@@ -29,7 +30,7 @@ class FileReplayDriver(HardwareSource):
         self.loop = loop
 
         self._connected = False
-        self._data: List[List[float]] = []
+        self._data: list[list[float]] = []
         self._index = 0
         self._sample_counter = 0
 
@@ -37,7 +38,7 @@ class FileReplayDriver(HardwareSource):
         if not os.path.exists(self.file_path):
             raise FileNotFoundError(f"Recorded sEMG file not found: {self.file_path}")
 
-        with open(self.file_path, "r", encoding="utf-8") as f:
+        with open(self.file_path, encoding="utf-8") as f:
             reader = csv.reader(f)
             for row in reader:
                 if not row or not row[0].strip() or row[0].strip().isalpha():
@@ -113,7 +114,7 @@ class SyntheticSignalGenerator(HardwareSource):
         self._sample_counter = 0
 
         # Command contraction injection states: maps channel index to multiplier
-        self._active_injections: List[Dict[str, Any]] = []
+        self._active_injections: list[dict[str, Any]] = []
 
     def start(self) -> None:
         self._connected = True
@@ -211,7 +212,7 @@ class SyntheticSignalGenerator(HardwareSource):
 class OpenBCICytonDriver(HardwareSource):
     """Acquires raw biosignals from OpenBCI Cyton boards via BrainFlow."""
 
-    def __init__(self, port: Optional[str] = None, simulated: bool = True):
+    def __init__(self, port: str | None = None, simulated: bool = True):
         """Initializes the Cyton driver.
 
         Loads BrainFlow dynamically.
@@ -224,7 +225,7 @@ class OpenBCICytonDriver(HardwareSource):
         # Load BrainFlow dynamically
         try:
             import brainflow
-            from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
+            from brainflow.board_shim import BoardIds, BoardShim, BrainFlowInputParams
             self._brainflow = brainflow
             self._BoardShim = BoardShim
             self._params = BrainFlowInputParams()
@@ -234,11 +235,11 @@ class OpenBCICytonDriver(HardwareSource):
                 self._board_id = BoardIds.CYTON_BOARD
                 if self.port:
                     self._params.serial_port = self.port
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "BrainFlow is required to use the OpenBCICytonDriver. "
                 "Please install it using: pip install brainflow"
-            )
+            ) from e
 
     def start(self) -> None:
         if self._connected:
@@ -314,8 +315,8 @@ class DelsysTrignoDriver(HardwareSource):
         self.fs = fs
 
         self._connected = False
-        self._data_socket: Optional[socket.socket] = None
-        self._cmd_socket: Optional[socket.socket] = None
+        self._data_socket: socket.socket | None = None
+        self._cmd_socket: socket.socket | None = None
         self._sample_counter = 0
 
     def start(self) -> None:
@@ -340,7 +341,7 @@ class DelsysTrignoDriver(HardwareSource):
             self._sample_counter = 0
         except Exception as e:
             self.stop()
-            raise RuntimeError(f"Failed to connect to Delsys Trigno Utility at {self.host}: {e}")
+            raise RuntimeError(f"Failed to connect to Delsys Trigno Utility at {self.host}: {e}") from e
 
     def stop(self) -> None:
         # Send STOP to command station

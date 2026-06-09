@@ -2,12 +2,12 @@
 """
 
 import time
-from typing import List, Optional, Callable, Dict, Any
 import uuid
+from collections.abc import Callable
+from typing import Any
 
-from subvocal.context.schema import UserContext
-from .models import Frame, CommandToken, Intent, Action
-from .interfaces import HardwareSource, LLMProvider, ActionExecutor, ContextProvider
+from .interfaces import ActionExecutor, ContextProvider, HardwareSource, LLMProvider
+from .models import Action, CommandToken, Frame
 
 
 class SubvocalPipeline:
@@ -16,14 +16,14 @@ class SubvocalPipeline:
     def __init__(
         self,
         hardware: HardwareSource,
-        classify_fn: Callable[[Frame], Optional[CommandToken]],
+        classify_fn: Callable[[Frame], CommandToken | None],
         llm_provider: LLMProvider,
         context_provider: ContextProvider,
         executor: ActionExecutor,
         phrase_timeout_seconds: float = 1.5,
-        policy_engine: Optional[Any] = None,
+        policy_engine: Any | None = None,
         dry_run: bool = False,
-        trace_path: Optional[str] = None,
+        trace_path: str | None = None,
     ):
         """Initializes the subvocal pipeline.
 
@@ -50,11 +50,11 @@ class SubvocalPipeline:
         self.dry_run = dry_run
         self.trace_path = trace_path
 
-        self._token_buffer: List[CommandToken] = []
+        self._token_buffer: list[CommandToken] = []
         self._last_token_time: float = 0.0
 
     @property
-    def token_buffer(self) -> List[CommandToken]:
+    def token_buffer(self) -> list[CommandToken]:
         """Returns the current accumulated tokens in the buffer."""
         return self._token_buffer
 
@@ -63,7 +63,7 @@ class SubvocalPipeline:
         self._token_buffer.clear()
         self._last_token_time = 0.0
 
-    def step(self, window_ms: int = 100) -> Optional[Action]:
+    def step(self, window_ms: int = 100) -> Action | None:
         """Performs a single step of the pipeline.
 
         1. Ingests a new frame of raw sEMG data from the hardware source.
@@ -97,7 +97,7 @@ class SubvocalPipeline:
 
         return None
 
-    def _write_trace(self, trace_entry: Dict[str, Any]) -> None:
+    def _write_trace(self, trace_entry: dict[str, Any]) -> None:
         """Appends a structured trace record to the local JSONL log file."""
         import json
         import os
@@ -108,7 +108,7 @@ class SubvocalPipeline:
         with open(trace_path, "a") as f:
             f.write(json.dumps(trace_entry) + "\n")
 
-    def process_phrase(self) -> Optional[Action]:
+    def process_phrase(self) -> Action | None:
         """Forces immediate decoding and execution of the accumulated tokens.
 
         Returns:

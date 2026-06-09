@@ -1,21 +1,19 @@
 """Public API surface for the Subvocal middleware platform core package.
 """
 
-from .models import (
-    Sample,
-    Frame,
-    CommandToken,
-    Intent,
-    Action,
-)
-
 from .interfaces import (
-    HardwareSource,
-    LLMProvider,
     ActionExecutor,
     ContextProvider,
+    HardwareSource,
+    LLMProvider,
 )
-
+from .models import (
+    Action,
+    CommandToken,
+    Frame,
+    Intent,
+    Sample,
+)
 from .pipeline import SubvocalPipeline
 
 __all__ = [

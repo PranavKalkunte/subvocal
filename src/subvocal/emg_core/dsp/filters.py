@@ -80,7 +80,7 @@ def bandpass(
     if low_norm >= high_norm or low_norm <= 0:
         return signal  # Return unfiltered if bounds are invalid
 
-    b, a = butter(order, [low_norm, high_norm], btype='band')
+    b, a = butter(order, [low_norm, high_norm], btype='band')  # pyright: ignore
     return filtfilt(b, a, signal).astype(signal.dtype)
 
 

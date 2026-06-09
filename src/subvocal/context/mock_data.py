@@ -6,17 +6,10 @@ compressed phonetic shorthands for all text labels.
 """
 
 import time
-from typing import List
+
+from subvocal.context.schema import AppState, CalendarEvent, Contact, LocationInfo, Message, UIElement, UserContext
 from subvocal.shorthand.spec import compress_word
-from subvocal.context.schema import (
-    Contact,
-    CalendarEvent,
-    LocationInfo,
-    Message,
-    UIElement,
-    AppState,
-    UserContext
-)
+
 
 def generate_mock_context() -> UserContext:
     """Generate a high-fidelity UserContext populated with mock data."""

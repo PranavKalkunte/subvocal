@@ -3,11 +3,11 @@
 
 import os
 import time
-from typing import List, Optional
+
 import numpy as np
 
-from subvocal.core.models import Sample, Frame
 from subvocal.core.interfaces import HardwareSource
+from subvocal.core.models import Frame, Sample
 
 
 class NinaproDriver(HardwareSource):
@@ -35,17 +35,17 @@ class NinaproDriver(HardwareSource):
         # scipy is loaded dynamically so a base install can import this module
         try:
             import scipy.io
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "scipy is required to use the NinaproDriver. "
                 'Install it with: pip install "subvocal[hardware]"'
-            )
+            ) from e
 
         # Load mat file
         try:
             mat = scipy.io.loadmat(self.file_path)
         except Exception as e:
-            raise ValueError(f"Failed to parse Ninapro MAT file: {e}")
+            raise ValueError(f"Failed to parse Ninapro MAT file: {e}") from e
 
         # Ninapro files store raw sEMG signals in the 'emg' key
         if "emg" not in mat:
@@ -121,11 +121,11 @@ class PutEMGDriver(HardwareSource):
         try:
             import h5py
             self._h5py = h5py
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "h5py is required to use the PutEMGDriver. "
-                "Please install it using: pip install h5py"
-            )
+                'Install it with: pip install "subvocal[hardware]"'
+            ) from e
 
         if not os.path.exists(self.file_path):
             raise FileNotFoundError(f"PutEMG dataset file not found: {self.file_path}")
@@ -152,7 +152,7 @@ class PutEMGDriver(HardwareSource):
             self._total_samples = self._emg_dataset.shape[0]
 
         except Exception as e:
-            raise ValueError(f"Failed to open/parse PutEMG file: {e}")
+            raise ValueError(f"Failed to open/parse PutEMG file: {e}") from e
 
     def start(self) -> None:
         self._connected = True
@@ -172,7 +172,7 @@ class PutEMGDriver(HardwareSource):
         return self._connected
 
     def read_frame(self, window_ms: int) -> Frame:
-        if not self._connected:
+        if not self._connected or self._emg_dataset is None:
             raise RuntimeError("PutEMG stream is not started.")
 
         now = time.time()
@@ -254,7 +254,7 @@ class CSLHDEMGDriver(HardwareSource):
                 raw_floats = np.fromfile(self.file_path, dtype=np.float32)
                 self._data = raw_floats.reshape(-1, num_channels)
         except Exception as e:
-            raise ValueError(f"Failed to load CSL-HDEMG dataset array: {e}")
+            raise ValueError(f"Failed to load CSL-HDEMG dataset array: {e}") from e
 
         self.num_channels = self._data.shape[1]
         self._total_samples = self._data.shape[0]

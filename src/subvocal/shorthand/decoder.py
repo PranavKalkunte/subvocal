@@ -5,20 +5,17 @@ with a model-agnostic LLM reconstruction layer.
 """
 
 import json
-import urllib.request
-import urllib.error
+import logging
 import os
-from typing import Dict, List, Tuple, Optional, Any
+import urllib.error
+import urllib.request
 
 from subvocal.shorthand.spec import (
-    LETTER_TO_GROUP,
-    COMMAND_ABBREVIATIONS,
     ABBREVIATION_TO_COMMAND,
-    COMMON_ABBREVIATIONS,
-    compress_word
+    LETTER_TO_GROUP,
+    compress_word,
 )
 from subvocal.shorthand.vocab import COMMANDS
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +91,7 @@ def articulatory_distance(word1: str, word2: str) -> float:
     return dp[m][n]
 
 
-def find_best_shorthand_match(noisy_token: str, candidate_words: List[str]) -> List[Tuple[str, float]]:
+def find_best_shorthand_match(noisy_token: str, candidate_words: list[str]) -> list[tuple[str, float]]:
     """Scores a noisy shorthand token against a list of candidate words.
     
     Compresses candidates to shorthand and computes articulatory distance.
@@ -119,14 +116,14 @@ def find_best_shorthand_match(noisy_token: str, candidate_words: List[str]) -> L
 
 def heuristic_decode_phrase(
     noisy_phrase: str,
-    web_context_words: Optional[List[str]] = None,
-    calendar_words: Optional[List[str]] = None,
-    contacts_words: Optional[List[str]] = None,
+    web_context_words: list[str] | None = None,
+    calendar_words: list[str] | None = None,
+    contacts_words: list[str] | None = None,
     # Advanced structured contexts
-    ui_elements: Optional[List[str]] = None,
-    contacts: Optional[List[str]] = None,
-    calendar_events: Optional[List[str]] = None
-) -> Tuple[str, float]:
+    ui_elements: list[str] | None = None,
+    contacts: list[str] | None = None,
+    calendar_events: list[str] | None = None
+) -> tuple[str, float]:
     """Decodes a full noisy shorthand phrase using articulatory heuristics.
     
     Uses Command-Aware Context Prioritization and Phrase-Level Matching.
@@ -160,7 +157,7 @@ def heuristic_decode_phrase(
     noisy_args_shorthand = "".join(arg_tokens).lower()
     
     # 3. Command-Aware Prioritization
-    def expand_pool(pool_list: List[str]) -> List[str]:
+    def expand_pool(pool_list: list[str]) -> list[str]:
         expanded = []
         for item in pool_list:
             expanded.append(item)
@@ -191,7 +188,7 @@ def heuristic_decode_phrase(
             prioritized_pool.extend(expand_pool(contacts))
             
     # Helper for phrase-level matching
-    def match_phrase_pool(pool: List[str], max_dist_per_char: float = 0.35) -> Optional[Tuple[str, float]]:
+    def match_phrase_pool(pool: list[str], max_dist_per_char: float = 0.35) -> tuple[str, float] | None:
         best_match = None
         min_dist = 999.0
         for item in pool:
@@ -293,7 +290,7 @@ def heuristic_decode_phrase(
     return " ".join(decoded_words), confidence
 
 
-def call_llm_api(provider: str, api_key: str, model: str, prompt: str) -> Optional[str]:
+def call_llm_api(provider: str, api_key: str, model: str | None, prompt: str) -> str | None:
     """Helper to perform model-agnostic LLM calls via urllib without external SDK dependencies."""
     try:
         if provider == "openai":
@@ -359,11 +356,11 @@ def call_llm_api(provider: str, api_key: str, model: str, prompt: str) -> Option
 def reconstruct_intent_llm(
     noisy_input: str,
     heuristic_candidate: str,
-    web_context: Optional[str] = None,
-    calendar: Optional[str] = None,
-    contacts: Optional[str] = None,
-    history: Optional[str] = None
-) -> Optional[str]:
+    web_context: str | None = None,
+    calendar: str | None = None,
+    contacts: str | None = None,
+    history: str | None = None
+) -> str | None:
     """Reconstructs the target command phrase from noisy shorthand using a model-agnostic LLM.
     
     Discovers API keys dynamically from the environment.
@@ -406,15 +403,15 @@ def reconstruct_intent_llm(
 
 def hybrid_decode(
     noisy_phrase: str,
-    web_context_words: Optional[List[str]] = None,
-    calendar_words: Optional[List[str]] = None,
-    contacts_words: Optional[List[str]] = None,
-    history: Optional[str] = None,
+    web_context_words: list[str] | None = None,
+    calendar_words: list[str] | None = None,
+    contacts_words: list[str] | None = None,
+    history: str | None = None,
     # Advanced structured contexts
-    ui_elements: Optional[List[str]] = None,
-    contacts: Optional[List[str]] = None,
-    calendar_events: Optional[List[str]] = None
-) -> Tuple[str, float, str]:
+    ui_elements: list[str] | None = None,
+    contacts: list[str] | None = None,
+    calendar_events: list[str] | None = None
+) -> tuple[str, float, str]:
     """Combines heuristic alignment and LLM disambiguation for premium accuracy.
     
     Returns:

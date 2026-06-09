@@ -1,14 +1,15 @@
 """Correction-capture loop and fine-tuning hook implementation for Subvocal SDK.
 """
 
-import os
 import json
+import logging
+import os
 import time
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from subvocal.context.schema import UserContext
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class CorrectionLogEntry(BaseModel):
 class CorrectionManager:
     """Manages local storage and retrieval of user correction log entries."""
 
-    def __init__(self, log_path: Optional[str] = None):
+    def __init__(self, log_path: str | None = None):
         """Initializes the manager.
 
         Args:
@@ -63,13 +64,13 @@ class CorrectionManager:
 
         return entry
 
-    def get_corrections(self) -> List[CorrectionLogEntry]:
+    def get_corrections(self) -> list[CorrectionLogEntry]:
         """Retrieves all logged corrections from the local file."""
         if not os.path.exists(self.log_path):
             return []
 
         entries = []
-        with open(self.log_path, "r", encoding="utf-8") as f:
+        with open(self.log_path, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     try:
@@ -91,8 +92,9 @@ class FinetuningHook:
     @staticmethod
     def _build_user_prompt(entry: "CorrectionLogEntry") -> str:
         """Builds the canonical user prompt for a correction entry, matching live inference format."""
-        from .prompts import PromptManager
         from subvocal.shorthand.decoder import heuristic_decode_phrase
+
+        from .prompts import PromptManager
 
         contacts_str = ", ".join([f"{c.name} ({c.shorthand_name})" for c in entry.context_snapshot.contacts])
         calendar_str = ", ".join(
@@ -122,9 +124,9 @@ class FinetuningHook:
 
     @staticmethod
     def export_to_openai(
-        entries: List[CorrectionLogEntry],
+        entries: list[CorrectionLogEntry],
         system_instruction: str = "Translate silent speech shorthand and context into correct system actions.",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Converts entries to OpenAI chat fine-tuning format.
 
         Format:
@@ -143,9 +145,9 @@ class FinetuningHook:
 
     @staticmethod
     def export_to_gemini(
-        entries: List[CorrectionLogEntry],
+        entries: list[CorrectionLogEntry],
         system_instruction: str = "Translate silent speech shorthand and context into correct system actions.",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Converts entries to Google Gemini fine-tuning format.
 
         Format:
@@ -163,7 +165,7 @@ class FinetuningHook:
         ]
 
     @staticmethod
-    def export_to_jsonl(data: List[Dict[str, Any]], output_path: str) -> int:
+    def export_to_jsonl(data: list[dict[str, Any]], output_path: str) -> int:
         """Writes the exported dataset list to a JSONL file."""
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:

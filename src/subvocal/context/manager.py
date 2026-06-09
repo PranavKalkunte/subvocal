@@ -4,10 +4,8 @@ Integrates context querying with custom articulatory phonetic distance matching
 to enable context-aware silent speech decoding.
 """
 
-from typing import List, Tuple, Optional
+from subvocal.context.schema import Contact, UIElement, UserContext
 from subvocal.shorthand.decoder import articulatory_distance
-from subvocal.shorthand.spec import compress_word
-from subvocal.context.schema import UserContext, Contact, UIElement, CalendarEvent
 
 
 class ContextManager:
@@ -20,31 +18,31 @@ class ContextManager:
         """Update the active user context state."""
         self.context = new_context
         
-    def get_contact_names(self) -> List[str]:
+    def get_contact_names(self) -> list[str]:
         """Get list of all contact names in plain text."""
         return [c.name for c in self.context.contacts]
         
-    def get_contact_shorthands(self) -> List[str]:
+    def get_contact_shorthands(self) -> list[str]:
         """Get list of all pre-computed contact name shorthands."""
         return [c.shorthand_name for c in self.context.contacts]
         
-    def get_calendar_titles(self) -> List[str]:
+    def get_calendar_titles(self) -> list[str]:
         """Get list of all calendar event titles in plain text."""
         return [e.title for e in self.context.calendar]
         
-    def get_calendar_shorthands(self) -> List[str]:
+    def get_calendar_shorthands(self) -> list[str]:
         """Get list of all calendar event title shorthands."""
         return [e.shorthand_title for e in self.context.calendar]
         
-    def get_visible_element_labels(self) -> List[str]:
+    def get_visible_element_labels(self) -> list[str]:
         """Get list of all visible UI element labels in plain text."""
         return [el.label for el in self.context.app_state.visible_elements]
         
-    def get_visible_element_shorthands(self) -> List[str]:
+    def get_visible_element_shorthands(self) -> list[str]:
         """Get list of all visible UI element shorthands."""
         return [el.shorthand_label for el in self.context.app_state.visible_elements]
         
-    def get_all_context_words(self) -> List[str]:
+    def get_all_context_words(self) -> list[str]:
         """Compile a list of all potential word tokens present in the active context.
         
         Useful for seeding the dictionary candidate generator in the decoder.
@@ -79,7 +77,7 @@ class ContextManager:
                 
         return clean_words
 
-    def search_contacts(self, noisy_shorthand: str) -> List[Tuple[Contact, float]]:
+    def search_contacts(self, noisy_shorthand: str) -> list[tuple[Contact, float]]:
         """Search contacts by comparing noisy shorthand against pre-computed contact shorthands.
         
         Returns:
@@ -108,7 +106,7 @@ class ContextManager:
         results.sort(key=lambda x: x[1])
         return results
 
-    def search_elements(self, noisy_shorthand: str) -> List[Tuple[UIElement, float]]:
+    def search_elements(self, noisy_shorthand: str) -> list[tuple[UIElement, float]]:
         """Search visible UI elements using articulatory distance matching.
         
         Returns:

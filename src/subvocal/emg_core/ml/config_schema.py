@@ -1,7 +1,7 @@
 """Pydantic schema for reproducible model training configuration."""
 
+
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 class TrainingConfig(BaseModel):
@@ -33,7 +33,7 @@ class TrainingConfig(BaseModel):
         default="rbf",
         description="Kernel function for SVM (e.g. 'rbf', 'linear', 'poly')"
     )
-    lda_components: Optional[int] = Field(
+    lda_components: int | None = Field(
         default=None,
         description="Number of components for Linear Discriminant Analysis dimensionality reduction"
     )

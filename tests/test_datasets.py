@@ -2,14 +2,13 @@
 """
 
 import os
-import sys
-import unittest
 import tempfile
+import unittest
+
 import numpy as np
 import scipy.io
 
-
-from subvocal.hardware.datasets import NinaproDriver, PutEMGDriver, CSLHDEMGDriver
+from subvocal.hardware.datasets import CSLHDEMGDriver, NinaproDriver, PutEMGDriver
 
 
 class TestDatasetDrivers(unittest.TestCase):

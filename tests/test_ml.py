@@ -1,20 +1,19 @@
 """End-to-end integration tests for sEMG DSP and ML components."""
 
-import os
 import glob
-import numpy as np
+import os
 import unittest
 
-import sys
+import numpy as np
 
 from subvocal.emg_core import config
-from subvocal.emg_core.dsp.filters import preprocess_multichannel
 from subvocal.emg_core.dsp.features import extract_features
-from subvocal.emg_core.ml.train import train_model, calibrate_model
-from subvocal.emg_core.ml.infer import InferenceEngine
-from subvocal.emg_core.ml.export import export_to_onnx, quantize_model_int8
+from subvocal.emg_core.dsp.filters import preprocess_multichannel
 from subvocal.emg_core.ml.benchmark import run_benchmark
+from subvocal.emg_core.ml.export import export_to_onnx, quantize_model_int8
+from subvocal.emg_core.ml.infer import InferenceEngine
 from subvocal.emg_core.ml.model_io import get_model_path
+from subvocal.emg_core.ml.train import calibrate_model, train_model
 
 
 class TestEMGCoreML(unittest.TestCase):

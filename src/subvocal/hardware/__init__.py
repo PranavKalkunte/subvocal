@@ -1,17 +1,16 @@
 """Public interface for the Subvocal SDK Hardware Abstraction Layer (HAL).
 """
 
-from .drivers import (
-    FileReplayDriver,
-    SyntheticSignalGenerator,
-    OpenBCICytonDriver,
-    DelsysTrignoDriver,
-)
-
 from .datasets import (
+    CSLHDEMGDriver,
     NinaproDriver,
     PutEMGDriver,
-    CSLHDEMGDriver,
+)
+from .drivers import (
+    DelsysTrignoDriver,
+    FileReplayDriver,
+    OpenBCICytonDriver,
+    SyntheticSignalGenerator,
 )
 
 __all__ = [

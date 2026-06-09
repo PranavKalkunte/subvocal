@@ -1,10 +1,12 @@
 """Pre-training script for deep neural sEMG classifiers on public baseline datasets."""
 
-import os
-import numpy as np
-from subvocal.emg_core import config
-from subvocal.emg_core.ml.train import train_model, TrainingConfig
 import logging
+import os
+
+import numpy as np
+
+from subvocal.emg_core import config
+from subvocal.emg_core.ml.train import TrainingConfig, train_model
 
 logger = logging.getLogger(__name__)
 

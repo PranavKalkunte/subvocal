@@ -1,17 +1,13 @@
 """Unit tests for the core models, interfaces, and pipeline orchestrator.
 """
 
-import os
-import sys
 
-import unittest
 import time
-from typing import Optional
+import unittest
 
-from subvocal.core.models import Sample, Frame, CommandToken
+from subvocal.core.models import CommandToken, Frame, Sample
 from subvocal.core.pipeline import SubvocalPipeline
-from subvocal.core.testing import MockHardwareSource, MockLLMProvider, MockActionExecutor, MockContextProvider
-
+from subvocal.core.testing import MockActionExecutor, MockContextProvider, MockHardwareSource, MockLLMProvider
 
 # --- Unit Tests Suite ---
 
@@ -45,7 +41,7 @@ class TestCoreAPI(unittest.TestCase):
 
         # Mock classifier callback: returns a token every 3rd call, otherwise None
         call_count = 0
-        def dummy_classify(_frame: Frame) -> Optional[CommandToken]:
+        def dummy_classify(_frame: Frame) -> CommandToken | None:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -99,7 +95,7 @@ class TestCoreAPI(unittest.TestCase):
         hw = MockHardwareSource()
         hw.start()
 
-        def dummy_classify(_frame: Frame) -> Optional[CommandToken]:
+        def dummy_classify(_frame: Frame) -> CommandToken | None:
             return CommandToken(text="clk", confidence=0.99, timestamp=time.time())
 
         llm = MockLLMProvider()

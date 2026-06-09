@@ -1,14 +1,11 @@
 """Unit and integration tests for Model Context Protocol (MCP) server."""
 
-import os
-import sys
 import json
 import time
 import unittest
 
-
-from subvocal.mcp.server import SubvocalMCPServer
 from subvocal.core.models import CommandToken
+from subvocal.mcp.server import SubvocalMCPServer
 
 
 class TestSubvocalMCPServer(unittest.TestCase):

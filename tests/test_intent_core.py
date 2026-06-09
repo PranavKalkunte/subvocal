@@ -1,37 +1,36 @@
 """Unit tests for the intent reconstruction core (prompts, providers, context aggregation, corrections).
 """
 
-import unittest
+import json
 import os
 import tempfile
 import time
-import json
-from typing import List
+import unittest
 
+from subvocal.context.providers import (
+    AppStateContextProvider,
+    CalendarContextProvider,
+    CompositeContextProvider,
+    ContactsContextProvider,
+    LocationContextProvider,
+)
 from subvocal.context.schema import (
-    UserContext,
-    Contact,
-    CalendarEvent,
-    LocationInfo,
     AppState,
+    CalendarEvent,
+    Contact,
+    LocationInfo,
     UIElement,
+    UserContext,
+)
+from subvocal.core.corrections import CorrectionManager, FinetuningHook
+from subvocal.core.llm_providers import (
+    ClaudeProvider,
+    GeminiProvider,
+    LlamaProvider,
+    OpenAIProvider,
 )
 from subvocal.core.models import CommandToken
 from subvocal.core.prompts import PromptManager
-from subvocal.core.llm_providers import (
-    ClaudeProvider,
-    OpenAIProvider,
-    GeminiProvider,
-    LlamaProvider,
-)
-from subvocal.context.providers import (
-    CalendarContextProvider,
-    ContactsContextProvider,
-    LocationContextProvider,
-    AppStateContextProvider,
-    CompositeContextProvider,
-)
-from subvocal.core.corrections import CorrectionManager, FinetuningHook
 
 
 class TestIntentCore(unittest.TestCase):
@@ -171,7 +170,7 @@ class TestIntentCore(unittest.TestCase):
             self.assertTrue(os.path.exists(export_path))
             
             # Read and verify exported file content
-            with open(export_path, "r", encoding="utf-8") as f:
+            with open(export_path, encoding="utf-8") as f:
                 content = json.loads(f.read().strip())
                 self.assertEqual(content["messages"][2]["content"], "TYPE Alice")
 

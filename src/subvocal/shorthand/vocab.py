@@ -4,10 +4,10 @@ Defines a phonetically diverse set of 17 commands optimized for throat/jaw
 surface Electromyography (sEMG) classification.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 # Target vocabulary definition
-COMMANDS: Dict[str, Dict[str, Any]] = {
+COMMANDS: dict[str, dict[str, Any]] = {
     "GOTO": {
         "phonetic_ipa": "ˈɡoʊ.tuː",
         "articulatory_features": "Velar plosive + Glottal vowel + Dental/Alveolar plosive + Glottal vowel",
@@ -113,11 +113,11 @@ COMMANDS: Dict[str, Dict[str, Any]] = {
 }
 
 
-def get_command_list() -> List[str]:
+def get_command_list() -> list[str]:
     """Return a list of all command names in the vocabulary."""
     return list(COMMANDS.keys())
 
 
-def get_command_details(name: str) -> Dict[str, Any]:
+def get_command_details(name: str) -> dict[str, Any]:
     """Retrieve details for a specific command."""
     return COMMANDS.get(name.upper(), {})

@@ -2,8 +2,9 @@
 
 import os
 import time
+from typing import Any
+
 import numpy as np
-from typing import Dict, Any
 
 from subvocal.emg_core.ml.infer import InferenceEngine
 from subvocal.emg_core.ml.model_io import get_model_path
@@ -69,7 +70,7 @@ def estimate_flops(model_type: str, num_channels: int = 4, segment_length: int =
         return 0
 
 
-def run_benchmark(user_id: str, model_type: str, num_runs: int = 200) -> Dict[str, Any]:
+def run_benchmark(user_id: str, model_type: str, num_runs: int = 200) -> dict[str, Any]:
     """Benchmark model inference latency, disk footprint, and parameter size.
 
     Estimates computational FLOPs and electrical energy footprint.

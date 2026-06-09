@@ -1,26 +1,16 @@
 """Unit tests for safety, policies, dry-run, and tracing APIs."""
 
-import os
-import sys
 import json
+import os
 import time
 import unittest
-from typing import List, Dict, Any
 
-
-from subvocal.core.models import Frame, CommandToken, Intent, Action
-from subvocal.core.interfaces import HardwareSource, LLMProvider, ActionExecutor, ContextProvider
+from subvocal.context.schema import AppState, UserContext
+from subvocal.core.interfaces import ActionExecutor, ContextProvider, HardwareSource, LLMProvider
+from subvocal.core.models import Action, CommandToken, Frame, Intent
 from subvocal.core.pipeline import SubvocalPipeline
-from subvocal.context.schema import UserContext, AppState
+from subvocal.core.security import CommandWhitelistPolicy, ConfidenceThresholdPolicy, ContextBoundPolicy, PolicyEngine
 from subvocal.emg_core import config
-
-from subvocal.core.security import (
-    ConfidenceThresholdPolicy,
-    CommandWhitelistPolicy,
-    ContextBoundPolicy,
-    PolicyEngine
-)
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Mocks
@@ -39,7 +29,7 @@ class MockLLM(LLMProvider):
         self.cmd = cmd
         self.confidence = confidence
 
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         return Intent(
             command=self.cmd,
             arguments=[],
@@ -162,7 +152,7 @@ class TestSubvocalSecurity(unittest.TestCase):
 
         # Verify trace entry written to JSONL
         self.assertTrue(os.path.exists(self.trace_file))
-        with open(self.trace_file, "r") as f:
+        with open(self.trace_file) as f:
             trace = json.loads(f.read().strip())
         self.assertEqual(trace["status"], "REJECTED_UNAUTHORIZED")
         self.assertFalse(trace["authorized"])
@@ -188,7 +178,7 @@ class TestSubvocalSecurity(unittest.TestCase):
         self.assertEqual(len(executor.executed), 0)
 
         # Verify trace entry
-        with open(self.trace_file, "r") as f:
+        with open(self.trace_file) as f:
             trace = json.loads(f.read().strip())
         self.assertEqual(trace["status"], "DRY_RUN")
         self.assertTrue(trace["dry_run"])

@@ -9,26 +9,25 @@ Supports:
 """
 
 import os
-import numpy as np
-from typing import Dict, Any, Tuple, List, Optional
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, accuracy_score
+from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import TensorDataset, DataLoader
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from torch.utils.data import DataLoader, TensorDataset
 
 from subvocal.emg_core import config
 from subvocal.emg_core.dsp.features import extract_features
 from subvocal.emg_core.dsp.filters import preprocess_multichannel
-from subvocal.emg_core.ml.model_io import save_model, load_model
 from subvocal.emg_core.ml.config_schema import TrainingConfig
-
+from subvocal.emg_core.ml.model_io import load_model, save_model
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PyTorch Model Architectures
@@ -139,7 +138,7 @@ class EMGTransformer(nn.Module):
 # Helper Functions
 # ══════════════════════════════════════════════════════════════════════════════
 
-def load_dataset(user_id: str) -> Tuple[List[np.ndarray], List[str]]:
+def load_dataset(user_id: str) -> tuple[list[np.ndarray], list[str]]:
     """Load the calibration dataset for a user.
 
     Returns:
@@ -157,7 +156,7 @@ def load_dataset(user_id: str) -> Tuple[List[np.ndarray], List[str]]:
 
 
 def preprocess_segments(
-    segments: List[np.ndarray],
+    segments: list[np.ndarray],
     fs: float,
     low: float,
     high: float
@@ -180,8 +179,8 @@ def train_model(
     user_id: str,
     model_type: str = "rf",
     test_size: float = 0.2,
-    config_obj: Optional[TrainingConfig] = None
-) -> Dict[str, Any]:
+    config_obj: TrainingConfig | None = None
+) -> dict[str, Any]:
     """Train a sEMG model for a user and save it to disk.
 
     Args:
@@ -243,7 +242,7 @@ def train_model(
         X_train_f, X_test_f = X_feats[idx_train], X_feats[idx_test]
 
         # Build pipeline
-        steps: List[Any] = [('scaler', StandardScaler())]
+        steps: list[Any] = [('scaler', StandardScaler())]
         if num_classes > 2:
             lda_c = config_obj.lda_components or config.LDA_COMPONENTS
             lda_comp = min(lda_c, num_classes - 1)
@@ -323,7 +322,7 @@ def train_model(
 
         # Optimization loop
         model.train()
-        for epoch in range(config_obj.epochs):
+        for _epoch in range(config_obj.epochs):
             for xb, yb in train_loader:
                 xb, yb = xb.to(device), yb.to(device)
                 optimizer.zero_grad()
@@ -357,7 +356,7 @@ def train_model(
     # Compute per-class accuracy
     per_class_acc = {}
     for i, label in enumerate(unique_labels):
-        mask = y_test == i
+        mask = np.asarray(y_test == i)
         if mask.sum() > 0:
             per_class_acc[label] = float(accuracy_score(y_test[mask], y_pred[mask]))
         else:
@@ -375,8 +374,8 @@ def train_model(
 def calibrate_model(
     user_id: str,
     pretrained_model_type: str,
-    calibration_config: Optional[TrainingConfig] = None
-) -> Dict[str, Any]:
+    calibration_config: TrainingConfig | None = None
+) -> dict[str, Any]:
     """Calibrate / fine-tune a pre-trained model for a new user.
 
     For PyTorch models (CNN, GRU, Transformer), it loads pre-trained weights,
@@ -492,7 +491,7 @@ def calibrate_model(
 
     # Fine-tune classification head
     model.train()
-    for epoch in range(config_obj.epochs):
+    for _epoch in range(config_obj.epochs):
         for xb, yb in train_loader:
             xb, yb = xb.to(device), yb.to(device)
             optimizer.zero_grad()
@@ -526,7 +525,7 @@ def calibrate_model(
 
     per_class_acc = {}
     for i, label in enumerate(unique_labels):
-        mask = y_test == i
+        mask = np.asarray(y_test == i)
         if mask.sum() > 0:
             per_class_acc[label] = float(accuracy_score(y_test[mask], y_pred[mask]))
         else:
@@ -552,7 +551,7 @@ if __name__ == "__main__":
 
     config_obj = None
     if args.config and os.path.exists(args.config):
-        with open(args.config, "r") as f:
+        with open(args.config) as f:
             config_data = json.load(f)
             config_obj = TrainingConfig(**config_data)
             model_type = config_obj.model_type

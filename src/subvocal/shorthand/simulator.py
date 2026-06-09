@@ -5,11 +5,11 @@ articulatory sEMG noise (substitutions, insertions, and deletions).
 """
 
 import random
-from typing import List, Tuple
+
 from subvocal.shorthand.spec import LETTER_TO_GROUP, compress_word
 
 # Group reverse mappings for substitution candidate lookup
-GROUP_TO_LETTERS: dict[str, List[str]] = {}
+GROUP_TO_LETTERS: dict[str, list[str]] = {}
 for letter, grp in LETTER_TO_GROUP.items():
     GROUP_TO_LETTERS.setdefault(grp, []).append(letter)
 
@@ -76,7 +76,7 @@ def phrase_to_noisy_shorthand(
     sub_rate: float = 0.10,
     del_rate: float = 0.05,
     ins_rate: float = 0.05
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """Convert a full phrase to clean shorthand and simulated noisy shorthand.
     
     Returns:

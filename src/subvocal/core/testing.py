@@ -1,12 +1,13 @@
 """Shared test fixtures for Subvocal SDK unit tests."""
 
 import time
-import numpy as np
-from typing import List, Any
+from typing import Any
 
-from subvocal.context.schema import UserContext, AppState
-from subvocal.core.models import Sample, Frame, CommandToken, Intent, Action
-from subvocal.core.interfaces import HardwareSource, LLMProvider, ActionExecutor, ContextProvider
+import numpy as np
+
+from subvocal.context.schema import AppState, UserContext
+from subvocal.core.interfaces import ActionExecutor, ContextProvider, HardwareSource, LLMProvider
+from subvocal.core.models import Action, CommandToken, Frame, Intent, Sample
 
 
 class MockHardwareSource(HardwareSource):
@@ -45,7 +46,7 @@ class MockHardwareSource(HardwareSource):
 class MockLLMProvider(LLMProvider):
     """Maps shorthand token text patterns to GOTO or CLICK intents."""
 
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         shorthand = " ".join([t.text for t in tokens])
         if "gt" in shorthand or "goto" in shorthand:
             cmd, args = "GOTO", ["google.com"]
@@ -70,7 +71,7 @@ class MockActionExecutor(ActionExecutor):
     """Records dispatched actions for assertion in tests."""
 
     def __init__(self):
-        self.executed_actions: List[Action] = []
+        self.executed_actions: list[Action] = []
 
     def execute(self, action: Action) -> Any:
         self.executed_actions.append(action)

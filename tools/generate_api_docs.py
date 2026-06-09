@@ -5,12 +5,12 @@ Extracts docstrings and signatures from the python codebase without importing mo
 Outputs structured Docusaurus-compatible markdown reference files.
 """
 
-import os
 import ast
-from typing import List, Dict, Any
+import os
+from typing import Any
 
-SDK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "sdk"))
-OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs", "docs", "api"))
+SDK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "subvocal"))
+OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs", "api"))
 
 
 def get_arg_signature(node: ast.arguments) -> str:
@@ -60,12 +60,12 @@ class ModuleParser(ast.NodeVisitor):
         self.filepath = filepath
         self.relative_path = relative_path
         self.module_doc = ""
-        self.classes: List[Dict[str, Any]] = []
-        self.functions: List[Dict[str, Any]] = []
-        self.current_class: Dict[str, Any] = None
+        self.classes: list[dict[str, Any]] = []
+        self.functions: list[dict[str, Any]] = []
+        self.current_class: dict[str, Any] = None
         
     def parse(self):
-        with open(self.filepath, "r", encoding="utf-8") as f:
+        with open(self.filepath, encoding="utf-8") as f:
             tree = ast.parse(f.read(), filename=self.filepath)
         
         # Extract module-level docstring
@@ -208,7 +208,7 @@ def main():
     print(f"Generating API references from {SDK_DIR} into {OUTPUT_DIR}...")
     
     # We target key packages
-    target_packages = ["core", "context", "hardware", "emg_core", "mcp"]
+    target_packages = ["core", "context", "hardware", "emg_core", "mcp", "shorthand", "tts"]
     
     for pkg in target_packages:
         pkg_dir = os.path.join(SDK_DIR, pkg)

@@ -5,29 +5,28 @@ Runs ML inference benchmarks (latency, disk, parameters, FLOPs) and
 Heuristic Intent Reconstruction benchmarks, outputting a structured Markdown report.
 """
 
-import os
-import sys
 import json
+import os
 import subprocess
-from typing import Dict, Any
+import sys
+from typing import Any
 
 # Paths
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_PATH = os.path.join(REPO_ROOT, "platform", "benchmark_report.md")
 
 
-def run_ml_benchmark(model_type: str) -> Dict[str, Any]:
+def run_ml_benchmark(model_type: str) -> dict[str, Any]:
     """Run the ML inference benchmarking script."""
     cmd = [
         sys.executable,
-        "-m", "emg_core.ml.benchmark",
+        "-m", "subvocal.emg_core.ml.benchmark",
         "--user_id", "pretrained",
         "--model_type", model_type,
         "--runs", "100"
     ]
     try:
         env = os.environ.copy()
-        env["PYTHONPATH"] = os.path.join(REPO_ROOT, "sdk")
         result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, env=env, check=True)
         # Parse the JSON portion of stdout
         lines = result.stdout.strip().split("\n")
@@ -49,11 +48,10 @@ def run_intent_benchmark() -> str:
     """Run the intent reconstruction benchmark harness."""
     cmd = [
         sys.executable,
-        "sdk/shorthand/test_intent_runner.py"
+        "benchmarks/intent_eval.py"
     ]
     try:
         env = os.environ.copy()
-        env["PYTHONPATH"] = os.path.join(REPO_ROOT, "sdk")
         result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, env=env)
         return result.stdout
     except Exception as e:

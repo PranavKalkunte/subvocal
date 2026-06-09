@@ -4,7 +4,6 @@ Defines the articulatory phonetic groups representing sEMG jaw/throat
 activation clusters, and compression rules to construct the shorthand representation.
 """
 
-from typing import Dict, List, Optional
 
 # Articulatory groupings for simulated throat/jaw sEMG activation.
 # G: Glottal / Vowels / Glides (Open mouth, vocal chord vibration, throat)
@@ -12,7 +11,7 @@ from typing import Dict, List, Optional
 # A: Alveolars / Dentals (Tongue tip, teeth)
 # V: Velars / Palatals (Tongue back, soft palate)
 # R: Rhotics / Retroflex (Tongue curl)
-LETTER_TO_GROUP: Dict[str, str] = {
+LETTER_TO_GROUP: dict[str, str] = {
     "a": "G", "e": "G", "i": "G", "o": "G", "u": "G", "y": "G", "h": "G",
     "b": "L", "p": "L", "m": "L", "w": "L", "f": "L", "v": "L",
     "t": "A", "d": "A", "n": "A", "s": "A", "z": "A", "l": "A",
@@ -20,10 +19,10 @@ LETTER_TO_GROUP: Dict[str, str] = {
     "r": "R"
 }
 
-ARTICULATORY_GROUPS: List[str] = ["G", "L", "A", "V", "R"]
+ARTICULATORY_GROUPS: list[str] = ["G", "L", "A", "V", "R"]
 
 # Command abbreviations for rapid entry
-COMMAND_ABBREVIATIONS: Dict[str, str] = {
+COMMAND_ABBREVIATIONS: dict[str, str] = {
     "GOTO": "gt",
     "SEARCH": "srch",
     "CLICK": "clk",
@@ -44,10 +43,10 @@ COMMAND_ABBREVIATIONS: Dict[str, str] = {
 }
 
 # Inverse command abbreviations
-ABBREVIATION_TO_COMMAND: Dict[str, str] = {v: k for k, v in COMMAND_ABBREVIATIONS.items()}
+ABBREVIATION_TO_COMMAND: dict[str, str] = {v: k for k, v in COMMAND_ABBREVIATIONS.items()}
 
 # Common english word abbreviations used in subvocal shortcuts
-COMMON_ABBREVIATIONS: Dict[str, str] = {
+COMMON_ABBREVIATIONS: dict[str, str] = {
     "the": "th",
     "and": "nd",
     "for": "fr",
@@ -115,7 +114,7 @@ def compress_word(word: str) -> str:
     return "".join(result)
 
 
-def word_to_articulatory_sequence(shorthand_word: str) -> List[str]:
+def word_to_articulatory_sequence(shorthand_word: str) -> list[str]:
     """Convert a shorthand word to its articulatory group sequence.
     
     Non-alphabet characters (like numbers and punctuation) are preserved as-is.

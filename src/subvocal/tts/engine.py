@@ -3,17 +3,15 @@
 Supports native macOS 'say' / 'afplay' utilities, OpenAI Audio API, and pyttsx3.
 """
 
-import os
-import sys
-
 import json
+import logging
+import os
 import subprocess
-import urllib.request
+import sys
 import urllib.error
-from typing import Optional
+import urllib.request
 
 from subvocal.tts.schema import TTSConfig
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +19,7 @@ logger = logging.getLogger(__name__)
 class TTSEngine:
     """Multi-backend Text-to-Speech generator and player."""
 
-    def __init__(self, config: Optional[TTSConfig] = None):
+    def __init__(self, config: TTSConfig | None = None):
         self.config = config or TTSConfig()
         
         # Ensure output directory exists
@@ -31,7 +29,7 @@ class TTSEngine:
         self.is_mac = sys.platform == "darwin"
         self.has_openai = bool(os.environ.get("OPENAI_API_KEY"))
         
-    def speak(self, text: str, filename: Optional[str] = None) -> str:
+    def speak(self, text: str, filename: str | None = None) -> str:
         """Synthesize and speak the text, saving the audio to a file.
         
         Args:

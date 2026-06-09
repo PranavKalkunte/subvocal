@@ -4,16 +4,14 @@ Evaluates the 50-example test suite across Heuristic and concrete LLM providers.
 """
 
 import os
-import sys
 import time
-from typing import Dict, List, Any
 
-from subvocal.shorthand.eval_set import EVAL_SET
-from subvocal.shorthand.decoder import heuristic_decode_phrase
-from subvocal.shorthand.spec import compress_word
-from subvocal.context.schema import UserContext, AppState, Contact, CalendarEvent, UIElement
+from subvocal.context.schema import AppState, CalendarEvent, Contact, UIElement, UserContext
+from subvocal.core.llm_providers import ClaudeProvider, GeminiProvider, LlamaProvider, OpenAIProvider
 from subvocal.core.models import CommandToken
-from subvocal.core.llm_providers import ClaudeProvider, OpenAIProvider, GeminiProvider, LlamaProvider
+from subvocal.shorthand.decoder import heuristic_decode_phrase
+from subvocal.shorthand.eval_set import EVAL_SET
+from subvocal.shorthand.spec import compress_word
 
 
 def run_benchmark():
@@ -39,8 +37,6 @@ def run_benchmark():
     print("-" * 80)
 
     # Initialize stats
-    heur_correct = 0
-    heur_latency_sum = 0.0
 
     # We evaluate Heuristic + all detected live providers.
     # If no live providers exist, we evaluate a simulated LLM provider (Gemini or Claude in mock mode) to verify execution.
