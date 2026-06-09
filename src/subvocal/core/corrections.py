@@ -8,6 +8,9 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 from subvocal.context.schema import UserContext
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CorrectionLogEntry(BaseModel):
@@ -73,7 +76,7 @@ class CorrectionManager:
                         entries.append(CorrectionLogEntry.model_validate_json(line))
                     except Exception as e:
                         # Skip corrupted lines gracefully
-                        print(f"[Warning] Failed to parse correction log line: {e}")
+                        logger.warning("Failed to parse correction log line: %s", e)
         return entries
 
     def clear_logs(self) -> None:

@@ -18,6 +18,9 @@ from subvocal.shorthand.spec import (
     compress_word
 )
 from subvocal.shorthand.vocab import COMMANDS
+import logging
+
+logger = logging.getLogger(__name__)
 
 COMMON_WORDS_DICT = [
     "google", "search", "click", "scroll", "type", "enter", "confirm", "cancel",
@@ -346,9 +349,9 @@ def call_llm_api(provider: str, api_key: str, model: str, prompt: str) -> Option
                 return res_json["candidates"][0]["content"]["parts"][0]["text"].strip()
                 
     except urllib.error.URLError as e:
-        print(f"[LLM Decoder Error] HTTP call failed for {provider}: {e}")
+        logger.error("LLM decoder HTTP call failed for %s: %s", provider, e)
     except Exception as e:
-        print(f"[LLM Decoder Error] General failure for {provider}: {e}")
+        logger.error("LLM decoder general failure for %s: %s", provider, e)
         
     return None
 
