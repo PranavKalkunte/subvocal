@@ -6,8 +6,12 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
-## [1.0.0-rc1] - 2026-06-08
+## [1.0.0rc1] - 2026-06-09
 ### Added
+*   **PyPI Packaging**: The SDK is now a proper installable package (`pip install subvocal`) with a src-layout (`src/subvocal/`), hatchling build backend, single-source version (`subvocal.__version__`), PEP 561 `py.typed` marker, and optional extras `[ml]`, `[hardware]`, `[tts]`, `[export]`, `[all]`, `[dev]`.
+*   **`subvocal-mcp` Console Command**: The MCP stdio server installs as an entry point.
+*   **Writable Path Resolution**: `subvocal.paths` resolves per-user data/model directories (overridable via `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR`), replacing package-relative paths that break after installation; `SubvocalPipeline` accepts a `trace_path` parameter.
+*   **CI Quality Gates**: GitHub Actions matrix (Python 3.10–3.12) running ruff, pyright, pytest with coverage, license audit, and a packaging job that builds, twine-checks, and smoke-tests the wheel in a clean environment.
 *   **Documentation Site**: Full Docusaurus site configuration under `docs/` containing detailed guides for getting-started, custom agents, hardware abstractions, LLM systems, context, MCP integration, and model calibration.
 *   **API Auto-Generation**: AST-based python docstring parser in `tools/generate_api_docs.py` to compile Markdown pages directly from code.
 *   **Walkthrough Notebook**: Google Colab-compatible Jupyter notebook `notebooks/subvocal_walkthrough.ipynb` demonstrating the end-to-end signal-to-intent pipeline.
