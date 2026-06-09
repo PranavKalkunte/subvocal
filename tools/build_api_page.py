@@ -81,8 +81,19 @@ def docstring_html(doc: str) -> str:
     return "".join(f"<p>{esc(p)}</p>" for p in paragraphs)
 
 
+TOP_LEVEL_MODULES = ["exceptions.py", "paths.py"]
+
+
 def collect_modules() -> list[ModuleParser]:
     parsers = []
+    for filename in TOP_LEVEL_MODULES:
+        full_path = os.path.join(SDK_DIR, filename)
+        if not os.path.exists(full_path):
+            continue
+        parser = ModuleParser(full_path, filename)
+        parser.parse()
+        if parser.classes or parser.functions:
+            parsers.append(parser)
     for pkg in TARGET_PACKAGES:
         pkg_dir = os.path.join(SDK_DIR, pkg)
         if not os.path.isdir(pkg_dir):
@@ -149,6 +160,8 @@ def main():
     current_pkg = None
     for p in parsers:
         pkg = p.relative_path.split(os.sep)[0]
+        if pkg.endswith(".py"):
+            pkg = pkg[:-3]
         if pkg != current_pkg:
             if current_pkg is not None:
                 sidebar.append("</ul>")

@@ -32,6 +32,14 @@
       <div class="docs-layout">
 <aside class="docs-sidebar">
 <h4>API Reference</h4>
+<h4>subvocal.exceptions</h4>
+<ul>
+<li><a href="#subvocal-exceptions"><span>[*]</span> exceptions</a></li>
+</ul>
+<h4>subvocal.paths</h4>
+<ul>
+<li><a href="#subvocal-paths"><span>[*]</span> paths</a></li>
+</ul>
 <h4>subvocal.core</h4>
 <ul>
 <li><a href="#subvocal-core-corrections"><span>[*]</span> corrections</a></li>
@@ -86,7 +94,71 @@
 </aside>
 <article class="docs-body">
 <h1>API Reference</h1>
-<p>Auto-generated from docstrings across 30 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
+<p>Auto-generated from docstrings across 32 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
+<section class="api-module" id="subvocal-exceptions">
+<h2>subvocal.exceptions</h2>
+<p>Typed exception hierarchy for the Subvocal SDK.</p><p>Every error the SDK raises derives from :class:`SubvocalError`, so integrators
+can catch one base class at the application boundary::</p><p>try:
+        pipeline.step()
+    except SubvocalError as e:
+        logger.error("subvocal failure: %s", e)</p><p>Subclasses also inherit the builtin exception type the SDK historically raised
+in each situation (``RuntimeError``, ``ImportError``, ...), so pre-existing
+``except RuntimeError`` handlers keep working across upgrades.</p>
+<div class="api-member">
+<h3><code>class SubvocalError(Exception)</code></h3>
+<p>Base class for all errors raised by the Subvocal SDK.</p>
+</div>
+<div class="api-member">
+<h3><code>class ConfigurationError(SubvocalError, ValueError)</code></h3>
+<p>Invalid or missing configuration (API keys, parameters, paths).</p>
+</div>
+<div class="api-member">
+<h3><code>class HardwareError(SubvocalError, RuntimeError)</code></h3>
+<p>A hardware source failed: not connected, stream fault, or parse error.</p>
+</div>
+<div class="api-member">
+<h3><code>class MissingDependencyError(SubvocalError, ImportError)</code></h3>
+<p>An optional dependency is required for the requested feature.</p><p>The message always names the pip extra that provides it.</p>
+</div>
+<div class="api-member">
+<h3><code>class ProviderError(SubvocalError, RuntimeError)</code></h3>
+<p>An LLM provider call failed after exhausting retries.</p>
+</div>
+<div class="api-member">
+<h3><code>class DecodingError(SubvocalError, RuntimeError)</code></h3>
+<p>Shorthand-to-intent decoding produced no usable result.</p>
+</div>
+<div class="api-member">
+<h3><code>class PolicyViolationError(SubvocalError, PermissionError)</code></h3>
+<p>An action was rejected by the authorization policy engine.</p><p>Raised only when the pipeline is configured with
+``raise_on_policy_violation=True``; by default rejections are traced and
+reported through callbacks without raising.</p>
+</div>
+<div class="api-member">
+<h3><code>class CalibrationError(SubvocalError, RuntimeError)</code></h3>
+<p>Per-user classifier calibration or model loading failed.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-paths">
+<h2>subvocal.paths</h2>
+<p>Resolution of writable data and model directories.</p><p>The SDK writes pipeline traces, correction logs, and trained model weights at
+runtime. After installation the package directory lives in ``site-packages``
+and must never be written to, so all writable paths resolve to a per-user data
+directory instead. Resolution order:</p><p>1. Environment variables ``SUBVOCAL_DATA_DIR`` / ``SUBVOCAL_MODELS_DIR``.
+2. The OS-conventional user data directory (via ``platformdirs``),
+   e.g. ``~/Library/Application Support/subvocal`` on macOS or
+   ``~/.local/share/subvocal`` on Linux.</p><p>Directories are created on first use.</p>
+<div class="api-member">
+<h3><code>get_data_dir</code></h3>
+<pre><code>def get_data_dir() -&gt; str</code></pre>
+<p>Writable directory for traces, correction logs, and datasets.</p>
+</div>
+<div class="api-member">
+<h3><code>get_models_dir</code></h3>
+<pre><code>def get_models_dir() -&gt; str</code></pre>
+<p>Writable directory for trained and downloaded model weights.</p>
+</div>
+</section>
 <section class="api-module" id="subvocal-core-corrections">
 <h2>subvocal.core.corrections</h2>
 <p>Correction-capture loop and fine-tuning hook implementation for Subvocal SDK.</p>
@@ -251,12 +323,16 @@
 <p>Base provider containing prompt formatting and request helpers.</p>
 <div class="api-member">
 <h4>__init__</h4>
-<pre><code>def __init__(self, api_key: str | None = None, model_name: str | None = None, mock_response: str | None = None, prompt_version: str = 'v1')</code></pre>
+<pre><code>def __init__(self, api_key: str | None = None, model_name: str | None = None, mock_response: str | None = None, prompt_version: str = 'v1', timeout: float = 10.0, max_retries: int = 2, backoff_seconds: float = 0.5)</code></pre>
 <p>Initializes the base LLM provider.</p><p>Args:
     api_key: API authorization key. Resolves from environment if None.
     model_name: Name of the LLM model to request.
     mock_response: Optional mock string response to bypass HTTP calls (for testing).
-    prompt_version: The version string of the prompt template to use.</p>
+    prompt_version: The version string of the prompt template to use.
+    timeout: Per-request HTTP timeout in seconds.
+    max_retries: Additional attempts after the first failure for transient
+        errors (connection failures and retryable HTTP statuses).
+    backoff_seconds: Base delay for exponential backoff between retries.</p>
 </div>
 </div>
 <div class="api-member">
@@ -320,6 +396,39 @@
 <p>No description.</p>
 </div>
 </div>
+<div class="api-member">
+<h3><code>class HeuristicProvider(LLMProvider)</code></h3>
+<p>Fully offline intent reconstruction using the articulatory-distance decoder.</p><p>Resolves shorthand phrases against the command vocabulary and the active
+user context with no network access or API keys. Useful as a development
+default, an air-gapped deployment mode, and a graceful fallback when no
+LLM credentials are configured (see :func:`resolve_provider`).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, min_confidence: float = 0.0)</code></pre>
+<p>Initializes the heuristic provider.</p><p>Args:
+    min_confidence: Confidence floor below which the intent command is
+        reported as UNKNOWN rather than a low-quality guess.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>resolve_provider</code></h3>
+<pre><code>def resolve_provider(prefer: str | None = None, **kwargs) -&gt; LLMProvider</code></pre>
+<p>Returns the best available LLM provider for this environment.</p><p>Selection order: an explicit ``prefer`` name ("anthropic", "openai",
+"gemini", "ollama", "heuristic"), then the first provider whose API key is
+present in the environment, then the offline :class:`HeuristicProvider`.</p><p>Args:
+    prefer: Optional provider name to force.
+    **kwargs: Passed through to the chosen provider constructor.</p>
+</div>
 </section>
 <section class="api-module" id="subvocal-core-models">
 <h2>subvocal.core.models</h2>
@@ -360,11 +469,20 @@
 <h2>subvocal.core.pipeline</h2>
 <p>SubvocalPipeline class coordinating the hardware, classification, and execution layers.</p>
 <div class="api-member">
+<h3><code>class PipelineStats</code></h3>
+<p>Running counters for a pipeline instance, exposed as ``pipeline.stats``.</p>
+<div class="api-member">
+<h4>as_dict</h4>
+<pre><code>def as_dict(self) -&gt; dict[str, Any]</code></pre>
+<p>Returns the counters as a plain dictionary (for logging/export).</p>
+</div>
+</div>
+<div class="api-member">
 <h3><code>class SubvocalPipeline</code></h3>
 <p>Orchestrates hardware ingestion, classifier decoding, intent reconstruction, and action execution.</p>
 <div class="api-member">
 <h4>__init__</h4>
-<pre><code>def __init__(self, hardware: HardwareSource, classify_fn: Callable[[Frame], CommandToken | None], llm_provider: LLMProvider, context_provider: ContextProvider, executor: ActionExecutor, phrase_timeout_seconds: float = 1.5, policy_engine: Any | None = None, dry_run: bool = False, trace_path: str | None = None)</code></pre>
+<pre><code>def __init__(self, hardware: HardwareSource, classify_fn: Callable[[Frame], CommandToken | None], llm_provider: LLMProvider, context_provider: ContextProvider, executor: ActionExecutor, phrase_timeout_seconds: float = 1.5, policy_engine: Any | None = None, dry_run: bool = False, trace_path: str | None = None, raise_on_policy_violation: bool = False, on_token: Callable[[CommandToken], None] | None = None, on_intent: Callable[[Intent], None] | None = None, on_action: Callable[[Action, str], None] | None = None, on_error: Callable[[Exception], None] | None = None)</code></pre>
 <p>Initializes the subvocal pipeline.</p><p>Args:
     hardware: The hardware source to read sEMG frames from.
     classify_fn: A function that takes a Frame and returns an optional CommandToken.
@@ -376,7 +494,17 @@
     dry_run: If True, resolves intents and compiles actions but does not run them.
     trace_path: Destination JSONL file for execution traces. Defaults to
         ``pipeline_traces.jsonl`` inside the user data directory
-        (see :mod:`subvocal.paths`).</p>
+        (see :mod:`subvocal.paths`).
+    raise_on_policy_violation: If True, a policy rejection raises
+        :class:`subvocal.exceptions.PolicyViolationError` instead of
+        being silently traced.
+    on_token: Observer invoked with each classified CommandToken.
+    on_intent: Observer invoked with each reconstructed Intent.
+    on_action: Observer invoked with each terminal (action, status)
+        pair; status is one of SUCCESS, DRY_RUN, REJECTED_UNAUTHORIZED,
+        FAILED_CANNOT_EXECUTE.
+    on_error: Observer invoked with exceptions raised during phrase
+        processing. Observer failures are logged, never propagated.</p>
 </div>
 <div class="api-member">
 <h4>token_buffer</h4>
@@ -1364,20 +1492,6 @@ For classical models (RF, SVM), it fits a new pipeline on user data.</p>
 <section class="api-module" id="subvocal-mcp-server">
 <h2>subvocal.mcp.server</h2>
 <p>Model Context Protocol (MCP) reference server for Subvocal Middleware.</p>
-<div class="api-member">
-<h3><code>class MockLLMProvider(LLMProvider)</code></h3>
-<p>Fallback LLM Provider that maps command abbreviations to intents.</p>
-<div class="api-member">
-<h4>reconstruct_intent</h4>
-<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
-<p>No description.</p>
-</div>
-<div class="api-member">
-<h4>get_provider_name</h4>
-<pre><code>def get_provider_name(self) -&gt; str</code></pre>
-<p>No description.</p>
-</div>
-</div>
 <div class="api-member">
 <h3><code>class MockContextProvider(ContextProvider)</code></h3>
 <p>Exposes mock system context state.</p>
