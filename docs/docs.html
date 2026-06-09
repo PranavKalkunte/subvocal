@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <main data-page="opencode">
+  <main data-page="subvocal">
     <div data-component="container">
       
       <!-- Top Sticky Navigation Header -->
@@ -25,6 +25,9 @@
             </li>
             <li>
               <a href="./docs.html" aria-current="page">Docs</a>
+            </li>
+            <li>
+              <a href="./api.html">API</a>
             </li>
           </ul>
         </nav>
@@ -58,6 +61,7 @@
             <li><a href="./index.html" onclick="toggleMobileMenu()">Home</a></li>
             <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></li>
             <li><a href="./docs.html" aria-current="page" onclick="toggleMobileMenu()">Docs</a></li>
+            <li><a href="./api.html">API</a></li>
           </ul>
         </nav>
       </div>
@@ -72,6 +76,8 @@
             <li><a href="#introduction" aria-current="page"><span>[*]</span> Introduction</a></li>
             <li><a href="#quickstart"><span>[*]</span> Quickstart Guide</a></li>
             <li><a href="#development"><span>[*]</span> Local Development</a></li>
+            <li><a href="#mcp"><span>[*]</span> MCP Integration</a></li>
+            <li><a href="./api.html"><span>[*]</span> API Reference</a></li>
           </ul>
         </aside>
 
@@ -144,28 +150,17 @@
               The Subvocal SDK is structured as a monorepo containing modular packages:
             </p>
             <pre><code>subvocal/
-├── sdk/
-│   ├── shorthand/          # Compressed shorthand simulator & intent reconstructor
-│   │   ├── vocab.py        # 17-command phonetic target vocabulary
-│   │   ├── spec.py         # Shorthand grammar and sEMG phonetic clusters
-│   │   ├── simulator.py    # Physiological sEMG noise channel simulator
-│   │   ├── decoder.py      # Asymmetric Levenshtein & hybrid LLM decoder
-│   │   └── eval_runner.py  # 50-case benchmark execution harness
-│   ├── context/            # Pydantic schemas and search manager for user context
-│   │   ├── schema.py       # Contacts, Calendar, and AppState context models
-│   │   └── manager.py      # Phonetic context matching
-│   ├── tts/                # Zero-dependency local TTS audio feedback engine
-│   │   └── engine.py       # macOS native CLI say/afplay fallback + OpenAI Audio
-│   └── emg_core/           # Digital Signal Processing (DSP) & ML classifiers
-│       ├── config.py       # Central hardware and training configurations
-│       ├── dsp/
-│       │   ├── filters.py  # Reconciled 1.3-50 Hz bandpass and notch filters
-│       │   └── features.py # TD10 segment feature extraction (840 dims)
-│       └── ml/
-│           ├── train.py    # Random Forest, 1D CNN, and GRU PyTorch models
-│           ├── infer.py    # Unified InferenceEngine with confidence & cooldown gating
-│           └── model_io.py # Model serialization (.pth and .joblib)
-├── platform/               # Publishable specifications & documentation config
+├── src/subvocal/           # The installable package (pip install subvocal)
+│   ├── core/               # Data models, interfaces, pipeline, security policies, LLM providers
+│   ├── hardware/           # HAL drivers (file replay, synthetic, OpenBCI, Delsys) + dataset loaders
+│   ├── emg_core/           # DSP filters, TD10 features, ML classifiers (RF/CNN/GRU/Transformer)
+│   ├── shorthand/          # Phonetic shorthand vocabulary, simulator, hybrid decoder
+│   ├── context/            # User context schemas and phonetic context matching
+│   ├── mcp/                # Model Context Protocol stdio server (subvocal-mcp)
+│   └── tts/                # Multi-backend TTS feedback engine
+├── tests/                  # Pytest suite
+├── benchmarks/             # 50-case intent-reconstruction eval harnesses
+├── platform/               # Publishable specifications & documentation
 ├── LICENSE                 # MIT License
 └── README.md               # Monorepo overview</code></pre>
           </section>
@@ -174,37 +169,68 @@
           <section id="quickstart" class="docs-section-page" style="display: none;">
             <h2>Quickstart Guide</h2>
             <p>
-              Get your physiological signal pipeline running locally and execute intent-reconstruction tests in three steps.
+              Get a complete silent speech pipeline running offline in three steps.
             </p>
 
-            <h3>Step 1: Set up your local environment</h3>
+            <h3>Step 1: Install the SDK</h3>
             <p>
-              The Subvocal SDK operates fully offline and runs on standard Python environments. Install the modeling and deep learning packages:
+              The base install is lightweight (pydantic + numpy) and covers the pipeline, hardware drivers, shorthand decoding, context, and the MCP server:
             </p>
-            <pre><code>pip install pydantic scikit-learn joblib torch</code></pre>
+            <pre><code>pip install subvocal</code></pre>
+            <p>Optional extras pull in heavier subsystems:</p>
+            <pre><code>pip install "subvocal[ml]"        # classifier training & inference (torch, scikit-learn)
+pip install "subvocal[hardware]"  # public-dataset drivers (Ninapro, PutEMG, CSL-HDEMG)
+pip install "subvocal[tts]"       # audio feedback outside macOS
+pip install "subvocal[all]"       # everything</code></pre>
             <div class="docs-callout tip">
               <div class="docs-callout-title">Tip: CPU Inference Gating</div>
               PyTorch sequence models are configured by default to run on CPU threads. This avoids MPS device-pooling overhead on Apple Silicon, keeping gesture inference latencies under 1 millisecond.
             </div>
 
-            <h3>Step 2: Run verification tests</h3>
+            <h3>Step 2: Run an end-to-end pipeline</h3>
             <p>
-              Verify that the classifiers, DSP conditioning filters, and context managers compile and resolve correctly by running the test suite:
+              The following runs the full pipeline — synthetic sEMG source, classification, intent reconstruction, and action execution — with no hardware or API keys:
             </p>
-            <pre><code># Test 1: ML Core Classifiers (RF, CNN, GRU)
-python3 sdk/emg_core/test_ml.py
+            <pre><code>from subvocal import SubvocalPipeline
+from subvocal.core.testing import MockActionExecutor, MockContextProvider, MockLLMProvider
+from subvocal.hardware.drivers import SyntheticSignalGenerator
+from subvocal.core.models import CommandToken
+import time
 
-# Test 2: Shorthand Phonetic Alignment
-python3 sdk/shorthand/test_shorthand.py
+hardware = SyntheticSignalGenerator(fs=1000.0, num_channels=8)
 
-# Test 3: Context-Aware Intent Resolution
-python3 sdk/context/test_context.py</code></pre>
+def classify(frame):
+    arr = frame.to_numpy()
+    if abs(arr).max() > 1.0:
+        return CommandToken(text="gt", confidence=0.95, timestamp=time.time())
+    return None
+
+pipeline = SubvocalPipeline(
+    hardware=hardware,
+    classify_fn=classify,
+    llm_provider=MockLLMProvider(),
+    context_provider=MockContextProvider(),
+    executor=MockActionExecutor(),
+    phrase_timeout_seconds=0.5,
+)
+
+hardware.start()
+hardware.trigger_command("gt", duration_ms=120)
+for _ in range(30):
+    action = pipeline.step(window_ms=50)
+    if action:
+        print("Executed:", action.action_type, action.params)
+        break
+    time.sleep(0.05)</code></pre>
 
             <h3>Step 3: Execute target reconstruction benchmarks</h3>
             <p>
-              Run the evaluation harness to measure spelling shorthand reconstruction accuracy and execution latency under simulated physiological noise:
+              From a repository checkout, run the evaluation harness to measure spelling shorthand reconstruction accuracy and execution latency under simulated physiological noise:
             </p>
-            <pre><code>python3 sdk/shorthand/eval_runner.py</code></pre>
+            <pre><code>git clone https://github.com/PranavKalkunte/subvocal.git
+cd subvocal
+pip install -e ".[all,dev]"
+python benchmarks/eval_runner.py</code></pre>
             <div class="docs-callout note">
               <div class="docs-callout-title">Expected Results</div>
               The evaluation harness simulates muscle-movement biopotential noise across 50 realistic shorthand command scenarios (e.g. <code>g gl</code> -> <code>Google</code>), returning a baseline heuristic accuracy of <strong>74.0%</strong> at <strong>&lt;0.72 ms execution latency</strong>.
@@ -220,30 +246,39 @@ python3 sdk/context/test_context.py</code></pre>
 
             <h3>1. Custom Signal Preprocessing (DSP)</h3>
             <p>
-              Physiological raw signals ingest at 250 Hz. Signal conditioning routines are located in <code>sdk/emg_core/dsp/filters.py</code> and apply:
+              Physiological raw signals ingest at 250 Hz. Signal conditioning routines are located in <code>subvocal.emg_core.dsp.filters</code> and apply:
             </p>
             <ul>
               <li>An AlterEgo-inspired <strong>1.3–50.0 Hz bandpass filter</strong> designed to capture slow, low-velocity articulatory gestures.</li>
-              <li>A <strong>50 Hz notch filter</strong> to remove local AC line noise.</li>
-              <li>Time-domain feature extraction in <code>sdk/emg_core/dsp/features.py</code> yielding <strong>TD10 segment features</strong> (840-dimensional representations per segment window).</li>
+              <li>A <strong>60 Hz notch filter</strong> (configurable to 50 Hz for EU power grids) to remove AC line noise.</li>
+              <li>Time-domain feature extraction in <code>subvocal.emg_core.dsp.features</code> yielding <strong>TD10 segment features</strong> (840-dimensional representations per segment window).</li>
             </ul>
 
             <h3>2. Training Custom Classifiers</h3>
             <p>
-              Custom pipeline training skeletons are located in <code>sdk/emg_core/ml/train.py</code>. The SDK supports:
+              Custom pipeline training skeletons are located in <code>subvocal.emg_core.ml.train</code> (requires the <code>[ml]</code> extra). The SDK supports:
             </p>
             <ul>
               <li><strong>Random Forest</strong>: Standard lightweight heuristic baseline.</li>
               <li><strong>1D CNN</strong>: Temporal convolutional model mapping multi-channel muscle traces.</li>
               <li><strong>GRU (Gated Recurrent Unit)</strong>: Sequence model trained on temporal sEMG feature frames.</li>
+              <li><strong>Transformer</strong>: Small attention encoder over multi-channel segments.</li>
             </ul>
-            <pre><code># Example skeleton to train all models
-from sdk.emg_core.ml.train import train_all_models
-train_all_models(data_path="data/raw_gestures.pkl", save_dir="models/")</code></pre>
+            <pre><code># Train a 1D CNN on a user's recorded calibration data
+from subvocal.emg_core.ml.train import train_model
+from subvocal.emg_core.ml.config_schema import TrainingConfig
+
+config = TrainingConfig(model_type="cnn", epochs=20, batch_size=16, lr=1e-3, test_size=0.2)
+metrics = train_model("your_user_id", model_type="cnn", config_obj=config)
+print(metrics["accuracy"])</code></pre>
+            <div class="docs-callout note">
+              <div class="docs-callout-title">Where data and models live</div>
+              Calibration recordings and trained weights resolve to the per-user data directory; override with the <code>SUBVOCAL_DATA_DIR</code> and <code>SUBVOCAL_MODELS_DIR</code> environment variables.
+            </div>
 
             <h3>3. Live Inference & Cooldown Gating</h3>
             <p>
-              Inference is managed by a unified <code>InferenceEngine</code> in <code>sdk/emg_core/ml/infer.py</code>. It applies confidence thresholds and adaptive cooldown gating (e.g., ignoring predictions within 500ms of a successful trigger) to prevent duplicate gesture triggers in real time.
+              Inference is managed by a unified <code>InferenceEngine</code> in <code>subvocal.emg_core.ml.infer</code>. It applies confidence thresholds and adaptive cooldown gating (e.g., ignoring predictions within 500ms of a successful trigger) to prevent duplicate gesture triggers in real time.
             </p>
 
             <h3>4. Articulatory Shorthand Decoder Customization</h3>
@@ -251,7 +286,7 @@ train_all_models(data_path="data/raw_gestures.pkl", save_dir="models/")</code></
               Rather than classifying whole words (which degrades rapidly beyond small vocabularies), users speak compressed phonetic consonant shorthand (e.g. <code>g gl</code> for <code>Google</code>).
             </p>
             <p>
-              The decoder in <code>sdk/shorthand/decoder.py</code> aligns shorthand strings using a custom dynamic programming cost matrix (Asymmetric Levenshtein) configured with biological muscle confusion groups in <code>sdk/shorthand/spec.py</code>:
+              The decoder in <code>subvocal.shorthand.decoder</code> aligns shorthand strings using a custom dynamic programming cost matrix (Asymmetric Levenshtein) configured with biological muscle confusion groups in <code>subvocal.shorthand.spec</code>:
             </p>
             <ul>
               <li><strong>Labial</strong>: physical gestures overlap (`p`, `b`, `m`, `f`, `v`).</li>
@@ -260,13 +295,48 @@ train_all_models(data_path="data/raw_gestures.pkl", save_dir="models/")</code></
               <li><strong>Rhotic</strong>: throat muscle movement (`r`).</li>
             </ul>
             <p>
-              Consonant omissions are weighted based on biological gesture overlap. Update the target vocabulary directly in <code>sdk/shorthand/vocab.py</code> to adapt command priorities.
+              Consonant omissions are weighted based on biological gesture overlap. Update the target vocabulary directly in <code>subvocal.shorthand.vocab</code> to adapt command priorities.
             </p>
 
             <h3>5. Zero-Dependency TTS Engine</h3>
             <p>
-              Located in <code>sdk/tts/engine.py</code>, the speech feedback system operates offline with zero external service requirements. It defaults to macOS system commands (<code>say</code> and <code>afplay</code>) to provide local audio confirmations.
+              Located in <code>subvocal.tts.engine</code>, the speech feedback system operates offline with zero external service requirements. It defaults to macOS system commands (<code>say</code> and <code>afplay</code>) to provide local audio confirmations.
             </p>
+          </section>
+
+          <!-- MCP Integration Section -->
+          <section id="mcp" class="docs-section-page" style="display: none;">
+            <h2>MCP Integration</h2>
+            <p>
+              The SDK ships a stdio-based <strong>Model Context Protocol</strong> server so Claude Desktop — or any MCP-compatible client — can ingest subvocal commands as standard tool calls. It installs as a console command:
+            </p>
+            <pre><code>subvocal-mcp</code></pre>
+
+            <h3>Claude Desktop configuration</h3>
+            <p>Add the server to <code>claude_desktop_config.json</code>:</p>
+            <pre><code>{
+  "mcpServers": {
+    "subvocal": { "command": "subvocal-mcp" }
+  }
+}</code></pre>
+
+            <h3>Exposed tools</h3>
+            <ul>
+              <li><strong>get_pipeline_status</strong>: Reports hardware connection, classifier model, and buffer state.</li>
+              <li><strong>get_token_buffer</strong>: Returns the accumulated command tokens awaiting phrase reconstruction.</li>
+              <li><strong>inject_token</strong>: Injects a shorthand token into the pipeline buffer (useful for testing without hardware).</li>
+              <li><strong>process_phrase</strong>: Forces immediate intent reconstruction and action dispatch on the buffered tokens.</li>
+              <li><strong>trigger_calibration</strong>: Starts a per-user classifier calibration run in the background (requires the <code>[ml]</code> extra).</li>
+            </ul>
+
+            <h3>Resources</h3>
+            <p>
+              The server also exposes <code>subvocal://intent/history</code>, a JSON log of recently executed intents, as an MCP resource.
+            </p>
+            <div class="docs-callout note">
+              <div class="docs-callout-title">Protocol details</div>
+              The server implements JSON-RPC 2.0 over stdio against protocol version <code>2025-03-26</code> with zero third-party dependencies. The full low-bandwidth intent profile proposal lives in <code>platform/mcp_intent_profile.md</code>.
+            </div>
           </section>
 
         </article>
@@ -322,7 +392,7 @@ train_all_models(data_path="data/raw_gestures.pkl", save_dir="models/")</code></
 
     // Docs page router
     function initRouter() {
-      const pages = ['introduction', 'quickstart', 'development'];
+      const pages = ['introduction', 'quickstart', 'development', 'mcp'];
       const sidebarLinks = document.querySelectorAll('.docs-sidebar a');
       const sections = document.querySelectorAll('.docs-section-page');
 

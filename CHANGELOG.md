@@ -12,7 +12,7 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 *   **`subvocal-mcp` Console Command**: The MCP stdio server installs as an entry point.
 *   **Writable Path Resolution**: `subvocal.paths` resolves per-user data/model directories (overridable via `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR`), replacing package-relative paths that break after installation; `SubvocalPipeline` accepts a `trace_path` parameter.
 *   **CI Quality Gates**: GitHub Actions matrix (Python 3.10–3.12) running ruff, pyright, pytest with coverage, license audit, and a packaging job that builds, twine-checks, and smoke-tests the wheel in a clean environment.
-*   **Documentation Site**: Full Docusaurus site configuration under `docs/` containing detailed guides for getting-started, custom agents, hardware abstractions, LLM systems, context, MCP integration, and model calibration.
+*   **Documentation Site**: Static GitHub Pages site under `docs/` with a landing page, quickstart/development/MCP guides, and an auto-generated API reference (`tools/build_api_page.py`).
 *   **API Auto-Generation**: AST-based python docstring parser in `tools/generate_api_docs.py` to compile Markdown pages directly from code.
 *   **Walkthrough Notebook**: Google Colab-compatible Jupyter notebook `notebooks/subvocal_walkthrough.ipynb` demonstrating the end-to-end signal-to-intent pipeline.
 *   **E2E Smoke Tests**: Added `sdk/core/test_smoke.py` simulating full pipelines.

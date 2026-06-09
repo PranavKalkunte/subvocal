@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <main data-page="opencode">
+  <main data-page="subvocal">
     <div data-component="container">
       
       <!-- Top Sticky Navigation Header -->
@@ -25,6 +25,9 @@
             </li>
             <li>
               <a href="./docs.html">Docs</a>
+            </li>
+            <li>
+              <a href="./api.html">API</a>
             </li>
           </ul>
         </nav>
@@ -58,6 +61,7 @@
             <li><a href="./index.html" onclick="toggleMobileMenu()">Home</a></li>
             <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></li>
             <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./api.html">API</a></li>
           </ul>
         </nav>
       </div>
@@ -85,10 +89,10 @@
               
               <div data-slot="panels">
                 <div data-slot="panel" id="panel-pip" aria-hidden="false">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'pip install subvocal-sdk')">
+                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'pip install subvocal')">
                     <span data-slot="command-script">
                       <span>pip install </span>
-                      <span data-slot="highlight">subvocal-sdk</span>
+                      <span data-slot="highlight">subvocal</span>
                     </span>
                     <div data-component="copy-status">
                       <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -119,10 +123,10 @@
                 </div>
                 
                 <div data-slot="panel" id="panel-verify" aria-hidden="true" style="display: none;">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'PYTHONPATH=sdk python3 -m unittest discover -s sdk')">
+                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'pip install -e &quot;.[all,dev]&quot; &amp;&amp; pytest')">
                     <span data-slot="command-script">
-                      <span>PYTHONPATH=sdk python3 -m </span>
-                      <span data-slot="highlight">unittest discover -s sdk</span>
+                      <span>pip install -e ".[all,dev]" &amp;&amp; </span>
+                      <span data-slot="highlight">pytest</span>
                     </span>
                     <div data-component="copy-status">
                       <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -136,10 +140,10 @@
                 </div>
                 
                 <div data-slot="panel" id="panel-bench" aria-hidden="true" style="display: none;">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'python3 sdk/shorthand/eval_runner.py')">
+                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'python benchmarks/eval_runner.py')">
                     <span data-slot="command-script">
-                      <span>python3 </span>
-                      <span data-slot="highlight">sdk/shorthand/eval_runner.py</span>
+                      <span>python </span>
+                      <span data-slot="highlight">benchmarks/eval_runner.py</span>
                     </span>
                     <div data-component="copy-status">
                       <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -190,7 +194,7 @@
             <li>
               <span>[*]</span>
               <div>
-                <strong>Classifier Skeletons:</strong> Train Random Forest, 1D CNN, and GRU model topologies locally on raw traces.
+                <strong>Classifier Skeletons:</strong> Train Random Forest, 1D CNN, GRU, and Transformer model topologies locally on raw traces.
               </div>
             </li>
             <li>
