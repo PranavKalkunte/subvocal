@@ -16,8 +16,19 @@ Optional subsystems live in subpackages and may require extras:
 import logging
 
 from .core.interfaces import ActionExecutor, ContextProvider, HardwareSource, LLMProvider
+from .core.llm_providers import HeuristicProvider, resolve_provider
 from .core.models import Action, CommandToken, Frame, Intent, Sample
-from .core.pipeline import SubvocalPipeline
+from .core.pipeline import PipelineStats, SubvocalPipeline
+from .exceptions import (
+    CalibrationError,
+    ConfigurationError,
+    DecodingError,
+    HardwareError,
+    MissingDependencyError,
+    PolicyViolationError,
+    ProviderError,
+    SubvocalError,
+)
 from .paths import get_data_dir, get_models_dir
 
 __version__ = "1.0.0rc1"
@@ -35,7 +46,18 @@ __all__ = [
     "ActionExecutor",
     "ContextProvider",
     "SubvocalPipeline",
+    "PipelineStats",
+    "HeuristicProvider",
+    "resolve_provider",
     "get_data_dir",
     "get_models_dir",
+    "SubvocalError",
+    "ConfigurationError",
+    "HardwareError",
+    "MissingDependencyError",
+    "ProviderError",
+    "DecodingError",
+    "PolicyViolationError",
+    "CalibrationError",
     "__version__",
 ]

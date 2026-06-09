@@ -12,6 +12,7 @@ import numpy as np
 
 from subvocal.core.interfaces import HardwareSource
 from subvocal.core.models import Frame, Sample
+from subvocal.exceptions import HardwareError, MissingDependencyError
 
 
 class FileReplayDriver(HardwareSource):
@@ -65,7 +66,7 @@ class FileReplayDriver(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected:
-            raise RuntimeError("Driver is not started. Call start() before reading frames.")
+            raise HardwareError("Driver is not started. Call start() before reading frames.")
 
         now = time.time()
         num_samples = int((window_ms / 1000.0) * self.fs)
@@ -154,7 +155,7 @@ class SyntheticSignalGenerator(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected:
-            raise RuntimeError("Signal generator not started.")
+            raise HardwareError("Signal generator not started.")
 
         now = time.time()
         num_samples = int((window_ms / 1000.0) * self.fs)
@@ -236,7 +237,7 @@ class OpenBCICytonDriver(HardwareSource):
                 if self.port:
                     self._params.serial_port = self.port
         except ImportError as e:
-            raise ImportError(
+            raise MissingDependencyError(
                 "BrainFlow is required to use the OpenBCICytonDriver. "
                 "Please install it using: pip install brainflow"
             ) from e
@@ -269,7 +270,7 @@ class OpenBCICytonDriver(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected or not self._board:
-            raise RuntimeError("OpenBCI board is not streaming. Call start().")
+            raise HardwareError("OpenBCI board is not streaming. Call start().")
 
         now = time.time()
         fs = self._BoardShim.get_sampling_rate(self._board_id)
@@ -341,7 +342,7 @@ class DelsysTrignoDriver(HardwareSource):
             self._sample_counter = 0
         except Exception as e:
             self.stop()
-            raise RuntimeError(f"Failed to connect to Delsys Trigno Utility at {self.host}: {e}") from e
+            raise HardwareError(f"Failed to connect to Delsys Trigno Utility at {self.host}: {e}") from e
 
     def stop(self) -> None:
         # Send STOP to command station
@@ -367,7 +368,7 @@ class DelsysTrignoDriver(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected or not self._data_socket:
-            raise RuntimeError("Trigno data stream is offline.")
+            raise HardwareError("Trigno data stream is offline.")
 
         now = time.time()
         num_samples = int((window_ms / 1000.0) * self.fs)
@@ -398,7 +399,7 @@ class DelsysTrignoDriver(HardwareSource):
         samples = []
         parsed_samples = len(raw_data) // packet_size
         if parsed_samples == 0:
-            raise RuntimeError(
+            raise HardwareError(
                 f"DelsysTrignoDriver: no data received from {self.host}:{self.data_port} within 100 ms timeout"
             )
 
