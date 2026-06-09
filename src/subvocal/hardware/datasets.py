@@ -8,6 +8,7 @@ import numpy as np
 
 from subvocal.core.interfaces import HardwareSource
 from subvocal.core.models import Frame, Sample
+from subvocal.exceptions import HardwareError, MissingDependencyError
 
 
 class NinaproDriver(HardwareSource):
@@ -36,7 +37,7 @@ class NinaproDriver(HardwareSource):
         try:
             import scipy.io
         except ImportError as e:
-            raise ImportError(
+            raise MissingDependencyError(
                 "scipy is required to use the NinaproDriver. "
                 'Install it with: pip install "subvocal[hardware]"'
             ) from e
@@ -68,7 +69,7 @@ class NinaproDriver(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected:
-            raise RuntimeError("Ninapro stream is not started.")
+            raise HardwareError("Ninapro stream is not started.")
 
         now = time.time()
         num_samples = int((window_ms / 1000.0) * self.fs)
@@ -122,7 +123,7 @@ class PutEMGDriver(HardwareSource):
             import h5py
             self._h5py = h5py
         except ImportError as e:
-            raise ImportError(
+            raise MissingDependencyError(
                 "h5py is required to use the PutEMGDriver. "
                 'Install it with: pip install "subvocal[hardware]"'
             ) from e
@@ -173,7 +174,7 @@ class PutEMGDriver(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected or self._emg_dataset is None:
-            raise RuntimeError("PutEMG stream is not started.")
+            raise HardwareError("PutEMG stream is not started.")
 
         now = time.time()
         num_samples = int((window_ms / 1000.0) * self.fs)
@@ -271,7 +272,7 @@ class CSLHDEMGDriver(HardwareSource):
 
     def read_frame(self, window_ms: int) -> Frame:
         if not self._connected:
-            raise RuntimeError("CSL-HDEMG stream is offline.")
+            raise HardwareError("CSL-HDEMG stream is offline.")
 
         now = time.time()
         num_samples = int((window_ms / 1000.0) * self.fs)

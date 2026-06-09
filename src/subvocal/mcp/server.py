@@ -4,45 +4,18 @@ import json
 import sys
 import threading
 import time
-import uuid
 from typing import Any
 
 from subvocal import __version__ as _SDK_VERSION
 from subvocal.context.schema import AppState, UserContext
-from subvocal.core.interfaces import ActionExecutor, ContextProvider, LLMProvider
-from subvocal.core.models import Action, CommandToken, Intent
+from subvocal.core.interfaces import ActionExecutor, ContextProvider
+from subvocal.core.llm_providers import HeuristicProvider
+from subvocal.core.models import Action, CommandToken
 from subvocal.core.pipeline import SubvocalPipeline
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Mock Implementations for Reference Running
 # ══════════════════════════════════════════════════════════════════════════════
-
-class MockLLMProvider(LLMProvider):
-    """Fallback LLM Provider that maps command abbreviations to intents."""
-    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
-        shorthand = " ".join([t.text for t in tokens])
-        # Simple heuristic mappings
-        command = "GOTO"
-        arguments = [shorthand]
-        if "clk" in shorthand.lower():
-            command = "CLICK"
-        elif "typ" in shorthand.lower():
-            command = "TYPE"
-            arguments = [shorthand.replace("typ", "").strip()]
-
-        return Intent(
-            command=command,
-            arguments=arguments,
-            resolved_text=f"{command} {', '.join(arguments)}",
-            raw_shorthand=shorthand,
-            confidence=0.9,
-            timestamp=time.time(),
-            context_snapshot_id=str(uuid.uuid4())
-        )
-
-    def get_provider_name(self) -> str:
-        return "mock_mcp_llm"
-
 
 class MockContextProvider(ContextProvider):
     """Exposes mock system context state."""
@@ -93,7 +66,7 @@ class SubvocalMCPServer:
             self.classify_fn = lambda f: None
             self.model_status = "Fallback (No Model)"
 
-        self.llm = MockLLMProvider()
+        self.llm = HeuristicProvider()
         self.context = MockContextProvider()
         self.executor = MockActionExecutor()
 

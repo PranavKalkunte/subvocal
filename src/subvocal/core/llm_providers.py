@@ -2,20 +2,27 @@
 """
 
 import json
+import logging
 import os
 import time
 import urllib.error
 import urllib.request
 
 from subvocal.context.schema import UserContext
+from subvocal.exceptions import ConfigurationError, ProviderError
 
 from .interfaces import LLMProvider
 from .models import CommandToken, Intent
 from .prompts import PromptManager
 
+logger = logging.getLogger(__name__)
+
 
 class BaseLLMProvider(LLMProvider):
     """Base provider containing prompt formatting and request helpers."""
+
+    #: HTTP status codes that are retried with exponential backoff.
+    RETRYABLE_STATUS = frozenset({408, 429, 500, 502, 503, 504})
 
     def __init__(
         self,
@@ -23,6 +30,9 @@ class BaseLLMProvider(LLMProvider):
         model_name: str | None = None,
         mock_response: str | None = None,
         prompt_version: str = "v1",
+        timeout: float = 10.0,
+        max_retries: int = 2,
+        backoff_seconds: float = 0.5,
     ):
         """Initializes the base LLM provider.
 
@@ -31,17 +41,28 @@ class BaseLLMProvider(LLMProvider):
             model_name: Name of the LLM model to request.
             mock_response: Optional mock string response to bypass HTTP calls (for testing).
             prompt_version: The version string of the prompt template to use.
+            timeout: Per-request HTTP timeout in seconds.
+            max_retries: Additional attempts after the first failure for transient
+                errors (connection failures and retryable HTTP statuses).
+            backoff_seconds: Base delay for exponential backoff between retries.
         """
+        if timeout <= 0:
+            raise ConfigurationError("timeout must be positive")
+        if max_retries < 0:
+            raise ConfigurationError("max_retries must be >= 0")
         self.api_key = api_key
         self.model_name = model_name
         self.mock_response = mock_response
         self.prompt_version = prompt_version
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.backoff_seconds = backoff_seconds
         self._prompt_mgr = PromptManager(default_version=prompt_version)
 
     def _get_api_key(self, env_var: str) -> str:
         key = self.api_key or os.environ.get(env_var)
         if not key and not self.mock_response:
-            raise ValueError(
+            raise ConfigurationError(
                 f"Missing API key. Please specify it in the constructor or set the environment variable '{env_var}'."
             )
         return key or ""
@@ -51,15 +72,32 @@ class BaseLLMProvider(LLMProvider):
         if self.mock_response is not None:
             return self.mock_response
 
-        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=10) as response:
-                return response.read().decode("utf-8")
-        except urllib.error.HTTPError as e:
-            err_body = e.read().decode("utf-8") if e.fp else ""
-            raise RuntimeError(f"HTTP request to {url} failed with status {e.code}: {e.reason}. Detail: {err_body}") from e
-        except Exception as e:
-            raise RuntimeError(f"Failed to connect to {url}: {e}") from e
+        last_error: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as response:
+                    return response.read().decode("utf-8")
+            except urllib.error.HTTPError as e:
+                err_body = e.read().decode("utf-8") if e.fp else ""
+                last_error = ProviderError(
+                    f"HTTP request to {url} failed with status {e.code}: {e.reason}. Detail: {err_body}"
+                )
+                last_error.__cause__ = e
+                if e.code not in self.RETRYABLE_STATUS:
+                    raise last_error from e
+            except Exception as e:
+                last_error = ProviderError(f"Failed to connect to {url}: {e}")
+                last_error.__cause__ = e
+            if attempt < self.max_retries:
+                delay = self.backoff_seconds * (2 ** attempt)
+                logger.warning(
+                    "Provider request failed (attempt %d/%d), retrying in %.1fs: %s",
+                    attempt + 1, self.max_retries + 1, delay, last_error,
+                )
+                time.sleep(delay)
+        assert last_error is not None
+        raise last_error
 
     def _format_context(self, context: UserContext) -> dict[str, str]:
         """Utility to format structured context into raw strings for prompts."""
@@ -318,3 +356,93 @@ class LlamaProvider(BaseLLMProvider):
             output = res_json["choices"][0]["message"]["content"]
 
         return self._parse_llm_output(output, raw_shorthand, mean_conf)
+
+
+class HeuristicProvider(LLMProvider):
+    """Fully offline intent reconstruction using the articulatory-distance decoder.
+
+    Resolves shorthand phrases against the command vocabulary and the active
+    user context with no network access or API keys. Useful as a development
+    default, an air-gapped deployment mode, and a graceful fallback when no
+    LLM credentials are configured (see :func:`resolve_provider`).
+    """
+
+    def __init__(self, min_confidence: float = 0.0):
+        """Initializes the heuristic provider.
+
+        Args:
+            min_confidence: Confidence floor below which the intent command is
+                reported as UNKNOWN rather than a low-quality guess.
+        """
+        self.min_confidence = min_confidence
+
+    def get_provider_name(self) -> str:
+        return "heuristic"
+
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
+        from subvocal.shorthand.decoder import heuristic_decode_phrase
+
+        raw_shorthand = " ".join(t.text for t in tokens)
+        resolved, confidence = heuristic_decode_phrase(
+            raw_shorthand,
+            ui_elements=[el.label for el in context.app_state.visible_elements],
+            contacts=[c.name for c in context.contacts],
+            calendar_events=[e.title for e in context.calendar],
+        )
+
+        parts = resolved.split()
+        if not parts or confidence < self.min_confidence:
+            return Intent(
+                command="UNKNOWN",
+                arguments=parts,
+                confidence=confidence,
+                resolved_text=resolved,
+                raw_shorthand=raw_shorthand,
+                timestamp=time.time(),
+            )
+
+        return Intent(
+            command=parts[0].upper(),
+            arguments=parts[1:],
+            confidence=confidence,
+            resolved_text=resolved,
+            raw_shorthand=raw_shorthand,
+            timestamp=time.time(),
+        )
+
+
+def resolve_provider(prefer: str | None = None, **kwargs) -> LLMProvider:
+    """Returns the best available LLM provider for this environment.
+
+    Selection order: an explicit ``prefer`` name ("anthropic", "openai",
+    "gemini", "ollama", "heuristic"), then the first provider whose API key is
+    present in the environment, then the offline :class:`HeuristicProvider`.
+
+    Args:
+        prefer: Optional provider name to force.
+        **kwargs: Passed through to the chosen provider constructor.
+    """
+    by_name: dict[str, type[LLMProvider]] = {
+        "anthropic": ClaudeProvider,
+        "openai": OpenAIProvider,
+        "gemini": GeminiProvider,
+        "ollama": LlamaProvider,
+        "heuristic": HeuristicProvider,
+    }
+    if prefer:
+        name = prefer.lower()
+        if name not in by_name:
+            raise ConfigurationError(
+                f"Unknown provider '{prefer}'. Choose from: {', '.join(sorted(by_name))}"
+            )
+        return by_name[name](**kwargs)
+
+    env_order = [
+        ("ANTHROPIC_API_KEY", ClaudeProvider),
+        ("OPENAI_API_KEY", OpenAIProvider),
+        ("GEMINI_API_KEY", GeminiProvider),
+    ]
+    for env_var, cls in env_order:
+        if os.environ.get(env_var):
+            return cls(**kwargs)
+    return HeuristicProvider()
