@@ -13,6 +13,9 @@ import urllib.error
 from typing import Optional
 
 from subvocal.tts.schema import TTSConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TTSEngine:
@@ -43,7 +46,7 @@ class TTSEngine:
             return ""
             
         clean_text = text.strip()
-        print(f"[TTS Engine] Synthesizing: '{clean_text}'")
+        logger.info("Synthesizing: %r", clean_text)
         
         # Generate safe file name
         if not filename:
@@ -74,7 +77,7 @@ class TTSEngine:
             return abs_output_path
             
         # 4. Fallback to console warning if no TTS works
-        print(f"[TTS Warning] Playing offline fallback audio simulation: (Beep) \"{clean_text}\"")
+        logger.warning("Playing offline fallback audio simulation: (Beep) %r", clean_text)
         return ""
 
     def _synthesize_openai(self, text: str, dest_path: str) -> bool:
@@ -83,7 +86,7 @@ class TTSEngine:
         if not api_key:
             return False
             
-        print("[TTS Engine] Attempting OpenAI Cloud TTS...")
+        logger.info("Attempting OpenAI Cloud TTS...")
         url = "https://api.openai.com/v1/audio/speech"
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -105,18 +108,18 @@ class TTSEngine:
             with urllib.request.urlopen(req, timeout=10) as response:
                 with open(dest_path, "wb") as f:
                     f.write(response.read())
-            print(f"[TTS Engine] OpenAI TTS synthesis success: {dest_path}")
+            logger.info("OpenAI TTS synthesis success: %s", dest_path)
             return True
         except urllib.error.URLError as e:
-            print(f"[TTS Engine Error] OpenAI API call failed: {e}")
+            logger.error("OpenAI API call failed: %s", e)
         except Exception as e:
-            print(f"[TTS Engine Error] OpenAI TTS general failure: {e}")
+            logger.error("OpenAI TTS general failure: %s", e)
             
         return False
 
     def _synthesize_macos(self, text: str, dest_path: str) -> bool:
         """Synthesize audio using macOS native `say` terminal command."""
-        print("[TTS Engine] Attempting macOS native 'say' utility...")
+        logger.info("Attempting macOS native 'say' utility...")
         try:
             # macOS native say defaults to AIFF. If wav is requested, we can use say's wave export
             # syntax: say -o output.wav --data-format=LEI16@22050
@@ -145,17 +148,17 @@ class TTSEngine:
             cmd.append(text)
             
             subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            print(f"[TTS Engine] macOS Native TTS synthesis success: {dest_path}")
+            logger.info("macOS native TTS synthesis success: %s", dest_path)
             return True
         except (subprocess.SubprocessError, FileNotFoundError) as e:
-            print(f"[TTS Engine Error] macOS native 'say' utility failed: {e}")
+            logger.error("macOS native 'say' utility failed: %s", e)
         return False
 
     def _synthesize_pyttsx3(self, text: str, dest_path: str) -> bool:
         """Fallback to offline pyttsx3 library."""
         try:
             import pyttsx3
-            print("[TTS Engine] Attempting pyttsx3 offline TTS library...")
+            logger.info("Attempting pyttsx3 offline TTS library...")
             engine = pyttsx3.init()
             
             # Configure speed
@@ -170,13 +173,13 @@ class TTSEngine:
             engine.say(text)
             engine.runAndWait()
             
-            print(f"[TTS Engine] pyttsx3 synthesis success: {dest_path}")
+            logger.info("pyttsx3 synthesis success: %s", dest_path)
             return True
         except ImportError:
             # pyttsx3 package is not installed
             pass
         except Exception as e:
-            print(f"[TTS Engine Error] pyttsx3 offline TTS failed: {e}")
+            logger.error("pyttsx3 offline TTS failed: %s", e)
         return False
 
     def _play_audio_file(self, file_path: str):
@@ -189,7 +192,7 @@ class TTSEngine:
                 # Play using macOS native afplay tool
                 subprocess.Popen(["afplay", file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception as e:
-                print(f"[TTS Engine Error] Local audio playback failed: {e}")
+                logger.error("Local audio playback failed: %s", e)
         else:
             # Non-mac offline playback could be implemented with play/aplay if needed
             pass

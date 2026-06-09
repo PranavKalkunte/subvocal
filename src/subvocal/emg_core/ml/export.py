@@ -9,6 +9,9 @@ from typing import Dict, Any
 from subvocal.emg_core import config
 from subvocal.emg_core.ml.model_io import load_model, save_model
 from subvocal.emg_core.ml.train import EMG1DCNN, EMGGRU, EMGTransformer, load_dataset, preprocess_segments, train_test_split
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def export_to_onnx(user_id: str, model_type: str, export_path: str) -> str:
@@ -55,7 +58,7 @@ def export_to_onnx(user_id: str, model_type: str, export_path: str) -> str:
         dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
         opset_version=14
     )
-    print(f"Model exported successfully to ONNX: {export_path}")
+    logger.info("Model exported successfully to ONNX: %s", export_path)
     return export_path
 
 
@@ -66,7 +69,7 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
     """
     try:
         import coremltools as ct
-        print("coremltools found. Starting Core ML conversion...")
+        logger.info("coremltools found. Starting Core ML conversion...")
         
         # Load model metadata
         model_data = load_model(user_id, model_type)
@@ -101,14 +104,14 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
         )
         os.makedirs(os.path.dirname(os.path.abspath(export_path)), exist_ok=True)
         mlmodel.save(export_path)
-        print(f"Model successfully converted to Core ML: {export_path}")
+        logger.info("Model successfully converted to Core ML: %s", export_path)
         return True
 
     except ImportError:
-        print("[Warning] coremltools package not installed. Skipping Core ML compilation.")
+        logger.warning("coremltools package not installed. Skipping Core ML compilation.")
         return False
     except Exception as e:
-        print(f"[Warning] Core ML compilation failed: {e}")
+        logger.warning("Core ML compilation failed: %s", e)
         return False
 
 
@@ -139,7 +142,7 @@ def export_to_tflite(user_id: str, model_type: str, export_path: str) -> bool:
         )
         if result.returncode != 0:
             raise RuntimeError(f"tf2onnx conversion failed: {result.stderr}")
-        print(f"Model exported to TFLite: {export_path}")
+        logger.info("Model exported to TFLite: %s", export_path)
         return True
     finally:
         if os.path.exists(onnx_temp):
@@ -245,17 +248,17 @@ def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) 
 
         accuracy_drop = acc_fp32 - acc_int8
     except RuntimeError as e:
-        print(f"[Warning] Quantization engine failed: {e}. Skipping dynamic quantization.")
+        logger.warning("Quantization engine failed: %s. Skipping dynamic quantization.", e)
         return {
             "accuracy_fp32": acc_fp32,
             "accuracy_int8": acc_fp32,
             "accuracy_drop": 0.0,
             "status": "SKIPPED_NO_ENGINE"
         }
-    print(f"\n[{model_type.upper()} Quantization Check]")
-    print(f"FP32 Accuracy: {acc_fp32:.4f}")
-    print(f"INT8 Accuracy: {acc_int8:.4f}")
-    print(f"Accuracy Drop: {accuracy_drop:.4f} (Threshold: {threshold:.4f})")
+    logger.info("%s quantization check", model_type.upper())
+    logger.info("FP32 accuracy: %.4f", acc_fp32)
+    logger.info("INT8 accuracy: %.4f", acc_int8)
+    logger.info("Accuracy drop: %.4f (threshold: %.4f)", accuracy_drop, threshold)
 
     # Accuracy regression check
     if accuracy_drop > threshold:
@@ -278,7 +281,7 @@ def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) 
     
     quant_type = f"{model_type}_quantized"
     save_model(quant_model_data, user_id, model_type=quant_type)
-    print(f"Quantized model successfully saved to model type: {quant_type}")
+    logger.info("Quantized model successfully saved to model type: %s", quant_type)
 
     return {
         "accuracy_fp32": acc_fp32,

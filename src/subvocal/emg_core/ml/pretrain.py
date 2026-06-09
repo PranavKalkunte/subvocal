@@ -4,6 +4,9 @@ import os
 import numpy as np
 from subvocal.emg_core import config
 from subvocal.emg_core.ml.train import train_model, TrainingConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def generate_synthetic_dataset(user_id: str = "pretrained", num_classes: int = 5, segments_per_class: int = 40):
@@ -36,7 +39,7 @@ def generate_synthetic_dataset(user_id: str = "pretrained", num_classes: int = 5
 
     data_path = os.path.join(config.DATA_DIR, f"{user_id}_calib.npz")
     np.savez(data_path, segments=segments, labels=labels)
-    print(f"Synthetic pre-training dataset saved to {data_path} ({len(segments)} segments, {num_classes} classes)")
+    logger.info("Synthetic pre-training dataset saved to %s (%d segments, %d classes)", data_path, len(segments), num_classes)
 
 
 def run_pretraining():
@@ -54,10 +57,10 @@ def run_pretraining():
     }
 
     for model_type in ["cnn", "gru", "transformer"]:
-        print(f"\n--- Pre-training Model: {model_type.upper()} ---")
+        logger.info("Pre-training model: %s", model_type.upper())
         cfg = TrainingConfig(model_type=model_type, **base_cfg)
         metrics = train_model(user_id, model_type=model_type, config_obj=cfg)
-        print(f"Pre-training {model_type} accuracy: {metrics['accuracy']:.4f}")
+        logger.info("Pre-training %s accuracy: %.4f", model_type, metrics["accuracy"])
 
 
 if __name__ == "__main__":
