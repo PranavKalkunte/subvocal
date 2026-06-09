@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Release Process | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html" aria-current="page"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal SDK SemVer and Release Process Specification</h1>
+<p><strong>Status:</strong> Proposed<br />
+<strong>Version:</strong> v0.1.0-alpha<br />
+<strong>Date:</strong> June 2026<br />
+<strong>Audience:</strong> Platform Maintainers, Community Contributors  </p>
+<hr />
+<h2>1. Semantic Versioning (SemVer) Policy</h2>
+<p>The Subvocal SDK follows the standard Semantic Versioning 2.0.0 specification (<code>MAJOR.MINOR.PATCH</code>), customized for a pluggable middleware framework:</p>
+<h3>Major Version Bump (<code>X.0.0</code>)</h3>
+<p>A major version bump is triggered by <strong>backwards-incompatible changes</strong> to the public API surface. Examples include:
+* Modifying abstract base class signatures in <code>sdk/core/interfaces.py</code> (e.g., changing parameter definitions or return types of <code>HardwareSource.read_frame</code> or <code>LLMProvider.reconstruct_intent</code>).
+* Removing or renaming fields in core data models in <code>sdk/core/models.py</code>.
+* Altering the execution flow or constructor requirements of the <code>SubvocalPipeline</code> orchestrator.
+* Breaking changes to the Model Context Protocol (MCP) tool schemas exposed to LLM clients.</p>
+<h3>Minor Version Bump (<code>0.Y.0</code> or <code>X.Y.0</code>)</h3>
+<p>A minor version bump represents <strong>backwards-compatible feature additions</strong>. Examples include:
+* Adding new subclass implementations of abstract interfaces (e.g., a new <code>OpenBCI</code> hardware driver, a new local <code>Llama</code> LLM adapter, or an app-specific context provider).
+* Introducing non-breaking, optional utility methods to existing classes or models.
+* Exposing new optional parameters in Pydantic models or configuration schema.</p>
+<h3>Patch Version Bump (<code>0.Y.Z</code> or <code>X.Y.Z</code>)</h3>
+<p>A patch version bump covers <strong>backwards-compatible bug fixes and optimizations</strong>. Examples include:
+* Adjusting signal-processing filter thresholds (e.g. tuning the 60 Hz notch filter parameters).
+* Tuning prompt templates in the <code>shorthand/decoder.py</code> module to improve intent reconstruction accuracy.
+* Resolving platform or operating system specific bugs (e.g., resolving MPS/CPU pooling issues in PyTorch inference).
+* Correcting typos in documentation or improving error messages.</p>
+<hr />
+<h2>2. Release Cadence and Lifecycle</h2>
+<p>We structure our release cadence around three lifecycle phases to balance developer safety with rapid feature iteration:</p>
+<pre><code>[ Experimental Features ] ──&gt; ( v0.1.0-alpha ) ──&gt; ( v0.1.0-beta ) ──&gt; ( v0.1.0 )
+                                   │                   │                   │
+                                 [ Dev ]            [ Pilot ]          [ Stable ]
+</code></pre>
+<h3>1. Alpha Phase (<code>v0.X.X-alpha.N</code>)</h3>
+<ul>
+<li><strong>Purpose:</strong> High-velocity iteration, experimental features, and API design prototyping.</li>
+<li><strong>Stability:</strong> Unstable. APIs may change day-to-day without warning.</li>
+<li><strong>Testing:</strong> Basic unit test validation.</li>
+</ul>
+<h3>2. Beta Phase (<code>v0.X.X-beta.N</code>)</h3>
+<ul>
+<li><strong>Purpose:</strong> Feature-complete candidate builds released for simulated pilot testing, community feedback, and developer integration.</li>
+<li><strong>Stability:</strong> Reasonably stable. Breaking changes are kept to a minimum and require documentation.</li>
+<li><strong>Testing:</strong> Full test suite execution, integration benchmarks, and verification of reference application flows.</li>
+</ul>
+<h3>3. Stable Release (<code>vX.Y.Z</code>)</h3>
+<ul>
+<li><strong>Purpose:</strong> Production-ready release for mainstream developers, clinical rigs, and commercial integrations.</li>
+<li><strong>Stability:</strong> Production grade. Complete backwards-compatibility guarantees within the major version.</li>
+<li><strong>Testing:</strong> End-to-end automated smoke tests, performance/latency benchmarks, and verification across all supported LLM providers.</li>
+</ul>
+<hr />
+<h2>3. Pre-1.0.0 (v0.y.z) Compatibility Exception</h2>
+<p>Per SemVer specification, during the initial development cycle (pre-1.0.0):
+* The public API surface is not considered fully stable.
+* <strong>Minor versions (<code>0.Y.0</code>) may introduce breaking changes</strong> to allow the API to mature.
+* Patch versions (<code>0.Y.Z</code>) must remain strictly backwards-compatible.
+* Stable production integrations should pin dependencies to the minor version (e.g., <code>subvocal-sdk~=0.1.0</code>).</p>
+<hr />
+<h2>4. Automated CI/CD Requirements</h2>
+<p>To maintain platform stability across distributed hardware and software integrations, the main repository enforces an automated CI/CD baseline:</p>
+<h3>Pull Request (PR) Validation</h3>
+<p>Every PR targeting the <code>main</code> or <code>release/*</code> branches must pass:
+1. <strong>Linting &amp; Code Formatting:</strong> Code must comply with standard style rules verified via <code>ruff</code> or <code>flake8</code>.
+2. <strong>Type Checking:</strong> Strict static analysis passing <code>mypy</code> check on the <code>sdk/</code> codebase.
+3. <strong>Unit &amp; Integration Tests:</strong> Automated execution of the full test suite via GitHub Actions:
+   <code>bash
+   python3 -m unittest discover -s sdk</code></p>
+<h3>Release Publication</h3>
+<p>When a release tag (e.g. <code>v0.1.0</code>) is pushed by a platform maintainer:
+1. The CI pipeline executes the complete regression suite.
+2. The pipeline automatically builds source and binary wheels.
+3. If tests pass, the artifacts are signed and published automatically to the official PyPI registry.</p>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

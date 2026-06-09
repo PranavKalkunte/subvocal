@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classifier Infrastructure | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html" aria-current="page"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Classifier Infrastructure &amp; Reference Models</h1>
+<p>This document specifies the architecture, data flows, and performance characteristics of the sEMG classifier subsystem. The classifier layer serves as the physiological interface of the subvocal middleware, transforming multi-channel signal frames into discrete command tokens with associated confidences.</p>
+<pre class="mermaid">graph TD
+    A[Raw sEMG Stream] --&gt; B[Hardware Abstraction Layer]
+    B --&gt; C[DSP Filtering &amp; Notch]
+    C --&gt; D[Frame Builder]
+    D --&gt;|Frame| E[Classifier Interface]
+    E --&gt; F{Model Selection}
+    F --&gt;|Classical Baseline| G[TD10 Features + SVM / RF]
+    F --&gt;|Deep Sequence| H[1D CNN / GRU / Transformer]
+    G --&gt; I[Softmax / Probability Output]
+    H --&gt; I
+    I --&gt; J[Confidence Gate &amp; Cooldown]
+    J --&gt;|CommandToken| K[Intent Reconstruction Core]
+</pre>
+<hr />
+<h2>1. The Classifier Interface</h2>
+<p>All classification components implement the unified <code>Classifier</code> abstract base class defined in <code>sdk/core/interfaces.py</code>:</p>
+<pre><code class="language-python">class Classifier(ABC):
+    &quot;&quot;&quot;Abstract interface for classifying physiological raw signals into command tokens.&quot;&quot;&quot;
+
+    @abstractmethod
+    def predict(self, frame: Union[Frame, Any]) -&gt; Optional[CommandToken]:
+        &quot;&quot;&quot;Classifies a Frame of raw signals into a CommandToken (applies gating/cooldown).&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def predict_raw(self, frame: Union[Frame, Any]) -&gt; Tuple[str, float, List[float]]:
+        &quot;&quot;&quot;Predicts the probability distribution for a Frame of raw signals.
+
+        Returns:
+            (predicted_class_label, max_probability, all_probabilities_list)
+        &quot;&quot;&quot;
+        pass
+
+    @property
+    @abstractmethod
+    def labels(self) -&gt; List[str]:
+        &quot;&quot;&quot;Returns the list of output labels/classes supported by the classifier.&quot;&quot;&quot;
+        pass
+</code></pre>
+<h3>Data Translation</h3>
+<p>During real-time inference, the <code>InferenceEngine</code> dynamically converts incoming structured Pydantic <code>Frame</code> objects into NumPy multi-channel segments using <code>Frame.to_numpy()</code> before ingestion, ensuring seamless typing compatibility.</p>
+<hr />
+<h2>2. Reference Model Architectures</h2>
+<p>The middleware provides five reference architectures to accommodate diverse hardware environments, ranging from zero-dependency embedded microcontrollers to dedicated neural accelerators.</p>
+<h3>A. Classical Feature-Based Baselines</h3>
+<p>Classical pipelines extract statistical temporal features over sliding windows and pool them into fixed-length vectors.
+1. <strong>TD10 Feature Pipeline</strong>: Decomposes signals into low-frequency articulation movements (double moving average) and muscular energy. For a 4-channel system, stacking ±10 context frames yields an 840-dimensional feature vector.
+2. <strong>Random Forest (<code>rf</code>)</strong>: An ensemble baseline of decision trees mapping high-dimensional TD10 features to target gestures.
+3. <strong>Support Vector Machine (<code>svm</code>)</strong>: An SVM baseline utilizing a Radial Basis Function (RBF) kernel and Platt scaling for probability calibration, optimized for high separability on small calibration sets.</p>
+<h3>B. Deep Sequence Architectures</h3>
+<p>Deep learning models bypass manual feature engineering, operating directly on z-score standardized raw time-series arrays of shape <code>(Batch, Channels, Time)</code>.
+1. <strong>1D CNN (<code>cnn</code>)</strong>: Applies three stages of temporal 1D convolutions, batch normalization, and max pooling, followed by adaptive average pooling to feed a classification head.
+2. <strong>GRU (<code>gru</code>)</strong>: A bidirectional Gated Recurrent Unit network that models bidirectional temporal dependencies, using global mean pooling to aggregate hidden states.
+3. <strong>Small Transformer (<code>transformer</code>)</strong>: A sequence-to-sequence model that projects raw multi-channel steps into a latent space, adds a learnable positional embedding, and processes the sequence with multi-head self-attention.</p>
+<hr />
+<h2>3. Reproducible Runs &amp; Training Configs</h2>
+<p>Training parameters are governed by the <code>TrainingConfig</code> Pydantic model (<code>sdk/emg_core/ml/config_schema.py</code>) to ensure reproducibility. Configs are stored alongside model weights to enable full lineage tracking:</p>
+<pre><code class="language-json">{
+  &quot;model_type&quot;: &quot;cnn&quot;,
+  &quot;seed&quot;: 42,
+  &quot;test_size&quot;: 0.2,
+  &quot;epochs&quot;: 40,
+  &quot;batch_size&quot;: 16,
+  &quot;lr&quot;: 0.001,
+  &quot;weight_decay&quot;: 0.0001,
+  &quot;hidden_size&quot;: 64,
+  &quot;num_layers&quot;: 2
+}
+</code></pre>
+<hr />
+<h2>4. Per-User Calibration &amp; Fine-Tuning</h2>
+<p>Silent speech gestures vary highly across individuals due to anatomical differences and sensor placement. The middleware implements a transfer learning calibration routine (<code>calibrate_model</code>):</p>
+<ol>
+<li><strong>Weight Initialization</strong>: Loads pre-trained model weights trained on public/synthetic multi-subject datasets.</li>
+<li><strong>Architecture Adaptation</strong>: Discards the original output layer and attaches a new classification head matching the target user's command labels.</li>
+<li><strong>Layer Freezing</strong>: Freezes base feature-extraction layers to prevent representation degradation.</li>
+<li><strong>Fine-Tuning</strong>: Trains the head parameters on the user's local calibration dataset using a reduced learning rate ($10^{-4}$) to adapt quickly (15 epochs) without overfitting.</li>
+</ol>
+<hr />
+<h2>5. Model Export &amp; int8 Quantization</h2>
+<p>For low-power mobile or wearable integration, models can be compiled and optimized.</p>
+<h3>PyTorch → ONNX</h3>
+<p>Models are exported to ONNX format with dynamic batch sizes:</p>
+<pre><code class="language-bash">python3 -m emg_core.ml.export --user_id &lt;user&gt; --model_type cnn --format onnx
+</code></pre>
+<h3>Dynamic int8 Quantization</h3>
+<p>Using PyTorch's dynamic quantization, linear and recurrent weights are quantized from float32 to int8:
+$$\mathbf{W}<em>{\text{int8}} = \text{round}\left(\frac{\mathbf{W}</em>{\text{float32}}}{\text{scale}}\right) + \text{zero_point}$$</p>
+<h3>Accuracy Regression Check</h3>
+<p>To safeguard against precision loss, the quantization pipeline runs a verification check on user validation data. If the drop in accuracy exceeds the configured threshold, the quantized model is rejected:
+$$\text{Accuracy}<em>{\text{float32}} - \text{Accuracy}</em>{\text{int8}} \le 0.05 \quad (5\%)$$</p>
+<hr />
+<h2>6. Offline Benchmarking Profile</h2>
+<p>An offline benchmark harness (<code>sdk/emg_core/ml/benchmark.py</code>) measures system footprint and profiles execution cost:</p>
+<ul>
+<li><strong>Latency (ms)</strong>: Measures mean, median, p95, and standard deviation over 200 inference loops on CPU.</li>
+<li><strong>Memory Footprint</strong>: Logs disk size (KB) of serialized weights and total active parameter count.</li>
+<li><strong>FLOPs Estimation</strong>: Computes the exact floating point operations for forward passes:</li>
+<li><strong>1D CNN</strong>: $\sum 2 \cdot k \cdot C_{\text{in}} \cdot C_{\text{out}} \cdot T_{\text{out}} + \sum 2 \cdot I \cdot O$</li>
+<li><strong>GRU</strong>: $4 \cdot L \cdot T \cdot 3 \cdot 2 \cdot (H(H + C) + H)$</li>
+<li><strong>Transformer</strong>: $2 \cdot C \cdot H \cdot T + L \cdot (2 \cdot H^2 \cdot (3 + 1) \cdot T + 2 \cdot H \cdot T^2 + 2 \cdot H \cdot 2H \cdot T \cdot 2)$</li>
+<li><strong>Energy Consumption</strong>: Estimated at a standard edge accelerator coefficient:
+  $$\text{Energy } (\mu\text{J}) = \text{FLOPs} \cdot 100\text{ pJ} \cdot 10^{-6}$$</li>
+</ul>
+<h3>Reference Benchmark Targets (Intel/ARM CPU Core)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Model Type</th>
+<th style="text-align: left;">Params</th>
+<th style="text-align: left;">Disk Size (KB)</th>
+<th style="text-align: left;">Latency (Mean)</th>
+<th style="text-align: left;">FLOPs (Est)</th>
+<th style="text-align: left;">Energy (Est)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Random Forest</strong></td>
+<td style="text-align: left;">N/A</td>
+<td style="text-align: left;">340 KB</td>
+<td style="text-align: left;">~1.2 ms</td>
+<td style="text-align: left;">750,000</td>
+<td style="text-align: left;">0.075 $\mu$J</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SVM</strong></td>
+<td style="text-align: left;">N/A</td>
+<td style="text-align: left;">180 KB</td>
+<td style="text-align: left;">~0.8 ms</td>
+<td style="text-align: left;">750,000</td>
+<td style="text-align: left;">0.075 $\mu$J</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>1D CNN</strong></td>
+<td style="text-align: left;">~72K</td>
+<td style="text-align: left;">290 KB</td>
+<td style="text-align: left;">~2.5 ms</td>
+<td style="text-align: left;">3,780,000</td>
+<td style="text-align: left;">0.378 $\mu$J</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GRU (2-Layer)</strong></td>
+<td style="text-align: left;">~132K</td>
+<td style="text-align: left;">530 KB</td>
+<td style="text-align: left;">~8.4 ms</td>
+<td style="text-align: left;">30,180,000</td>
+<td style="text-align: left;">3.018 $\mu$J</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Transformer</strong></td>
+<td style="text-align: left;">~240K</td>
+<td style="text-align: left;">980 KB</td>
+<td style="text-align: left;">~14.1 ms</td>
+<td style="text-align: left;">31,180,000</td>
+<td style="text-align: left;">3.118 $\mu$J</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CNN (Quantized)</strong></td>
+<td style="text-align: left;">~72K</td>
+<td style="text-align: left;">90 KB</td>
+<td style="text-align: left;">~1.8 ms</td>
+<td style="text-align: left;">2,646,000</td>
+<td style="text-align: left;">0.264 $\mu$J</td>
+</tr>
+</tbody>
+</table>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Declaration Post | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html" aria-current="page"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Declarative Framing: What I Want Subvocal-Input-for-Agents to Look Like</h1>
+<p><em>A paradigm shift from custom neckbands to open-source middleware rails.</em></p>
+<hr />
+<h2>The Bottleneck: Hardware-First Myopia</h2>
+<p>For years, the silent speech interface (SSI) community has been stuck. The default approach—epitomized by projects like MindOS—is vertically integrated, custom-hardware myopic: tape a couple of gel electrodes to your jaw, hook them up to a microcontroller, train a Random Forest on 8 closed commands, and call a cloud LLM to run browser tasks.</p>
+<p>This vertical hardware approach hits three walls:
+1. <strong>The Vocabulary Ceiling</strong>: Whole-word classifiers max out at 5–8 commands before accuracy plummets. You can't browse the web if your jaw can only say "OPEN", "SEARCH", "CLICK", "SCROLL", "ENTER", and "CANCEL".
+2. <strong>The Repositioning Cliff</strong>: Surface EMG is notoriously unstable. Reposition the device by 2 millimeters and accuracy drops by 15%.
+3. <strong>The Capital Barrier</strong>: Manufacturing wearable neckbands requires capital, supply chains, and regulatory clearances that slow software builders to a crawl.</p>
+<h2>The Framing Shift: We Are the Rails, Not the Train</h2>
+<p>We are declaring a pivot. <strong>We are not building a proprietary neckband. We are building the open-source SDK that every subvocal and biosignal interface will use to control LLM-driven agents.</strong></p>
+<p>Whether you are hacking in your apartment with a $200 OpenBCI board, researching laryngeal activations in a university clinical lab with a Delsys Trigno rig, or designing Meta's next-generation wrist sEMG controller—you need the same connective software rails. You shouldn't have to rewrite filters, feature extractors, noise simulators, and context-aware decoders from scratch.</p>
+<p>By providing a unified developer platform, we decouple the sensor hardware from the cognitive agent.</p>
+<hr />
+<h2>What We Are Shipping Today (v0.1.0-alpha)</h2>
+<p>We are releasing the core building blocks of the <strong>Subvocal SDK</strong>:</p>
+<h3>1. The Compressed Shorthand Layer</h3>
+<p>To bypass the vocabulary ceiling, we introduced a spelling-shortening grammar. Users "silent-speak" compressed consonant shorthand (e.g. <code>g gl</code> for <code>Google</code>). We model sEMG signal degradation through an articulatory phonetic noise simulator, mapping jaw/throat activations into 5 physiological sEMG clusters.</p>
+<h3>2. Context-Aware Intent Reconstruction</h3>
+<p>Our decoder resolves noisy shorthand queries using:
+- <strong>Asymmetric sEMG Levenshtein Distance</strong>: A dynamic alignment matrix that highly discounts consonant omissions (which are common when users drop vowels/consonants in silent speech) while penalizing insertions.
+- <strong>Command-Aware Prioritization</strong>: It filters and ranks candidate targets (URLs, contacts, calendar events, active UI elements) based on the action intent (e.g. a <code>CLICK</code> query only searches active screen elements; a <code>TYPE</code> query only searches user contacts).</p>
+<h3>3. Modular ML Core (<code>emg_core</code>)</h3>
+<p>We have built and verified the physiological signal pipeline:
+- <strong>Reconciled DSP Filters</strong>: Defaulting to the AlterEgo-inspired <code>1.3–50.0 Hz</code> bandpass filter (physiologically correct for slow articulatory neuromuscular activations) with built-in options to support standard <code>20.0–450.0 Hz</code> gestures.
+- <strong>Deep Learning Skeletons</strong>: Local training pipelines for standard <strong>Random Forest</strong>, <strong>1D CNN (PyTorch)</strong>, and <strong>GRU (PyTorch)</strong> classifiers.
+- <strong>Model Serialization</strong>: Saving/loading parameters, feature scalers, and metadata to <code>.pth</code> and <code>.joblib</code> objects.</p>
+<h3>4. Zero-Dependency TTS Audio Feedback</h3>
+<p>An offline text-to-speech engine that automatically falls back to macOS native <code>say</code> and <code>afplay</code> utilities, providing sub-millisecond audio confirmation without introducing bloated python dependencies.</p>
+<hr />
+<h2>The Roadmap Ahead</h2>
+<p>We are standardizing this interface. In the coming weeks, we will expose these subvocal commands as a <strong>Model Context Protocol (MCP)</strong> server, making it trivial to plug a biosignal stream into Claude Desktop or any agentic system.</p>
+<p>The code is fully open-source. Clone it, run the integration tests, and start building.</p>
+<p><em>Join the conversation on <a href="https://github.com/PranavKalkunte/subvocal">GitHub</a>.</em></p>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

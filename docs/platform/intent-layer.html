@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intent Layer | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html" aria-current="page"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal SDK: Intent Reconstruction Layer</h1>
+<p><strong>Status:</strong> Draft Spec<br />
+<strong>Version:</strong> v0.1.0-alpha<br />
+<strong>Date:</strong> June 2026<br />
+<strong>Audience:</strong> Platform Developers, Systems Integrators  </p>
+<hr />
+<h2>1. Subsystem Overview</h2>
+<p>The <strong>Intent Reconstruction Layer</strong> forms the core decoding pipeline of the Subvocal SDK. It bridges raw electromyographic signal classification (Command Tokens) with LLM-driven actions (Agent Execution).</p>
+<p>Surface electromyography (sEMG) from the throat and neck features a raw word error rate (WER) of 15% to 25% due to physiological noise and dropped vowels in subvocal articulation. Rather than attempting direct speech-to-text transcription, the Subvocal SDK reframes the input as a <strong>low-bandwidth intent channel</strong>. </p>
+<p>It uses a <strong>Hybrid Decoder Pipeline</strong>:
+1. <strong>Heuristic Alignment (Stage A):</strong> Performs fast, local Levenshtein alignment on the phonetic group level using a customized articulatory distance matrix to resolve commands and prioritize arguments based on visible UI elements, contacts, or schedule items.
+2. <strong>Context-Aware LLM Reconstruction (Stage B):</strong> If the heuristic decoder's confidence score falls below a threshold (default: 0.90), or if the query requires complex phrase expansion, the SDK dispatches the noisy shorthand and heuristic recommendations to an LLM provider client along with active device contexts.</p>
+<pre><code>[ Noisy Shorthand ] ────&gt; [ Heuristic Alignment ] ───( Conf &gt;= 0.90 )───&gt; [ Fast Resolved Intent ]
+                                  │
+                          ( Conf &lt; 0.90 )
+                                  ▼
+[ UserContext Snapshot ] ─&gt; [ LLM Provider Client ] ────────────────────&gt; [ Context-Reconstructed Intent ]
+</code></pre>
+<hr />
+<h2>2. Pluggable LLM Providers</h2>
+<p>The SDK defines a model-agnostic REST client architecture implemented in <code>sdk/core/llm_providers.py</code>. These clients utilize only the Python standard library's <code>urllib</code> to hit endpoints, avoiding bloated external SDK packages:</p>
+<ul>
+<li><strong><code>ClaudeProvider</code>:</strong> Communicates with Anthropic's Messages REST API (<code>https://api.anthropic.com/v1/messages</code>).</li>
+<li><strong><code>OpenAIProvider</code>:</strong> Communicates with OpenAI's Chat Completions REST API (<code>https://api.openai.com/v1/chat/completions</code>).</li>
+<li><strong><code>GeminiProvider</code>:</strong> Communicates with Google's Gemini Content Generation API (<code>https://generativelanguage.googleapis.com/v1beta/models</code>).</li>
+<li><strong><code>LlamaProvider</code>:</strong> Communicates with local Llama/Ollama endpoints via their OpenAI-compatible <code>/v1/chat/completions</code> REST interface.</li>
+</ul>
+<p>Maintainers can register new providers by subclassing the abstract <code>LLMProvider</code> base class and implementing the <code>reconstruct_intent</code> method.</p>
+<hr />
+<h2>3. Prompt Template Versioning</h2>
+<p>Prompts are stored, versioned, and resolved via <code>PromptManager</code> in <code>sdk/core/prompts.py</code>. Versioning is critical for ensuring regression-free model upgrades:</p>
+<ul>
+<li><strong><code>v1</code> (Default):</strong> Targets basic translation instructions, listing shorthand rules, vocabulary descriptions, and user contexts as flat text lists. Optimized for standard chat models.</li>
+<li><strong><code>v2</code>:</strong> A structured system-instruction template that explicitly defines boundaries, inputs, and outputs, designed for next-generation thinking models.</li>
+</ul>
+<h3>Dynamic Prompt Registration</h3>
+<p>Developers can register custom prompt templates at runtime:</p>
+<pre><code class="language-python">from core.prompts import PromptManager
+
+manager = PromptManager()
+manager.register_template(&quot;v3-custom&quot;, &quot;System: Resolve shorthand... Inputs: {noisy_input}&quot;)
+</code></pre>
+<hr />
+<h2>4. Composite Context Provider Pattern</h2>
+<p>To resolve ambiguous shorthand tokens (e.g. mapping <code>clk sbt</code> to <code>CLICK Submit</code>), the LLM requires structured context snapshots. In <code>sdk/context/providers.py</code>, context retrieval is modularized:</p>
+<ol>
+<li><strong><code>CalendarContextProvider</code>:</strong> Exposes upcoming calendar titles and start/end times.</li>
+<li><strong><code>ContactsContextProvider</code>:</strong> Exposes contacts name and pre-computed phonetic shorthands.</li>
+<li><strong><code>LocationContextProvider</code>:</strong> Exposes user GPS coordinates and place name.</li>
+<li><strong><code>AppStateContextProvider</code>:</strong> Exposes the active application and active interactive UI elements.</li>
+<li><strong><code>CompositeContextProvider</code>:</strong> Takes a list of these sub-providers and aggregates their context data into a single unified <code>UserContext</code> model on demand.</li>
+</ol>
+<h3>Example Configuration:</h3>
+<pre><code class="language-python">from context.providers import (
+    ContactsContextProvider,
+    AppStateContextProvider,
+    CompositeContextProvider
+)
+
+# Initialize modular sources
+contacts_src = ContactsContextProvider(load_contacts_database())
+app_state_src = AppStateContextProvider(poll_screen_elements())
+
+# Merge sources into a unified provider
+context_provider = CompositeContextProvider([contacts_src, app_state_src])
+live_context = context_provider.get_context()
+</code></pre>
+<hr />
+<h2>5. Correction-Capture Loop and Fine-Tuning Hook</h2>
+<p>No machine learning pipeline is perfect. When an incorrect action is triggered, the user registers a correction (e.g., through an voice undo, physical interface override, or subsequent keyboard entry).</p>
+<p>The SDK implements a feedback loop in <code>sdk/core/corrections.py</code>:</p>
+<h3>The Correction Logging Loop</h3>
+<p>The <code>CorrectionManager</code> automatically logs correction entries to a local JSONL file (<code>sdk/data/corrections_log.jsonl</code>):</p>
+<pre><code class="language-python">from core.corrections import CorrectionManager
+
+# Initialize the manager
+manager = CorrectionManager()
+
+# Log a correction
+manager.log_correction(
+    raw_shorthand=&quot;typ alc&quot;,
+    decoded_intent=&quot;TYPE Alex&quot;,
+    corrected_intent=&quot;TYPE Alice&quot;,
+    context=active_context
+)
+</code></pre>
+<p>Each log line represents a serialized <code>CorrectionLogEntry</code> Pydantic model:</p>
+<pre><code class="language-json">{
+  &quot;timestamp&quot;: 1780823400.0,
+  &quot;raw_shorthand&quot;: &quot;typ alc&quot;,
+  &quot;decoded_intent&quot;: &quot;TYPE Alex&quot;,
+  &quot;corrected_intent&quot;: &quot;TYPE Alice&quot;,
+  &quot;context_snapshot&quot;: {
+    &quot;contacts&quot;: [{&quot;id&quot;: &quot;1&quot;, &quot;name&quot;: &quot;Alice&quot;, &quot;shorthand_name&quot;: &quot;alc&quot;}],
+    &quot;app_state&quot;: {&quot;current_app&quot;: &quot;Messages&quot;}
+  }
+}
+</code></pre>
+<h3>The Fine-Tuning Export Hook</h3>
+<p>To close the loop, the <code>FinetuningHook</code> class converts logged corrections into training examples formatted for model fine-tuning:</p>
+<pre><code class="language-python">from core.corrections import CorrectionManager, FinetuningHook
+
+manager = CorrectionManager()
+corrections = manager.get_corrections()
+
+# 1. Export to OpenAI Chat Fine-Tuning Format (JSONL)
+openai_dataset = FinetuningHook.export_to_openai(corrections)
+FinetuningHook.export_to_jsonl(openai_dataset, &quot;sdk/data/openai_tuning.jsonl&quot;)
+
+# 2. Export to Gemini Fine-Tuning Format (JSONL)
+gemini_dataset = FinetuningHook.export_to_gemini(corrections)
+FinetuningHook.export_to_jsonl(gemini_dataset, &quot;sdk/data/gemini_tuning.jsonl&quot;)
+</code></pre>
+<p>This local log can be uploaded periodically to cloud APIs or used to fine-tune a local Llama model (via Ollama or LLaMA-Factory) to personalize the intent reconstruction layer for a specific user's physiological speech patterns.</p>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

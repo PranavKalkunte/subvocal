@@ -98,10 +98,9 @@ subvocal/
 │   └── tts/                # Multi-backend TTS feedback engine
 ├── tests/                  # Pytest suite
 ├── benchmarks/             # 50-case intent-reconstruction eval harnesses
-├── tools/                  # API doc generation, license audit, benchmark runner
-├── platform/               # Publishable specifications (architecture, security, benchmarks)
-├── docs/                   # GitHub Pages site
-└── notebooks/              # Colab-compatible end-to-end walkthrough
+├── tools/                  # Site/API-page builders, license audit, benchmark runner
+└── docs/                   # GitHub Pages site (landing, docs, platform corpus, API reference)
+    └── content/            # Markdown sources for the platform corpus and walkthrough
 ```
 
 ---

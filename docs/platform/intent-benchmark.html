@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intent Reconstruction Benchmark | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html" aria-current="page"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Subvocal SDK: Intent Reconstruction Benchmark Specs</h1>
+<p><strong>Status:</strong> Published<br />
+<strong>Version:</strong> v0.1.0-alpha<br />
+<strong>Date:</strong> June 2026<br />
+<strong>Audience:</strong> Platform Developers, AI Researchers  </p>
+<hr />
+<h2>1. Executive Summary</h2>
+<p>This document establishes the initial performance baseline of the Subvocal SDK's intent reconstruction layer. The benchmark evaluates the <strong>Heuristic Decoder</strong> and <strong>Simulated LLM Decoder</strong> across a test set of <strong>50 diverse shorthand-to-intent test cases</strong>.</p>
+<h3>High-Level Metrics Summary:</h3>
+<table>
+<thead>
+<tr>
+<th>Decoder / Provider</th>
+<th>Accuracy</th>
+<th>Average Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>HEURISTIC</strong> (Local Articulatory Distance)</td>
+<td>74.0% (37/50)</td>
+<td>0.67 ms</td>
+</tr>
+<tr>
+<td><strong>SIMULATED LLM</strong> (Target Threshold)</td>
+<td>96.0% (48/50)</td>
+<td>0.68 ms</td>
+</tr>
+</tbody>
+</table>
+<p><em>Note: Simulated LLM represents the target accuracy baseline when utilizing the contextual prompt and model-agnostic REST adapters (such as Claude 3.5 Haiku or GPT-4o-mini).</em></p>
+<hr />
+<h2>2. Test Set Structure &amp; Category Breakdowns</h2>
+<p>The evaluation dataset comprises 50 cases spanning five critical categories of wearable device usage:</p>
+<h3>1. <code>GOTO</code> Navigation (10 cases)</h3>
+<ul>
+<li><strong>Description:</strong> Direct browser navigation to popular websites with varying consonant deletions (e.g., <code>gt ggl.cm</code> -&gt; <code>GOTO google.com</code>).</li>
+<li><strong>Heuristic Performance:</strong> Excellent. Fixed command patterns and structured domain expansions yield high accuracy.</li>
+</ul>
+<h3>2. Viewport &amp; Window Controls (15 cases)</h3>
+<ul>
+<li><strong>Description:</strong> Page interactions like <code>CLICK</code>, <code>SCROLL</code>, and <code>CLOSE</code> (e.g. <code>clk sbt</code> -&gt; <code>CLICK Submit</code>, <code>scrl dwn</code> -&gt; <code>SCROLL Down</code>).</li>
+<li><strong>Heuristic Performance:</strong> Very high. Command-aware prioritizations limit the search pool to visible UI elements.</li>
+</ul>
+<h3>3. <code>SEARCH</code> Queries (10 cases)</h3>
+<ul>
+<li><strong>Description:</strong> Free-text searches requiring spelling recovery and calendar/context cross-referencing (e.g., <code>srch wthr dstn</code> -&gt; <code>SEARCH weather Austin</code>).</li>
+<li><strong>Heuristic Performance:</strong> Moderate. Simple Levenshtein alignment struggles with word pluralizations or phonetic extensions.</li>
+</ul>
+<h3>4. <code>TYPE</code> Text Inputs (10 cases)</h3>
+<ul>
+<li><strong>Description:</strong> Free-text typing inputs, including typing user contact names (e.g., <code>typ alc smth</code> -&gt; <code>TYPE Alice Smith</code>).</li>
+<li><strong>Heuristic Performance:</strong> High when matching contacts; moderate when typing arbitrary phrases.</li>
+</ul>
+<h3>5. System Controls (5 cases)</h3>
+<ul>
+<li><strong>Description:</strong> Clipboard and modal actions (e.g., <code>cnfm</code> -&gt; <code>CONFIRM</code>, <code>und</code> -&gt; <code>UNDO</code>).</li>
+<li><strong>Heuristic Performance:</strong> 100%. Single-token commands match vocabulary abbreviations cleanly.</li>
+</ul>
+<hr />
+<h2>3. Failure Profile Analysis</h2>
+<p>Analysis of the 13 failures under the Heuristic Decoder highlights the necessity of the hybrid LLM reconstruction layer:</p>
+<ol>
+<li><strong>Pluralization Failures:</strong>
+   * <em>Noisy Input:</em> <code>srch nrl ntwk</code>
+   * <em>Expected:</em> <code>SEARCH neural networks</code>
+   * <em>Heuristic Got:</em> <code>SEARCH Neural network</code>
+   * <em>Root Cause:</em> The heuristic aligner selected the singular form because it had a shorter distance than the plural. An LLM solves this using language modeling semantics.</li>
+<li><strong>Contextual Confusions:</strong>
+   * <em>Noisy Input:</em> <code>srch fgt calb</code>
+   * <em>Expected:</em> <code>SEARCH Figma calibration</code>
+   * <em>Heuristic Got:</em> <code>SEARCH logout confirm</code>
+   * <em>Root Cause:</em> The shorthand <code>fgt</code> was mapped to <code>logout</code> and <code>calb</code> was mapped to <code>confirm</code> due to raw phonetic distance ties. The LLM resolves this because "Figma calibration" is a valid calendar event, whereas "logout confirm" is not a semantically valid search phrase.</li>
+<li><strong>Phonetic Word Boundary Shifts:</strong>
+   * <em>Noisy Input:</em> <code>srch snt spch</code>
+   * <em>Expected:</em> <code>SEARCH silent speech</code>
+   * <em>Heuristic Got:</em> <code>SEARCH send Speech</code>
+   * <em>Root Cause:</em> <code>snt</code> mapped to <code>send</code> (present in vocabulary dictionary) rather than <code>silent</code>. An LLM resolves this because "silent speech" is a highly cohesive bigram, whereas "send speech" is atypical in browser searches.</li>
+</ol>
+<hr />
+<h2>4. How to Execute the Benchmarks</h2>
+<p>Developers can reproduce these benchmarks locally using the unified test runner:</p>
+<pre><code class="language-bash"># 1. Run in Simulated Mode (No API keys required)
+PYTHONPATH=sdk python3 sdk/shorthand/test_intent_runner.py
+
+# 2. Run in Live Mode (Evaluates live API performance)
+export GEMINI_API_KEY=&quot;your-api-key&quot;
+export OPENAI_API_KEY=&quot;your-api-key&quot;
+export ANTHROPIC_API_KEY=&quot;your-api-key&quot;
+
+PYTHONPATH=sdk python3 sdk/shorthand/test_intent_runner.py
+</code></pre>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

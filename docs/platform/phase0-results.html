@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 0: Method & Results | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html" aria-current="page"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Phase 0 Software Demonstrator: Articulatory Phonetic Shorthand &amp; Context-Aware Intent Reconstruction</h1>
+<h2>Abstract</h2>
+<p>Traditional silent speech interfaces (such as MindOS/TreeHacks 2026) are bottlenecked by a <strong>vocabulary ceiling</strong> (typically limited to 8 closed-vocabulary whole-word commands) and a high sensitivity to electromyographic (sEMG) signal noise. </p>
+<p>This paper introduces the <strong>Phase 0 Software Demonstrator</strong> for a neckband silent speech interface. We overcome the vocabulary ceiling by defining a <strong>17-command phonetically diverse vocabulary</strong> and introducing a <strong>Compressed Shorthand Layer</strong> that simulates noisy subvocal speech. To decode this shorthand under heavy signal degradation, we implement a <strong>Hybrid Intent Reconstructor</strong> utilizing:
+1. <strong>Asymmetric sEMG Levenshtein Alignment</strong>: A dynamic-programming string matcher configured with physiological sEMG confusion clusters.
+2. <strong>Command-Aware Context Prioritization</strong>: Dynamic ranking of candidate pools (UI elements, contacts, calendar events) based on command intent.
+3. <strong>Phrase-Level Alignment</strong>: Reconstructing multi-word commands (like <code>Sign In</code>) by aligning concatenated shorthand tokens.
+4. <strong>Model-Agnostic LLM Fallback</strong>: Reconstructing free-text intents using standard, SDK-free REST requests to OpenAI, Anthropic, or Gemini APIs.</p>
+<p>We evaluate this system on a 50-case intent-reconstruction test suite, demonstrating <strong>74.0% overall heuristic accuracy</strong> (reaching <strong>100%</strong> on GOTO, CLICK, SCROLL, and system controls) with an average execution latency of <strong>0.72 ms</strong> per case.</p>
+<hr />
+<h2>1. Target Command Vocabulary</h2>
+<p>We expanded the vocabulary from TreeHacks' 8 commands to <strong>17 commands</strong>, categorizing them by action type and identifying dominant articulatory features to maximize sEMG separation:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Command</th>
+<th style="text-align: left;">Action Category</th>
+<th style="text-align: left;">Phonetic IPA</th>
+<th style="text-align: left;">Dominant sEMG Articulation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>GOTO</strong></td>
+<td style="text-align: left;">Navigation</td>
+<td style="text-align: left;"><code>ˈɡoʊ.tuː</code></td>
+<td style="text-align: left;">Velar plosive + Glottal vowel + Dental/Alveolar plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SEARCH</strong></td>
+<td style="text-align: left;">Navigation</td>
+<td style="text-align: left;"><code>sɜːrtʃ</code></td>
+<td style="text-align: left;">Dental/Alveolar fricative + Rhotic + Palatal affricate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CLICK</strong></td>
+<td style="text-align: left;">Interaction</td>
+<td style="text-align: left;"><code>klɪk</code></td>
+<td style="text-align: left;">Velar plosive + Dental/Alveolar lateral + Velar plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SCROLL</strong></td>
+<td style="text-align: left;">Interaction</td>
+<td style="text-align: left;"><code>skroʊl</code></td>
+<td style="text-align: left;">Dental/Alveolar fricative + Velar plosive + Rhotic + Lateral</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TYPE</strong></td>
+<td style="text-align: left;">Input</td>
+<td style="text-align: left;"><code>taɪp</code></td>
+<td style="text-align: left;">Dental/Alveolar plosive + Diphthong vowel + Labial plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ENTER</strong></td>
+<td style="text-align: left;">Action</td>
+<td style="text-align: left;"><code>ˈɛntər</code></td>
+<td style="text-align: left;">Glottal vowel + Alveolar nasal + Alveolar plosive + Rhotic</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CONFIRM</strong></td>
+<td style="text-align: left;">Confirmation</td>
+<td style="text-align: left;"><code>kənˈfɜːrm</code></td>
+<td style="text-align: left;">Velar plosive + Alveolar nasal + Rhotic + Labial nasal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CANCEL</strong></td>
+<td style="text-align: left;">Abort</td>
+<td style="text-align: left;"><code>ˈkænsəl</code></td>
+<td style="text-align: left;">Velar plosive + Alveolar nasal + Alveolar fricative + Lateral</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>BACK</strong></td>
+<td style="text-align: left;">Navigation</td>
+<td style="text-align: left;"><code>bæk</code></td>
+<td style="text-align: left;">Labial plosive + Glottal vowel + Velar plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>FORWARD</strong></td>
+<td style="text-align: left;">Navigation</td>
+<td style="text-align: left;"><code>ˈfɔːrwərd</code></td>
+<td style="text-align: left;">Labial fricative + Rhotic + Labial semivowel + Alveolar plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>REFRESH</strong></td>
+<td style="text-align: left;">Control</td>
+<td style="text-align: left;"><code>rɪˈfrɛʃ</code></td>
+<td style="text-align: left;">Rhotic + Labial fricative + Rhotic + Palatal fricative</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ZOOM</strong></td>
+<td style="text-align: left;">Control</td>
+<td style="text-align: left;"><code>zuːm</code></td>
+<td style="text-align: left;">Alveolar fricative + Glottal vowel + Labial nasal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CLOSE</strong></td>
+<td style="text-align: left;">Control</td>
+<td style="text-align: left;"><code>kloʊz</code></td>
+<td style="text-align: left;">Velar plosive + Alveolar lateral + Alveolar fricative</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>COPY</strong></td>
+<td style="text-align: left;">Clipboard</td>
+<td style="text-align: left;"><code>ˈkɑːpi</code></td>
+<td style="text-align: left;">Velar plosive + Glottal vowel + Labial plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PASTE</strong></td>
+<td style="text-align: left;">Clipboard</td>
+<td style="text-align: left;"><code>peɪst</code></td>
+<td style="text-align: left;">Labial plosive + Glottal vowel + Alveolar fricative + Plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>UNDO</strong></td>
+<td style="text-align: left;">Control</td>
+<td style="text-align: left;"><code>ʌnˈduː</code></td>
+<td style="text-align: left;">Glottal vowel + Alveolar nasal + Alveolar plosive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>WAIT</strong></td>
+<td style="text-align: left;">Control</td>
+<td style="text-align: left;"><code>weɪt</code></td>
+<td style="text-align: left;">Labial semivowel + Diphthong vowel + Alveolar plosive</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Compressed Shorthand Specification</h2>
+<p>Subvocal speech is highly compressed. When users silent-speak under muscular constraints, they tend to drop unstressed vowels and contract syllables. The spelling-shortening rules are formalized as:
+1. <strong>Vowel Dropping</strong>: All non-initial vowels (<code>a</code>, <code>e</code>, <code>i</code>, <code>o</code>, <code>u</code>, <code>y</code>) and the weak glottal consonant <code>h</code> are omitted.
+2. <strong>Duplicate Collapse</strong>: Consecutive duplicate letters are simplified to a single character (e.g., <code>google</code> -&gt; <code>ggl</code>).
+3. <strong>Common Abbreviations</strong>: Mapped via a static dictionary (e.g. <code>the</code> -&gt; <code>th</code>, <code>and</code> -&gt; <code>nd</code>, <code>for</code> -&gt; <code>fr</code>).</p>
+<hr />
+<h2>3. Physiological sEMG Noise Model</h2>
+<p>To realistically evaluate decoder robustness, we grouped the English alphabet into 5 <strong>articulatory phonetic clusters</strong> matching jaw/throat sEMG activation zones:
+* <strong>Glottal/Vowels (<code>G</code>)</strong>: <code>A, E, I, O, U, Y, H</code> (Vocal fold vibration, open mouth)
+* <strong>Labials (<code>L</code>)</strong>: <code>B, P, M, W, F, V</code> (Lip closure, front jaw)
+* <strong>Alveolars/Dentals (<code>A</code>)</strong>: <code>T, D, N, S, Z, L</code> (Tongue tip to teeth ridge)
+* <strong>Velars/Palatals (<code>V</code>)</strong>: <code>K, G, J, C, Q, X</code> (Tongue back to soft palate)
+* <strong>Rhotics (<code>R</code>)</strong>: <code>R</code> (Tongue curl/retroflex)</p>
+<p>Our simulator applies three forms of channel noise based on configurable rates:
+* <strong>Articulatory Substitution</strong>: Swapping a character with another in its same phonetic cluster (e.g., <code>t</code> -&gt; <code>d</code> or <code>l</code> -&gt; <code>n</code> at cost 0.25).
+* <strong>Signal Droplet (Deletion)</strong>: Dropping a character entirely to simulate electrode contact loss.
+* <strong>Artifact Insertion</strong>: Inserting spurious characters to model swallowing or muscle twitch spikes.</p>
+<hr />
+<h2>4. Intent Reconstructor (Decoder)</h2>
+<p>The intent reconstructor processes raw shorthand inputs using a three-stage pipeline:</p>
+<h3>4.1 Asymmetric sEMG Levenshtein Distance</h3>
+<p>Standard Levenshtein alignment penalizes deletions and insertions equally. In shorthand decoding, this fails because users <em>intentionally</em> drop consonants (resulting in extra characters in candidate words relative to the query). 
+We implement an <strong>asymmetric cost matrix</strong>:
+* Substituting characters in the same articulatory group: <strong>0.25</strong>
+* Substituting characters in different articulatory groups: <strong>1.0</strong>
+* Deleting characters from the query (query has extra char): <strong>1.0</strong>
+* Inserting characters into the candidate (query omitted char): <strong>0.4</strong> (highly discounted)</p>
+<h3>4.2 Command-Aware Context Prioritization &amp; Phrase-Level Alignment</h3>
+<p>When decoding arguments, candidate lists are prioritized dynamically based on the decoded command:
+* <code>CLICK</code>/<code>SCROLL</code> -&gt; Prioritizes active App State UI labels (<code>ui_elements</code>).
+* <code>GOTO</code> -&gt; Prioritizes common navigation domains.
+* <code>TYPE</code>/<code>MESSAGE</code> -&gt; Prioritizes user contacts (<code>contacts</code>).
+* <code>SEARCH</code> -&gt; Prioritizes upcoming calendar events (<code>calendar</code>).</p>
+<p>Instead of matching word-by-word, multi-word queries are concatenated (e.g. <code>sgn n</code>) and matched directly against the concatenated shorthand of full labels (e.g. <code>Sign In</code> -&gt; <code>sgnn</code>), reducing word-boundary errors. Longer titles (e.g. <code>BioSignals Research Review</code>) are expanded into constituent words to allow sub-phrase matches.</p>
+<h3>4.3 Domain Suffix Splitting</h3>
+<p>Tokens containing dots (such as <code>mail.google.com</code>) are split into sub-tokens, decoded independently, mapped to common domain extensions (<code>cm</code> -&gt; <code>com</code>, <code>rg</code> -&gt; <code>org</code>), and rejoined with a dot, allowing high-accuracy URL reconstruction under noise.</p>
+<hr />
+<h2>5. Text-to-Speech Engine</h2>
+<p>To close the feedback loop without visual overhead, we implemented a modular local TTS engine. It attempts:
+1. <strong>Cloud Speech API</strong>: Synthesizes via OpenAI audio API if a key is present.
+2. <strong>macOS Native CLI Fallback</strong>: Invokes macOS native <code>say</code> and <code>afplay</code> utilities via subprocess (completely offline, zero-dependency, high performance).
+3. <strong>pyttsx3</strong>: Falls back to the cross-platform python library if installed.</p>
+<hr />
+<h2>6. Experimental Results &amp; Benchmarks</h2>
+<h3>6.1 Accuracy &amp; Latency Breakdown</h3>
+<p>The evaluation harness (<a href="file:///Users/pranavkalkunte/Downloads/inbox/subvocal/software/shorthand/eval_runner.py">eval_runner.py</a>) was executed against 50 diverse test cases. Under a simulated noisy channel with no LLM connection (<code>LLM Decoder: INACTIVE</code>), the heuristic decoder achieved:
+* <strong>Overall Accuracy</strong>: <strong>74.0%</strong> (37/50)
+* <strong>Average Latency</strong>: <strong>0.72 ms</strong> per phrase</p>
+<p>Category-specific performance:
+* <strong>GOTO</strong>: <strong>100.0%</strong> (10/10)
+* <strong>CLICK</strong>: <strong>100.0%</strong> (9/9)
+* <strong>SCROLL</strong>: <strong>100.0%</strong> (4/4)
+* <strong>CLOSE</strong>: <strong>100.0%</strong> (2/2)
+* <strong>SYSTEM CONTROLS</strong>: <strong>100.0%</strong> (5/5)
+* <strong>SEARCH &amp; TYPE (Free-Text)</strong>: <strong>35.0%</strong> (7/20)</p>
+<h3>6.2 Comparison: Our Phase 0 vs. TreeHacks MindOS</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dimension</th>
+<th style="text-align: left;">TreeHacks MindOS (2026)</th>
+<th style="text-align: left;">Our Phase 0 Ground Up</th>
+<th style="text-align: left;">Competitive Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Vocabulary Size</strong></td>
+<td style="text-align: left;">8 closed whole-word commands</td>
+<td style="text-align: left;"><strong>17 commands</strong> + free-text</td>
+<td style="text-align: left;">Expanded capability and utility</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Argument Input</strong></td>
+<td style="text-align: left;">None (Discrete classification)</td>
+<td style="text-align: left;"><strong>Compressed Shorthand Layer</strong></td>
+<td style="text-align: left;">Allows typing arbitrary strings, URLs, and queries</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Context Awareness</strong></td>
+<td style="text-align: left;">None (Tracks execution state only)</td>
+<td style="text-align: left;"><strong>Full User Context Schema</strong></td>
+<td style="text-align: left;">Leverages App UI, Contacts, and Calendar to resolve shorthand</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Phonetic Matching</strong></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><strong>Asymmetric sEMG Levenshtein</strong></td>
+<td style="text-align: left;">High noise resilience using speech physiology clusters</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Model Portability</strong></td>
+<td style="text-align: left;">Locked to cloud GPT-4o</td>
+<td style="text-align: left;"><strong>Model-Agnostic + Local Fallbacks</strong></td>
+<td style="text-align: left;">Offline viability and zero-dependency local TTS</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. sEMG Signal Processing &amp; Classifier Training (Section 6)</h2>
+<p>We implemented and verified the digital signal processing (DSP) and machine learning (ML) training skeleton in the <code>emg_core</code> package:</p>
+<h3>7.1 Reconciled Bandpass Filtering</h3>
+<p>Silent speech sEMG signals differ from traditional physical/prosthetic EMG. We resolved this divergence by implementing:
+* <strong>AlterEgo sEMG configuration (1.3–50.0 Hz, default)</strong>: Rejects powerline hum (60 Hz) and high-frequency noise, focusing on slow-velocity articulation movements. This fits low sampling rates (e.g. 250 Hz) and acts as the default.
+* <strong>Prosthetics configuration (20.0–450.0 Hz, option)</strong>: Built-in configuration toggle for testing standard high-frequency limb-movement signals.</p>
+<h3>7.2 Classifier Architectures</h3>
+<p>We implemented three model classes in <code>software/emg_core/ml/train.py</code>:
+1. <strong>Random Forest + LDA</strong>: Standard ML model extracting 840 TD10 features.
+2. <strong>1D CNN (PyTorch)</strong>: A deep learning model that applies 1D convolutions over raw sEMG channels.
+3. <strong>GRU (PyTorch)</strong>: A temporal bidirectional GRU model with average pooling over time.</p>
+<h3>7.3 Integration Test Verification</h3>
+<p>The validation suite <code>test_ml.py</code> verified compilation, training, and inference across all three architectures on synthetic multichannel sEMG calibration segments (60 segments, 4 channels, 150-sample window).</p>
+<p>All classifiers achieved successful compilation and training execution, generating valid accuracy metrics and confusion matrices on CPU:
+* <strong>Test results</strong>: <code>Ran 4 tests. OK</code> (100% test pass).</p>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html" aria-current="page"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>The Architecture of a Practical Subvocal Interface</h1>
+<p><strong>Status:</strong> Proposed<br />
+<strong>Version:</strong> v0.1.0-alpha<br />
+<strong>Date:</strong> June 2026<br />
+<strong>Audience:</strong> Neurotech Builders, Agent Framework Developers, Accessibility Engineers  </p>
+<hr />
+<h2>1. Introduction: Hardware-First Myopia vs. Middleware Rails</h2>
+<p>A central tension defines the field of subvocal communication: the core technology has functioned in laboratory environments for over two decades. As early as 2004, researchers at NASA Ames demonstrated high-accuracy decoding of subauditory speech using surface electromyography (sEMG). Yet, in the years since, Silent Speech Interfaces (SSIs) have failed to transition from clinical or academic curiosities into practical consumer products.</p>
+<p>Historically, the industry has suffered from <strong>hardware-first myopia</strong>. Builders focus heavily on designing proprietary neckbands, custom printed circuit boards (PCBs), and multi-channel electrode collars, treating the software as an afterthought. This vertical hardware approach hits three walls:
+1. <strong>The Vocabulary Ceiling:</strong> Whole-word classifiers max out at 8 to 25 commands before classification accuracy plummets. You cannot navigate a modern mobile operating system if your jaw can only say "OPEN", "SEARCH", "CLICK", "SCROLL", "ENTER", and "CANCEL".
+2. <strong>The Repositioning Cliff:</strong> sEMG is highly sensitive to spatial shift. Physical movement or re-donning the device shifts electrodes by a few millimeters, dropping classification accuracy by 15% to 25%.
+3. <strong>The Capital Barrier:</strong> Manufacturing wearable electronics requires millions in capital, complex supply chains, and extensive regulatory clearance pathways (e.g., FDA Class II or CE/MDR review for speech assistance devices).</p>
+<p>This document details the anatomical, engineering, and systems-level reasoning behind a platform pivot: <strong>we decouple the physical sensor hardware from the cognitive agent by building a vendor-agnostic, open-source middleware layer.</strong> Rather than treating the sEMG classifier as a direct "silent microphone," we reframe it as a <strong>low-bandwidth intent channel</strong> that feeds a noisy, compressed token stream to a context-aware Large Language Model (LLM) agent.</p>
+<hr />
+<h2>2. Form Factor Rationale: Why the Neckband?</h2>
+<p>Selecting a wearable form factor requires balancing signal quality with daily wearability and social acceptability. The comparison between an <strong>anterior neckband</strong> and <strong>ear-adjacent/in-ear earbuds</strong> is governed by clear anatomical and biophysical constraints.</p>
+<pre><code>                         [ Social Wearability ]
+                                   │
+              ┌────────────────────┴────────────────────┐
+              ▼                                         ▼
+      [ Post-Auricular / In-Ear ]               [ Anterior Neckband ]
+      - High social acceptability               - Sleek sports collar styling
+      - SCM motion noise (&gt;100µV)               - High SNR speech musculature
+      - Attenuated anterior potentials          - Stable mechanical contact
+      - TMJ mechanical artifacts                - Dry textile compatible
+      * RESULT: Anatomically Dead               * RESULT: Signal Viable
+</code></pre>
+<h3>Relevant Muscle Groups and Surface Accessibility</h3>
+<p>The human speech production mechanism relies on the coordinated activation of over one hundred muscles. These are divided into primary groups based on location and surface accessibility:
+* <strong>Suprahyoid Group (Submental):</strong> Comprises the <em>mylohyoid</em>, <em>geniohyoid</em>, <em>stylohyoid</em>, and the <em>anterior belly of the digastric</em>. These form the floor of the mouth, running between the mandible and hyoid bone. They control tongue elevation, jaw depression, and initial consonant releases. They are highly superficial and accessible under the chin.
+* <strong>Infrahyoid Group (Strap Muscles):</strong> Comprises the <em>sternohyoid</em>, <em>sternothyroid</em>, <em>thyrohyoid</em>, and <em>omohyoid</em>. Located on the anterior midline of the neck, they stabilize the larynx and modulate vocal tract length. They are directly accessible on the front of the neck flanking the trachea.
+* <strong>Laryngeal Extrinsic &amp; Intrinsic Group:</strong> Includes the <em>thyrohyoid</em> and <em>cricothyroid</em> (which controls vocal fold tension). They are accessible over the thyroid cartilage lamina on the flanks of the throat.</p>
+<h3>Why Earbuds Fail</h3>
+<p>Earbud-based sEMG is highly socially acceptable but anatomically non-viable:
+1. <strong>SCM Motion Contamination:</strong> Electrodes placed behind the ear (over the mastoid process) sit directly over the insertion of the <strong>sternocleidomastoid (SCM)</strong> muscle. The SCM is a massive neck muscle active during head rotation, tilting, walking, and breathing. Contractions generate high-amplitude potentials (&gt;100 µV) that completely drown out microscopic subvocal speech potentials (&lt;10–20 µV).
+2. <strong>Absence of Anterior Path:</strong> The ear is separated from the anterior speech musculature by the mandible, the parotid gland, and the carotid sheath. Potentials are attenuated by the high impedance of these intervening tissues, making them unrecordable.
+3. <strong>Mechanical TMJ canal deflection:</strong> In-ear electrodes pick up mechanical ear canal wall deflection caused by the movement of the temporomandibular joint (TMJ) during jaw motion. This is a gross mechanical movement artifact, not a neuromuscular sEMG signal.</p>
+<h3>Why the Neckband Succeeds</h3>
+<p>A circumferential neckband collar aligns perfectly with the true distribution of speech-related neuromuscular signals:
+* It makes direct bilateral contact with the infrahyoid strap muscles and the larynx flanks.
+* An elastic collar design provides continuous, uniform mechanical pressure. This pressure maintains low-impedance contact with dry electrodes (such as graphene or PEDOT:PSS-coated textiles) without requiring sticky conductive gels that dry out and irritate the skin.
+* It is easily styled as a standard consumer accessory (sports collar, neckband headphones) or concealed under a collared shirt.</p>
+<hr />
+<h2>3. Electrode Layout: The 5-Zone System</h2>
+<p>To capture the complex muscle activations of silent speech, the platform defines a standardized five-zone electrode layout. These zones are anchored by palpable anatomical landmarks, allowing repeatably aligned placement without rigid grid coordinates.</p>
+<pre><code>                    Zone 1: Suprahyoid / Digastric (Submental)
+                 ┌──────────────────────────────────────────┐
+                 │                [ Mandible ]              │
+                 │   Zone 2: Mylohyoid (Submental Midline)  │
+                 └──────────────────────────────────────────┘
+                                      │
+                                [ Hyoid Bone ]
+                                      │
+                 ┌──────────────────────────────────────────┐
+                 │         Zone 3: Thyrohyoid Gap           │
+                 │      [ Thyroid Cartilage / Adam's Apple ] │
+                 │      Zone 4: Larynx Flanks (Lateral)     │
+                 └──────────────────────────────────────────┘
+                                      │
+                 ┌──────────────────────────────────────────┐
+                 │       Zone 5: Infrahyoid (Strap)         │
+                 │             [ Trachea ]                  │
+                 └──────────────────────────────────────────┘
+</code></pre>
+<h3>Zone Definitions:</h3>
+<ol>
+<li><strong>Zone 1 (Suprahyoid / Digastric):</strong> Positioned submentally, 10–15 mm lateral to the midline on each side, superior to the hyoid bone. Captures jaw depression and floor-of-mouth elevation.</li>
+<li><strong>Zone 2 (Mylohyoid):</strong> Located on the midline of the submental area between the chin tip and the hyoid bone. Oriented in a transverse configuration to capture bilabial stop consonants (e.g. /p/, /b/).</li>
+<li><strong>Zone 3 (Thyrohyoid Gap):</strong> Located in the narrow 10–15 mm gap between the hyoid bone and the superior edge of the thyroid cartilage. Measures larynx elevation to distinguish voicing transitions (e.g., /d/ vs /t/).</li>
+<li><strong>Zone 4 (Larynx Flanks):</strong> Positioned bilaterally over the thyroid cartilage lamina. Targets cricothyroid activity and voice onset dynamics.</li>
+<li><strong>Zone 5 (Infrahyoid Strap):</strong> Positioned on the anterior neck below the hyoid bone, flanking the trachea. Targets superficial sternohyoid and omohyoid muscles, providing high SNR activations linked to speech phrasing.</li>
+</ol>
+<h3>The Optional Chin Extension</h3>
+<p>Because Zones 1 and 2 lie above the hyoid bone, a standard straight neckband collar cannot contact them. Capturing them requires a curved submental bridge (chin extension) rising 40–60 mm from the collar. The chin extension is <strong>explicitly optional</strong> and is omitted when specific conditions are met:
+* <strong>Condition A (Closed-Vocabulary Targets):</strong> For simple closed vocabularies (10–25 commands), neck-only channels (Zones 3–5) provide sufficient discriminative features. If a within-session classifier achieves $\ge 95\%$ accuracy on Zones 3–5, the mechanical complexity of the chin bridge is omitted.
+* <strong>Condition B (Social UX Constraints):</strong> In mainstream consumer settings, a visible chin bridge is socially stigmatizing (projecting a medical look) and restricts natural head movement. For consumer adoption, it is omitted in favor of collar-only contacts.
+* <strong>Condition C (Biophysical Noise):</strong> Variations in submental fat and jaw profiles can cause electrodes on a rising bridge to slide during head rotation, creating motion artifacts that exceed their classification gain.
+* <strong>Condition D (Manufacturing Cost):</strong> If the adjustable mechanical articulation increases the Bill of Materials (BOM) beyond the marginal utility of open-vocabulary phonetic accuracy, it is omitted.</p>
+<h3>Electrode Count and Routing Optimization</h3>
+<p>To adapt to low-power, edge microcontroller configurations, routing is optimized into three reference layouts:</p>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>Channels</th>
+<th>Contacts</th>
+<th>Target Application</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Base Collar (Zones 3–5)</strong></td>
+<td>8 Differential</td>
+<td>16 Contacts</td>
+<td>Closed-Vocabulary Consumer Navigation (Media / Assistant)</td>
+</tr>
+<tr>
+<td><strong>With Chin Extension (Zones 1–5)</strong></td>
+<td>11 Differential</td>
+<td>22 Contacts</td>
+<td>Open-Vocabulary Phoneme Decoding</td>
+</tr>
+<tr>
+<td><strong>Optimized Common-Reference Array</strong></td>
+<td>10 Single-Ended</td>
+<td>11 Contacts</td>
+<td>Low-BOM / Low-Power Consumer Release</td>
+</tr>
+</tbody>
+</table>
+<p>By adopting a <strong>common-reference routing scheme</strong> (placing active contacts around the neck referenced to a single ground contact over the C7 vertebra), we capture the entire 5-zone space using only 11 contacts. This reduces Analog-to-Digital Converter (ADC) requirements and hardware space while preventing signal shunting.</p>
+<hr />
+<h2>4. Intent Reconstruction: Not a Silent Microphone</h2>
+<p>The core failure of early silent speech interfaces was a conceptual one: they were modeled as <strong>silent microphones</strong> whose sEMG classifiers must act as direct speech-to-text transcribers. This framing evaluates the system using Word Error Rate (WER). To be viable, a silent microphone must compete with acoustic ASR systems, requiring a $\le 5\%$ WER.</p>
+<p>This bar is biophysically impossible for dry-electrode consumer neckbands due to the absence of vocal fold resonance and expelled airflow. While SOTA clinical systems using wet gel adhesives on facial arrays achieve an 8.9% WER under laboratory conditions, a practical dry-electrode neckband yields a raw classifier WER of <strong>15% to 25%</strong> at best. Under a silent mic framing, a 15–25% WER is unusable.</p>
+<p>We reframe the subvocal interface as a <strong>low-bandwidth intent channel</strong>. The sEMG classifier's output is not a final text transcript, but rather a stream of noisy, compressed phonetic tokens. The receiver is a Large Language Model (LLM) that reconstructs the user's full, high-fidelity intent by combining this noisy token stream with the active consumer device context.</p>
+<pre><code>[ sEMG Neckband ] ──&gt; ( Noisy Tokens: &quot;nxt trak&quot; ) ──────┐
+                                                         ├─&gt; [ LLM Intent Decoder ] ──&gt; { Action: SKIP_TRACK }
+[ Active Context ] ──&gt; ( App: Spotify; Status: playing ) ┘
+</code></pre>
+<p>The LLM does not function as a post-hoc spell-checker; it is the primary decoder, resolving ambiguities using five layers of context:
+1. <strong>Application State:</strong> The active foreground app on the user's phone (e.g., if a music player is active, the LLM prioritizes media navigation over sending a text message).
+2. <strong>Environment Metadata:</strong> The user's GPS coordinates, local weather, and transit status.
+3. <strong>Notification History:</strong> The sequence of recent notifications (e.g., if a text message asking "Are you running late?" has just arrived, the LLM knows the next subvocal input is highly likely to be a template response like "yes", "no", or "running late").
+4. <strong>User Profile:</strong> The user's personal contact book, favorite music playlists, and calendar database (constraining search dictionaries for names and titles).
+5. <strong>Phonetic Proximity Map:</strong> The phonetic confusion matrix of the classifier (e.g., if the classifier outputs <code>"tacks"</code>, the LLM uses phonetic distance to resolve it to <code>"text"</code> because <code>"text"</code> is a valid action in the active messaging state, whereas <code>"tacks"</code> is not).</p>
+<p>This reframing shifts the target performance metric from a raw Word Error Rate to the <strong>Intent Execution Success Rate (target $\ge 95\%$)</strong>. A system with a raw classifier error rate of 20% can consistently achieve a $\ge 95\%$ execution success rate by utilizing these contextual constraints and prompting the user for confirmation (via bone conduction) if the classifier's output confidence falls below a set threshold.</p>
+<hr />
+<h2>5. The Signal Path</h2>
+<p>The flow of information from the user's motor cortex to the final system action is executed in a seven-stage signal pipeline:</p>
+<pre class="mermaid">flowchart TD
+    subgraph Wearable Neckband Hardware
+        A[Stage 1: Subvocalize\nPhysiological delay: ~60ms] --&gt;|sEMG potentials| B[Stage 2: sEMG Acquisition\nBuffering window: 100ms]
+        B --&gt;|Digitized packets| C[Stage 3: BLE Transmission\nConnection interval: &lt;20ms]
+    end
+
+    subgraph Phone / Edge Host Software
+        C --&gt;|Raw sEMG stream| D[Stage 4: Classifier\nML Inference: &lt;25ms]
+        C -.-&gt;|Dashed Feedback Path\nRaw logging| H[(Data Log)]
+        H -.-&gt;|Calibration update| I[Training Pipeline]
+        I -.-&gt;|Model weights| D
+
+        D --&gt;|Noisy tokens + Confidence| E[Stage 5: LLM Intent Reconstruction\nClaude Haiku: &lt;200ms]
+        E --&gt;|Structured JSON| F[Stage 6: Agent/Tool Execution\nDevice API call: &lt;100ms]
+        F --&gt;|Audio status| G[Stage 7: Bone Conduction Feedback\nTTS synthesis: &lt;150ms]
+        E --&gt;|Low Confidence\nClarification prompt| G
+    end
+
+    G --&gt;|Audio waveform| A
+
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style E fill:#bbf,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style G fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#eef,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    style I fill:#eef,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+</pre>
+<h3>The 7-Stage Pipeline Specifications:</h3>
+<ol>
+<li><strong>Stage 1: Subvocalize (60 ms):</strong> The user internally articulates a command. Efferent signals propagate to the speech muscles, generating sEMG potentials on the skin surface.</li>
+<li><strong>Stage 2: sEMG acquisition (100 ms):</strong> Bipolar dry contacts capture differential voltages. Signals are amplified, filtered (20–450 Hz bandpass + 60 Hz notch), and digitized using a 16-bit ADC. The sliding window buffers 100 ms of data.</li>
+<li><strong>Stage 3: BLE transmission (&lt;20 ms):</strong> An ESP32 microcontroller packetizes the data and transmits it via BLE GATT notification to a paired edge host, targeting a 15 ms connection interval.</li>
+<li><strong>Stage 4: Classifier (&lt;25 ms):</strong> The phone-side host runs a classifier (1D CNN or Random Forest) on the raw sEMG stream, outputting a softmax probability distribution over vocabulary classes.</li>
+<li><strong>Stage 5: LLM intent reconstruction (&lt;200 ms):</strong> Claude 3.5 Haiku receives the raw tokens, confidence scores, and active device context, outputting a structured JSON intent schema. If the classifier confidence falls below 0.75, the LLM triggers a confirmation request.</li>
+<li><strong>Stage 6: Agent / tool execution (&lt;100 ms):</strong> The structured intent is dispatched to a local mobile app tool or consumer API (e.g., music control, messaging).</li>
+<li><strong>Stage 7: Bone conduction audio feedback (&lt;150 ms):</strong> Native system TTS synthesizes the response (e.g., "Skipping track") and plays it via bone conduction transducers integrated into the neckband wings.</li>
+</ol>
+<h3>Latency Budget:</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Target Latency</th>
+<th>Status / Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Subvocalize → sEMG surface</td>
+<td>~60 ms</td>
+<td>Physiological, fixed</td>
+</tr>
+<tr>
+<td>2. sEMG acquisition (window)</td>
+<td>100 ms</td>
+<td>Hardware buffering</td>
+</tr>
+<tr>
+<td>3. BLE transmission</td>
+<td>&lt;20 ms</td>
+<td>ESP32 BLE GATT connection</td>
+</tr>
+<tr>
+<td>4. Classifier inference</td>
+<td>&lt;25 ms</td>
+<td>Phone-side ML (verified locally on CPU)</td>
+</tr>
+<tr>
+<td>5. LLM intent reconstruction</td>
+<td>&lt;200 ms</td>
+<td>Claude Haiku API / local model</td>
+</tr>
+<tr>
+<td>6. Agent tool execution</td>
+<td>&lt;100 ms</td>
+<td>Device API call</td>
+</tr>
+<tr>
+<td>7. TTS + bone conduction</td>
+<td>&lt;150 ms</td>
+<td>On-device audio buffer</td>
+</tr>
+<tr>
+<td><strong>Total (p50 target)</strong></td>
+<td><strong>655 ms</strong></td>
+<td><strong>Target &lt;1 second</strong></td>
+</tr>
+</tbody>
+</table>
+<p>An end-to-end latency of <strong>655 ms</strong> represents a significant speed advantage over standard consumer voice assistants, which typically require 1.0 to 1.5 seconds from trigger word completion to response initiation.</p>
+<hr />
+<h2>6. What this Architecture Cannot Do (Yet)</h2>
+<p>A practical systems design must be transparent about its physiological and engineering limits:
+1. <strong>Vocabulary Scaling Ceiling:</strong> The intent-reconstruction model does not enable unconstrained, open-vocabulary continuous speech. While it elevates the practical vocabulary ceiling of a dry neckband from ~25 words to <strong>200–500 commands</strong> by using contextual disambiguation, it cannot decode a 50,000-word open vocabulary.
+2. <strong>Inter-Session Electrode Shift:</strong> Physical landmark-based mechanical alignment reduces, but does not eliminate, repositioning errors. To maintain a target accuracy of $\ge 85\%$, the system still requires a <strong>&lt;10 minute calibration drill</strong> when the user first dons the device.
+3. <strong>Purely Covert Speech:</strong> The system cannot decode purely mental rehearsal (where the user thinks the word without any muscle innervation). The system requires <strong>subvocally mouthed speech</strong> (involving micro-contractions and subtle articulatory movements).
+4. <strong>Cross-User Generalization:</strong> Due to anatomical variations, the classifier is not zero-shot. It requires user-specific training data to construct the initial classifier weights.</p>
+<hr />
+<h2>7. The One Ask: Beta Program Call to Action</h2>
+<p>The viability of the intent-reconstruction layer has been proven in simulation. The next step is validating the architecture under real-world operational constraints:</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>Beta Opportunities:</strong> If you are a mobile developer or early adopter and want to participate in a simulated pilot of the intent-reconstruction software layer (which utilizes simulated noisy inputs and requires no physical hardware), please get in touch at <code>beta@subvocal.dev</code>.</p>
+</blockquote>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
+</body>
+</html>
