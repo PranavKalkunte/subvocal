@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference | Subvocal SDK</title>
+  <link rel="stylesheet" href="./index.css">
+  <style>
+    .api-module { margin-bottom: 3rem; }
+    .api-module h2 { font-family: var(--font-mono); }
+    .api-member { margin: 1.25rem 0; }
+    .api-member h4 { font-family: var(--font-mono); margin-bottom: 0.25rem; }
+    .docs-sidebar ul { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="./index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./api.html" aria-current="page">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+<aside class="docs-sidebar">
+<h4>API Reference</h4>
+<h4>subvocal.core</h4>
+<ul>
+<li><a href="#subvocal-core-corrections"><span>[*]</span> corrections</a></li>
+<li><a href="#subvocal-core-interfaces"><span>[*]</span> interfaces</a></li>
+<li><a href="#subvocal-core-llm_providers"><span>[*]</span> llm_providers</a></li>
+<li><a href="#subvocal-core-models"><span>[*]</span> models</a></li>
+<li><a href="#subvocal-core-pipeline"><span>[*]</span> pipeline</a></li>
+<li><a href="#subvocal-core-prompts"><span>[*]</span> prompts</a></li>
+<li><a href="#subvocal-core-security"><span>[*]</span> security</a></li>
+<li><a href="#subvocal-core-testing"><span>[*]</span> testing</a></li>
+</ul>
+<h4>subvocal.context</h4>
+<ul>
+<li><a href="#subvocal-context-manager"><span>[*]</span> manager</a></li>
+<li><a href="#subvocal-context-mock_data"><span>[*]</span> mock_data</a></li>
+<li><a href="#subvocal-context-providers"><span>[*]</span> providers</a></li>
+<li><a href="#subvocal-context-schema"><span>[*]</span> schema</a></li>
+</ul>
+<h4>subvocal.hardware</h4>
+<ul>
+<li><a href="#subvocal-hardware-datasets"><span>[*]</span> datasets</a></li>
+<li><a href="#subvocal-hardware-drivers"><span>[*]</span> drivers</a></li>
+</ul>
+<h4>subvocal.emg_core</h4>
+<ul>
+<li><a href="#subvocal-emg_core-dsp-features"><span>[*]</span> features</a></li>
+<li><a href="#subvocal-emg_core-dsp-filters"><span>[*]</span> filters</a></li>
+<li><a href="#subvocal-emg_core-ml-benchmark"><span>[*]</span> benchmark</a></li>
+<li><a href="#subvocal-emg_core-ml-config_schema"><span>[*]</span> config_schema</a></li>
+<li><a href="#subvocal-emg_core-ml-export"><span>[*]</span> export</a></li>
+<li><a href="#subvocal-emg_core-ml-infer"><span>[*]</span> infer</a></li>
+<li><a href="#subvocal-emg_core-ml-model_io"><span>[*]</span> model_io</a></li>
+<li><a href="#subvocal-emg_core-ml-pretrain"><span>[*]</span> pretrain</a></li>
+<li><a href="#subvocal-emg_core-ml-train"><span>[*]</span> train</a></li>
+</ul>
+<h4>subvocal.mcp</h4>
+<ul>
+<li><a href="#subvocal-mcp-server"><span>[*]</span> server</a></li>
+</ul>
+<h4>subvocal.shorthand</h4>
+<ul>
+<li><a href="#subvocal-shorthand-decoder"><span>[*]</span> decoder</a></li>
+<li><a href="#subvocal-shorthand-simulator"><span>[*]</span> simulator</a></li>
+<li><a href="#subvocal-shorthand-spec"><span>[*]</span> spec</a></li>
+<li><a href="#subvocal-shorthand-vocab"><span>[*]</span> vocab</a></li>
+</ul>
+<h4>subvocal.tts</h4>
+<ul>
+<li><a href="#subvocal-tts-engine"><span>[*]</span> engine</a></li>
+<li><a href="#subvocal-tts-schema"><span>[*]</span> schema</a></li>
+</ul>
+</aside>
+<article class="docs-body">
+<h1>API Reference</h1>
+<p>Auto-generated from docstrings across 30 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
+<section class="api-module" id="subvocal-core-corrections">
+<h2>subvocal.core.corrections</h2>
+<p>Correction-capture loop and fine-tuning hook implementation for Subvocal SDK.</p>
+<div class="api-member">
+<h3><code>class CorrectionLogEntry(BaseModel)</code></h3>
+<p>Represents a single correction entry logged when a user fixes an incorrect reconstruction.</p>
+</div>
+<div class="api-member">
+<h3><code>class CorrectionManager</code></h3>
+<p>Manages local storage and retrieval of user correction log entries.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, log_path: str | None = None)</code></pre>
+<p>Initializes the manager.</p><p>Args:
+    log_path: Path to the JSONL log file. Defaults to 'sdk/data/corrections_log.jsonl'.</p>
+</div>
+<div class="api-member">
+<h4>log_correction</h4>
+<pre><code>def log_correction(self, raw_shorthand: str, decoded_intent: str, corrected_intent: str, context: UserContext) -&gt; CorrectionLogEntry</code></pre>
+<p>Logs a new correction entry to the local JSONL file.</p>
+</div>
+<div class="api-member">
+<h4>get_corrections</h4>
+<pre><code>def get_corrections(self) -&gt; list[CorrectionLogEntry]</code></pre>
+<p>Retrieves all logged corrections from the local file.</p>
+</div>
+<div class="api-member">
+<h4>clear_logs</h4>
+<pre><code>def clear_logs(self) -&gt; None</code></pre>
+<p>Clears all logged corrections in the file.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class FinetuningHook</code></h3>
+<p>Converts correction logs into training datasets for fine-tuning LLMs.</p>
+<div class="api-member">
+<h4>export_to_openai</h4>
+<pre><code>def export_to_openai(entries: list[CorrectionLogEntry], system_instruction: str = 'Translate silent speech shorthand and context into correct system actions.') -&gt; list[dict[str, Any]]</code></pre>
+<p>Converts entries to OpenAI chat fine-tuning format.</p><p>Format:
+    {"messages": [{"role": "system", "content": ...}, {"role": "user", "content": ...}, {"role": "assistant", "content": ...}]}</p>
+</div>
+<div class="api-member">
+<h4>export_to_gemini</h4>
+<pre><code>def export_to_gemini(entries: list[CorrectionLogEntry], system_instruction: str = 'Translate silent speech shorthand and context into correct system actions.') -&gt; list[dict[str, Any]]</code></pre>
+<p>Converts entries to Google Gemini fine-tuning format.</p><p>Format:
+    {"contents": [...], "systemInstruction": {...}}</p>
+</div>
+<div class="api-member">
+<h4>export_to_jsonl</h4>
+<pre><code>def export_to_jsonl(data: list[dict[str, Any]], output_path: str) -&gt; int</code></pre>
+<p>Writes the exported dataset list to a JSONL file.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-interfaces">
+<h2>subvocal.core.interfaces</h2>
+<p>Abstract base interfaces for subvocal middleware components.</p><p>Enables pluggable integration of various:
+- Hardware sources (real-time stream, replay file, synthetic generators).
+- LLM providers (Gemini, Claude, GPT, local Llama).
+- Action executors (browser control, device APIs, notifications).
+- Context providers (OS, active application, contacts, location).</p>
+<div class="api-member">
+<h3><code>class HardwareSource(ABC)</code></h3>
+<p>Abstract interface for subvocal/sEMG sensor data acquisition.</p>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>Initialize connection and start streaming raw sEMG data.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>Stop data acquisition and disconnect hardware clean.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>Reads a buffered window of raw sEMG samples.</p><p>Args:
+    window_ms: Time duration in milliseconds to buffer and retrieve.</p><p>Returns:
+    A Frame containing the Sample points.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>Returns True if the sensor connection is healthy.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class LLMProvider(ABC)</code></h3>
+<p>Abstract interface for turning noisy classified shorthand into semantic Intents.</p>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>Resolves a noisy shorthand token stream to a structured Intent.</p><p>Args:
+    tokens: A sequence of classified CommandTokens.
+    context: The UserContext state snapshot at execution time.</p><p>Returns:
+    The reconstructed Intent.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>Returns the name of the LLM provider (e.g., 'gemini', 'anthropic').</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ActionExecutor(ABC)</code></h3>
+<p>Abstract interface for dispatching resolved agentic Actions.</p>
+<div class="api-member">
+<h4>execute</h4>
+<pre><code>def execute(self, action: Action) -&gt; Any</code></pre>
+<p>Dispatches the action to device APIs or agent tools.</p><p>Args:
+    action: The Action object to execute.</p><p>Returns:
+    The result of the execution.</p>
+</div>
+<div class="api-member">
+<h4>can_execute</h4>
+<pre><code>def can_execute(self, action: Action) -&gt; bool</code></pre>
+<p>Returns True if the executor supports this specific action type.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ContextProvider(ABC)</code></h3>
+<p>Abstract interface for retrieving live device or environment context.</p>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>Retrieves a snapshot of the active user/system context.</p><p>Returns:
+    The UserContext populated with active state metadata.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>Returns the name/identifier of this context provider.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class Classifier(ABC)</code></h3>
+<p>Abstract interface for classifying physiological raw signals into command tokens.</p>
+<div class="api-member">
+<h4>predict</h4>
+<pre><code>def predict(self, frame: Frame | Any) -&gt; CommandToken | None</code></pre>
+<p>Classifies a Frame of raw signals into a CommandToken (applies gating/cooldown if configured).</p>
+</div>
+<div class="api-member">
+<h4>predict_raw</h4>
+<pre><code>def predict_raw(self, frame: Frame | Any) -&gt; tuple[str, float, list[float]]</code></pre>
+<p>Predicts the probability distribution for a Frame of raw signals.</p><p>Returns:
+    (predicted_class_label, max_probability, all_probabilities_list)</p>
+</div>
+<div class="api-member">
+<h4>labels</h4>
+<pre><code>def labels(self) -&gt; list[str]</code></pre>
+<p>Returns the list of output labels/classes supported by the classifier.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-llm_providers">
+<h2>subvocal.core.llm_providers</h2>
+<p>Concrete implementations of the LLMProvider interface using urllib.</p>
+<div class="api-member">
+<h3><code>class BaseLLMProvider(LLMProvider)</code></h3>
+<p>Base provider containing prompt formatting and request helpers.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, api_key: str | None = None, model_name: str | None = None, mock_response: str | None = None, prompt_version: str = 'v1')</code></pre>
+<p>Initializes the base LLM provider.</p><p>Args:
+    api_key: API authorization key. Resolves from environment if None.
+    model_name: Name of the LLM model to request.
+    mock_response: Optional mock string response to bypass HTTP calls (for testing).
+    prompt_version: The version string of the prompt template to use.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ClaudeProvider(BaseLLMProvider)</code></h3>
+<p>Anthropic Claude LLM provider client.</p>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class OpenAIProvider(BaseLLMProvider)</code></h3>
+<p>OpenAI GPT completions provider client.</p>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class GeminiProvider(BaseLLMProvider)</code></h3>
+<p>Google Gemini content generation provider client.</p>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class LlamaProvider(BaseLLMProvider)</code></h3>
+<p>Local Llama provider client (running via Ollama).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, ollama_host: str | None = None, model_name: str | None = None, mock_response: str | None = None, prompt_version: str = 'v1')</code></pre>
+<p>Initializes the Ollama Llama provider client.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-models">
+<h2>subvocal.core.models</h2>
+<p>Core data models representing the flow from raw physiological signals to actions.</p><p>Defines:
+- Sample: A single point-in-time multi-channel sensor reading.
+- Frame: A window of Samples buffered for classifier consumption.
+- CommandToken: A token/shorthand output by a classifier.
+- Intent: Reconstructed semantic command and arguments.
+- Action: Executable instruction dispatched to an executor.</p>
+<div class="api-member">
+<h3><code>class Sample(BaseModel)</code></h3>
+<p>A single multichannel biometric time-series sample.</p>
+</div>
+<div class="api-member">
+<h3><code>class Frame(BaseModel)</code></h3>
+<p>A window/segment of Samples buffered for signal processing or ML inference.</p>
+<div class="api-member">
+<h4>to_numpy</h4>
+<pre><code>def to_numpy(self) -&gt; np.ndarray</code></pre>
+<p>Converts the frame samples into a 2D NumPy array.</p><p>Returns:
+    np.ndarray of shape (num_samples, num_channels)</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CommandToken(BaseModel)</code></h3>
+<p>A token predicted by the raw classifier with associated confidence.</p>
+</div>
+<div class="api-member">
+<h3><code>class Intent(BaseModel)</code></h3>
+<p>Semantic intent reconstructed from a token stream and active context.</p>
+</div>
+<div class="api-member">
+<h3><code>class Action(BaseModel)</code></h3>
+<p>The executable instruction dispatched to the system or agent executor.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-pipeline">
+<h2>subvocal.core.pipeline</h2>
+<p>SubvocalPipeline class coordinating the hardware, classification, and execution layers.</p>
+<div class="api-member">
+<h3><code>class SubvocalPipeline</code></h3>
+<p>Orchestrates hardware ingestion, classifier decoding, intent reconstruction, and action execution.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, hardware: HardwareSource, classify_fn: Callable[[Frame], CommandToken | None], llm_provider: LLMProvider, context_provider: ContextProvider, executor: ActionExecutor, phrase_timeout_seconds: float = 1.5, policy_engine: Any | None = None, dry_run: bool = False, trace_path: str | None = None)</code></pre>
+<p>Initializes the subvocal pipeline.</p><p>Args:
+    hardware: The hardware source to read sEMG frames from.
+    classify_fn: A function that takes a Frame and returns an optional CommandToken.
+    llm_provider: The LLM intent decoder.
+    context_provider: The active user context source.
+    executor: The device or tool action dispatcher.
+    phrase_timeout_seconds: Duration of silence (no tokens) to wait before triggering intent reconstruction.
+    policy_engine: Optional authorization and security policy checker.
+    dry_run: If True, resolves intents and compiles actions but does not run them.
+    trace_path: Destination JSONL file for execution traces. Defaults to
+        ``pipeline_traces.jsonl`` inside the user data directory
+        (see :mod:`subvocal.paths`).</p>
+</div>
+<div class="api-member">
+<h4>token_buffer</h4>
+<pre><code>def token_buffer(self) -&gt; list[CommandToken]</code></pre>
+<p>Returns the current accumulated tokens in the buffer.</p>
+</div>
+<div class="api-member">
+<h4>clear_buffer</h4>
+<pre><code>def clear_buffer(self) -&gt; None</code></pre>
+<p>Clears the accumulated command token buffer.</p>
+</div>
+<div class="api-member">
+<h4>step</h4>
+<pre><code>def step(self, window_ms: int = 100) -&gt; Action | None</code></pre>
+<p>Performs a single step of the pipeline.</p><p>1. Ingests a new frame of raw sEMG data from the hardware source.
+2. Classifies the frame into a potential command token.
+3. Accumulates the token and checks for phrase completion timeout.
+4. If timed out, reconstructs the intent and executes the action.</p><p>Args:
+    window_ms: Buffer window duration in milliseconds to acquire.</p><p>Returns:
+    An executed Action if an intent was resolved and dispatched, otherwise None.</p>
+</div>
+<div class="api-member">
+<h4>process_phrase</h4>
+<pre><code>def process_phrase(self) -&gt; Action | None</code></pre>
+<p>Forces immediate decoding and execution of the accumulated tokens.</p><p>Returns:
+    The executed Action if successful, otherwise None.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-prompts">
+<h2>subvocal.core.prompts</h2>
+<p>Prompt templates and version manager for intent reconstruction.</p>
+<div class="api-member">
+<h3><code>class PromptManager</code></h3>
+<p>Manages versioned prompt templates for LLM intent decoding.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, default_version: str = 'v1')</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>register_template</h4>
+<pre><code>def register_template(self, version: str, template: str) -&gt; None</code></pre>
+<p>Register a new custom prompt template version.</p>
+</div>
+<div class="api-member">
+<h4>get_template</h4>
+<pre><code>def get_template(self, version: str | None = None) -&gt; str</code></pre>
+<p>Retrieve a raw prompt template string by version.</p>
+</div>
+<div class="api-member">
+<h4>format_prompt</h4>
+<pre><code>def format_prompt(self, noisy_input: str, heuristic_recommendation: str, web_context: str, calendar: str, contacts: str, history: str, version: str | None = None) -&gt; str</code></pre>
+<p>Formats the selected prompt template with active inputs.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-security">
+<h2>subvocal.core.security</h2>
+<p>Security policies and authorization gating for subvocal actions.</p>
+<div class="api-member">
+<h3><code>class AuthorizationPolicy(ABC)</code></h3>
+<p>Abstract base class for all subvocal execution policies.</p>
+<div class="api-member">
+<h4>is_authorized</h4>
+<pre><code>def is_authorized(self, action: Action, context: UserContext) -&gt; bool</code></pre>
+<p>Evaluate if the given action is authorized to execute.</p><p>Args:
+    action: The proposed Action object.
+    context: The UserContext state snapshot at proposal time.</p><p>Returns:
+    True if authorized, False otherwise.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ConfidenceThresholdPolicy(AuthorizationPolicy)</code></h3>
+<p>Restricts execution of actions if classifier/reconstruction confidence is too low.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, threshold: float = 0.8)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_authorized</h4>
+<pre><code>def is_authorized(self, action: Action, context: UserContext) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CommandWhitelistPolicy(AuthorizationPolicy)</code></h3>
+<p>Restricts commands to a strict whitelist of allowed actions.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, allowed_commands: list[str])</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_authorized</h4>
+<pre><code>def is_authorized(self, action: Action, context: UserContext) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ContextBoundPolicy(AuthorizationPolicy)</code></h3>
+<p>Blocks execution of sensitive commands unless the active application is safe.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, sensitive_commands: list[str], safe_applications: list[str])</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_authorized</h4>
+<pre><code>def is_authorized(self, action: Action, context: UserContext) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class PolicyEngine</code></h3>
+<p>Orchestrates authorization consensus across multiple active policies.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, policies: list[AuthorizationPolicy] | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>add_policy</h4>
+<pre><code>def add_policy(self, policy: AuthorizationPolicy) -&gt; None</code></pre>
+<p>Add a new policy to the engine.</p>
+</div>
+<div class="api-member">
+<h4>is_authorized</h4>
+<pre><code>def is_authorized(self, action: Action, context: UserContext) -&gt; bool</code></pre>
+<p>Returns True only if all configured policies approve the action.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-core-testing">
+<h2>subvocal.core.testing</h2>
+<p>Shared test fixtures for Subvocal SDK unit tests.</p>
+<div class="api-member">
+<h3><code>class MockHardwareSource(HardwareSource)</code></h3>
+<p>Generates continuous synthetic sEMG samples (sine + noise).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, fs: float = 1000.0, num_channels: int = 4)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class MockLLMProvider(LLMProvider)</code></h3>
+<p>Maps shorthand token text patterns to GOTO or CLICK intents.</p>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class MockActionExecutor(ActionExecutor)</code></h3>
+<p>Records dispatched actions for assertion in tests.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>execute</h4>
+<pre><code>def execute(self, action: Action) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>can_execute</h4>
+<pre><code>def can_execute(self, action: Action) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class MockContextProvider(ContextProvider)</code></h3>
+<p>Returns a static browser UserContext snapshot.</p>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-context-manager">
+<h2>subvocal.context.manager</h2>
+<p>Context Manager for retrieving, filtering, and searching user context.</p><p>Integrates context querying with custom articulatory phonetic distance matching
+to enable context-aware silent speech decoding.</p>
+<div class="api-member">
+<h3><code>class ContextManager</code></h3>
+<p>Manages active UserContext and provides phonetic searching utilities.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, context: UserContext)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>update_context</h4>
+<pre><code>def update_context(self, new_context: UserContext)</code></pre>
+<p>Update the active user context state.</p>
+</div>
+<div class="api-member">
+<h4>get_contact_names</h4>
+<pre><code>def get_contact_names(self) -&gt; list[str]</code></pre>
+<p>Get list of all contact names in plain text.</p>
+</div>
+<div class="api-member">
+<h4>get_contact_shorthands</h4>
+<pre><code>def get_contact_shorthands(self) -&gt; list[str]</code></pre>
+<p>Get list of all pre-computed contact name shorthands.</p>
+</div>
+<div class="api-member">
+<h4>get_calendar_titles</h4>
+<pre><code>def get_calendar_titles(self) -&gt; list[str]</code></pre>
+<p>Get list of all calendar event titles in plain text.</p>
+</div>
+<div class="api-member">
+<h4>get_calendar_shorthands</h4>
+<pre><code>def get_calendar_shorthands(self) -&gt; list[str]</code></pre>
+<p>Get list of all calendar event title shorthands.</p>
+</div>
+<div class="api-member">
+<h4>get_visible_element_labels</h4>
+<pre><code>def get_visible_element_labels(self) -&gt; list[str]</code></pre>
+<p>Get list of all visible UI element labels in plain text.</p>
+</div>
+<div class="api-member">
+<h4>get_visible_element_shorthands</h4>
+<pre><code>def get_visible_element_shorthands(self) -&gt; list[str]</code></pre>
+<p>Get list of all visible UI element shorthands.</p>
+</div>
+<div class="api-member">
+<h4>get_all_context_words</h4>
+<pre><code>def get_all_context_words(self) -&gt; list[str]</code></pre>
+<p>Compile a list of all potential word tokens present in the active context.</p><p>Useful for seeding the dictionary candidate generator in the decoder.</p>
+</div>
+<div class="api-member">
+<h4>search_contacts</h4>
+<pre><code>def search_contacts(self, noisy_shorthand: str) -&gt; list[tuple[Contact, float]]</code></pre>
+<p>Search contacts by comparing noisy shorthand against pre-computed contact shorthands.</p><p>Returns:
+    List of tuples (Contact, articulatory_distance) sorted by distance.</p>
+</div>
+<div class="api-member">
+<h4>search_elements</h4>
+<pre><code>def search_elements(self, noisy_shorthand: str) -&gt; list[tuple[UIElement, float]]</code></pre>
+<p>Search visible UI elements using articulatory distance matching.</p><p>Returns:
+    List of tuples (UIElement, articulatory_distance) sorted by distance.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-context-mock_data">
+<h2>subvocal.context.mock_data</h2>
+<p>Mock user context generator for testing and demonstration.</p><p>Generates structured mock data for contacts, calendar events, location,
+conversation history, and active browser app state, automatically pre-computing
+compressed phonetic shorthands for all text labels.</p>
+<div class="api-member">
+<h3><code>generate_mock_context</code></h3>
+<pre><code>def generate_mock_context() -&gt; UserContext</code></pre>
+<p>Generate a high-fidelity UserContext populated with mock data.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-context-providers">
+<h2>subvocal.context.providers</h2>
+<p>Modular ContextProvider implementations for the Subvocal SDK.</p>
+<div class="api-member">
+<h3><code>class StaticContextProvider(ContextProvider)</code></h3>
+<p>Simple provider wrapping a static UserContext instance (useful for tests/mock runs).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, context: UserContext, name: str = 'static_context')</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CalendarContextProvider(ContextProvider)</code></h3>
+<p>Modular provider for retrieving calendar events.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, events: list[CalendarEvent] | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ContactsContextProvider(ContextProvider)</code></h3>
+<p>Modular provider for retrieving user contact directory.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, contacts: list[Contact] | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class LocationContextProvider(ContextProvider)</code></h3>
+<p>Modular provider for retrieving current location details.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, location: LocationInfo | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class AppStateContextProvider(ContextProvider)</code></h3>
+<p>Modular provider for retrieving active app state and visible elements.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, app_state: AppState | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CompositeContextProvider(ContextProvider)</code></h3>
+<p>Aggregates multiple individual ContextProviders into a single UserContext.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, providers: list[ContextProvider])</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-context-schema">
+<h2>subvocal.context.schema</h2>
+<p>Pydantic schemas for the Subvocal user context.</p><p>Defines the structure for contacts, calendar events, location, conversation,
+and app state (including visible interactive elements).</p>
+<div class="api-member">
+<h3><code>class Contact(BaseModel)</code></h3>
+<p>Represents a user contact contact.</p>
+</div>
+<div class="api-member">
+<h3><code>class CalendarEvent(BaseModel)</code></h3>
+<p>Represents a calendar entry.</p>
+</div>
+<div class="api-member">
+<h3><code>class LocationInfo(BaseModel)</code></h3>
+<p>Represents the user's current spatial coordinates and address.</p>
+</div>
+<div class="api-member">
+<h3><code>class Message(BaseModel)</code></h3>
+<p>Represents a conversation turn in user-agent history.</p>
+</div>
+<div class="api-member">
+<h3><code>class UIElement(BaseModel)</code></h3>
+<p>Represents an interactive user interface element visible on screen.</p>
+</div>
+<div class="api-member">
+<h3><code>class AppState(BaseModel)</code></h3>
+<p>Represents the active application and on-screen context.</p>
+</div>
+<div class="api-member">
+<h3><code>class UserContext(BaseModel)</code></h3>
+<p>Root model for the complete user context state.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-hardware-datasets">
+<h2>subvocal.hardware.datasets</h2>
+<p>Dataset drivers for public electromyography databases (Ninapro, PutEMG, CSL-HDEMG).</p>
+<div class="api-member">
+<h3><code>class NinaproDriver(HardwareSource)</code></h3>
+<p>Streams electromyography signals from Ninapro MATLAB (.mat) files.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, file_path: str, fs: float = 2000.0, loop: bool = True)</code></pre>
+<p>Initializes the Ninapro driver.</p><p>Args:
+    file_path: Path to the downloaded Ninapro subject MATLAB .mat file.
+    fs: Sampling frequency (default: 2000.0 Hz for DB2/DB3, DB1 is 100 Hz).
+    loop: Boolean representing whether to loop data when EOF is reached.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class PutEMGDriver(HardwareSource)</code></h3>
+<p>Streams electromyography signals from PutEMG HDF5 (.h5) files.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, file_path: str, fs: float = 5120.0, loop: bool = True)</code></pre>
+<p>Initializes the PutEMG driver.</p><p>Loads h5py dynamically.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CSLHDEMGDriver(HardwareSource)</code></h3>
+<p>Streams electromyography signals from CSL-HDEMG binary or NumPy (.npy) files.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, file_path: str, fs: float = 2000.0, loop: bool = True, num_channels: int = 8)</code></pre>
+<p>Initializes the CSL-HDEMG driver.</p><p>Args:
+    file_path: Path to the NumPy (.npy) or raw binary float data file.
+    fs: Sample rate of the recording.
+    loop: Boolean representing whether to loop the data when EOF is reached.
+    num_channels: Number of channels in the raw binary file (ignored for .npy, which encodes shape).</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-hardware-drivers">
+<h2>subvocal.hardware.drivers</h2>
+<p>Concrete implementations of HardwareSource drivers for the Subvocal SDK.</p>
+<div class="api-member">
+<h3><code>class FileReplayDriver(HardwareSource)</code></h3>
+<p>Replays raw sEMG data from a CSV file, simulating real-time acquisition.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, file_path: str, fs: float = 1000.0, loop: bool = True)</code></pre>
+<p>Initializes the file replay driver.</p><p>Args:
+    file_path: Path to the recorded CSV file.
+    fs: Sample rate of the recording.
+    loop: Boolean representing whether to loop the data when EOF is reached.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SyntheticSignalGenerator(HardwareSource)</code></h3>
+<p>Generates continuous physiological sEMG noise and injects command triggers.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, fs: float = 1000.0, num_channels: int = 8)</code></pre>
+<p>Initializes the synthetic signal generator.</p><p>Args:
+    fs: Sample frequency in Hz.
+    num_channels: Number of channels to generate (maps to 5-zone layouts).</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>trigger_command</h4>
+<pre><code>def trigger_command(self, command: str, duration_ms: int = 300) -&gt; None</code></pre>
+<p>Injects a high-amplitude transient signal profile on selected channels.</p><p>Args:
+    command: Command name (e.g., 'gt', 'clk', 'srch', 'typ').
+    duration_ms: Burst duration in milliseconds.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class OpenBCICytonDriver(HardwareSource)</code></h3>
+<p>Acquires raw biosignals from OpenBCI Cyton boards via BrainFlow.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, port: str | None = None, simulated: bool = True)</code></pre>
+<p>Initializes the Cyton driver.</p><p>Loads BrainFlow dynamically.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class DelsysTrignoDriver(HardwareSource)</code></h3>
+<p>Direct TCP Socket driver connecting to the Delsys Trigno Control Utility.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, host: str = 'localhost', data_port: int = 50043, cmd_port: int = 50040, num_channels: int = 8, fs: float = 2000.0)</code></pre>
+<p>Initializes the Delsys socket driver.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-dsp-features">
+<h2>subvocal.emg_core.dsp.features</h2>
+<p>Feature extraction for sEMG segments.</p><p>Implements the TD0/TD10 feature pipeline (validated on the EMG-UKA corpus).
+This decomposes the raw sEMG signal into:
+1. Low-frequency articulatory gestures (using a double moving average filter).
+2. High-frequency muscular activity.</p><p>Features are computed over sliding window frames, stacked with context,
+and averaged over the entire segment to create robust representations.</p>
+<div class="api-member">
+<h3><code>extract_features_td10</code></h3>
+<pre><code>def extract_features_td10(segment: np.ndarray, sample_rate: float = 250.0, frame_size_ms: int = 27, frame_shift_ms: int = 10, context: int = 10) -&gt; np.ndarray</code></pre>
+<p>Extract TD10 features for all channels.</p><p>Returns:
+    2D array: (num_frames, num_channels * 5 * (2*context + 1))</p>
+</div>
+<div class="api-member">
+<h3><code>extract_features_td10_segment</code></h3>
+<pre><code>def extract_features_td10_segment(segment: np.ndarray, sample_rate: float = 250.0, frame_size_ms: int = 27, frame_shift_ms: int = 10, context: int = 10) -&gt; np.ndarray</code></pre>
+<p>Aggregate frame-level TD10 features into a single 1D segment feature vector.</p><p>Computes mean and standard deviation across frames.
+For 4 channels with context=10: 4 * 5 * 21 * 2 = 840 dimensional vector.</p>
+</div>
+<div class="api-member">
+<h3><code>extract_features</code></h3>
+<pre><code>def extract_features(segment: np.ndarray, sample_rate: float = 250.0) -&gt; np.ndarray</code></pre>
+<p>Extract features from a multi-channel segment using TD10 pipeline.</p>
+</div>
+<div class="api-member">
+<h3><code>extract_features_batch</code></h3>
+<pre><code>def extract_features_batch(segments: list[np.ndarray], sample_rate: float = 250.0) -&gt; np.ndarray</code></pre>
+<p>Extract features for a batch of segments.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-dsp-filters">
+<h2>subvocal.emg_core.dsp.filters</h2>
+<p>DSP filters for sEMG signal preprocessing.</p><p>All functions operate on numpy arrays.</p><p>PHYSIOLOGICAL RATIONALE FOR FILTER PARAMETERS:
+Traditional electromyography (EMG) used in physical prosthetics and active gesture recognition typically
+utilizes a bandpass filter from 20 Hz to 450 Hz. This bandwidth is chosen to capture high-speed motor unit action
+potentials (MUAPs) generated by large skeletal muscle contractions (e.g., bicep flexion) while rejecting movement
+artifacts (which lie below 10–20 Hz).</p><p>However, for silent speech interface (SSI) surface electromyography (sEMG) around the vocal tract, jaw, and throat:
+1. **Low-Velocity Articulatory Movements**: The vocal articulators (tongue, throat musculature, jaw) move at low speeds,
+   producing slow neuromuscular signal envelopes (1–15 Hz) during internal speech imagery/subvocalization.
+2. **Rejection of Speech Dynamics**: Standard acoustic speech features operate at higher frequency bands, but silent
+   neuromuscular activations are primary envelope-based targets.
+3. **Powerline Interference Gating**: Powerline noise (50 Hz in EU, 60 Hz in US) heavily corrupts biological signals.
+   By constraining the bandpass filter's upper bound to 50.0 Hz, we inherently reject the majority of powerline
+   interference before it can leak into feature extractors.
+4. **Nyquist Limit Constraints**: Wearable device power budgets restrict hardware sampling rates (typically 250 Hz).
+   At fs=250 Hz, the Nyquist limit is 125 Hz. A filter cutoff of 50 Hz ensures we satisfy the Nyquist-Shannon sampling
+   theorem with a generous guard band, avoiding aliasing artifacts.</p><p>Therefore, we implement and default to the AlterEgo-inspired 1.3–50.0 Hz bandpass filter, but support standard
+20–450.0 Hz ranges via parameter config.</p>
+<div class="api-member">
+<h3><code>remove_dc</code></h3>
+<pre><code>def remove_dc(signal: np.ndarray, window_samples: int = 250) -&gt; np.ndarray</code></pre>
+<p>Remove DC offset by subtracting a rolling mean.</p><p>Args:
+    signal: 1D array of samples for a single channel.
+    window_samples: Window size in samples (default 250 = 1s at 250Hz).</p><p>Returns:
+    DC-removed signal.</p>
+</div>
+<div class="api-member">
+<h3><code>bandpass</code></h3>
+<pre><code>def bandpass(signal: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, order: int = 4) -&gt; np.ndarray</code></pre>
+<p>Butterworth bandpass filter for raw sEMG.</p><p>Args:
+    signal: 1D array of samples.
+    fs: Sampling frequency in Hz.
+    low: Low cutoff frequency.
+    high: High cutoff frequency.
+    order: Filter order.</p><p>Returns:
+    Bandpass-filtered signal.</p>
+</div>
+<div class="api-member">
+<h3><code>notch_60hz</code></h3>
+<pre><code>def notch_60hz(signal: np.ndarray, fs: float = 250.0, freq: float = 60.0, Q: float = 30.0) -&gt; np.ndarray</code></pre>
+<p>Notch filter to remove power line interference.</p><p>Args:
+    signal: 1D array of samples.
+    fs: Sampling frequency.
+    freq: Notch frequency (60 Hz US, 50 Hz EU).
+    Q: Quality factor (higher = narrower notch).</p><p>Returns:
+    Notch-filtered signal.</p>
+</div>
+<div class="api-member">
+<h3><code>smooth</code></h3>
+<pre><code>def smooth(signal: np.ndarray, window: int = 3) -&gt; np.ndarray</code></pre>
+<p>Simple moving average smoothing.</p><p>Args:
+    signal: 1D array of samples.
+    window: Window size in samples.</p><p>Returns:
+    Smoothed signal.</p>
+</div>
+<div class="api-member">
+<h3><code>preprocess_channel</code></h3>
+<pre><code>def preprocess_channel(signal: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, apply_bandpass: bool = True, apply_notch: bool = True) -&gt; np.ndarray</code></pre>
+<p>Full preprocessing pipeline for a single channel.</p><p>Args:
+    signal: 1D float array of raw ADC values.
+    fs: Sample rate.
+    low: Low cutoff frequency for bandpass.
+    high: High cutoff frequency for bandpass.
+    apply_bandpass: Whether to apply bandpass.
+    apply_notch: Whether to apply notch filter.</p><p>Returns:
+    Preprocessed signal.</p>
+</div>
+<div class="api-member">
+<h3><code>preprocess_multichannel</code></h3>
+<pre><code>def preprocess_multichannel(data: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, apply_bandpass: bool = True, apply_notch: bool = True) -&gt; np.ndarray</code></pre>
+<p>Preprocess all channels.</p><p>Args:
+    data: 2D array of shape (num_samples, num_channels).
+    fs: Sample rate.
+    low: Low cutoff frequency for bandpass.
+    high: High cutoff frequency for bandpass.</p><p>Returns:
+    Preprocessed data of same shape.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-benchmark">
+<h2>subvocal.emg_core.ml.benchmark</h2>
+<p>Inference benchmarking harness for sEMG classifiers.</p>
+<div class="api-member">
+<h3><code>estimate_flops</code></h3>
+<pre><code>def estimate_flops(model_type: str, num_channels: int = 4, segment_length: int = 150, num_classes: int = 4, hidden_size: int = 64, num_layers: int = 2) -&gt; int</code></pre>
+<p>Estimate floating point operations (FLOPs) per forward inference pass.</p><p>Formulas derived from structural layers (convolutions, linear projections, attention, and recurrences).</p>
+</div>
+<div class="api-member">
+<h3><code>run_benchmark</code></h3>
+<pre><code>def run_benchmark(user_id: str, model_type: str, num_runs: int = 200) -&gt; dict[str, Any]</code></pre>
+<p>Benchmark model inference latency, disk footprint, and parameter size.</p><p>Estimates computational FLOPs and electrical energy footprint.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-config_schema">
+<h2>subvocal.emg_core.ml.config_schema</h2>
+<p>Pydantic schema for reproducible model training configuration.</p>
+<div class="api-member">
+<h3><code>class TrainingConfig(BaseModel)</code></h3>
+<p>Configuration class for reproducible training runs.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-export">
+<h2>subvocal.emg_core.ml.export</h2>
+<p>Model export and quantization pipeline for sEMG classifiers.</p>
+<div class="api-member">
+<h3><code>export_to_onnx</code></h3>
+<pre><code>def export_to_onnx(user_id: str, model_type: str, export_path: str) -&gt; str</code></pre>
+<p>Export a trained PyTorch model to ONNX format.</p><p>Args:
+    user_id: The ID of the user.
+    model_type: "cnn", "gru", or "transformer".
+    export_path: Destination path for the exported ONNX model.</p>
+</div>
+<div class="api-member">
+<h3><code>export_to_coreml</code></h3>
+<pre><code>def export_to_coreml(user_id: str, model_type: str, export_path: str) -&gt; bool</code></pre>
+<p>Compile PyTorch/ONNX model to Apple Core ML format.</p><p>Note: requires coremltools. If missing, handles gracefully.</p>
+</div>
+<div class="api-member">
+<h3><code>export_to_tflite</code></h3>
+<pre><code>def export_to_tflite(user_id: str, model_type: str, export_path: str) -&gt; bool</code></pre>
+<p>Compile PyTorch model to TFLite format via ONNX → tf2onnx → TFLite.</p><p>Requires: tensorflow, tf2onnx. If missing, raises NotImplementedError.
+Returns True on success, raises on failure.</p>
+</div>
+<div class="api-member">
+<h3><code>quantize_model_int8</code></h3>
+<pre><code>def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) -&gt; dict[str, Any]</code></pre>
+<p>Perform dynamic int8 quantization on a PyTorch model and run accuracy regression checks.</p><p>Args:
+    user_id: User calibration dataset ID to evaluate against.
+    model_type: "cnn", "gru", or "transformer".
+    threshold: Maximum allowed accuracy drop (e.g. 0.05 = 5%).</p><p>Returns:
+    Dict detailing quantization metrics.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-infer">
+<h2>subvocal.emg_core.ml.infer</h2>
+
+<div class="api-member">
+<h3><code>class InferenceEngine(Classifier)</code></h3>
+<p>Inference engine with debounce and confidence thresholding.</p><p>Implements the core.interfaces.Classifier interface.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, user_id: str, model_type: str = 'rf', confidence_threshold: float = config.CONFIDENCE_THRESHOLD, cooldown_ms: int = config.COOLDOWN_MS)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>labels</h4>
+<pre><code>def labels(self) -&gt; list[str]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>predict</h4>
+<pre><code>def predict(self, frame: Frame | np.ndarray) -&gt; CommandToken | None</code></pre>
+<p>Classify a segment and apply gating logic.</p><p>Args:
+    frame: A Frame object or 2D array of shape (segment_length, num_channels)</p><p>Returns:
+    CommandToken if successful, else None.</p>
+</div>
+<div class="api-member">
+<h4>predict_raw</h4>
+<pre><code>def predict_raw(self, frame: Frame | np.ndarray) -&gt; tuple[str, float, list[float]]</code></pre>
+<p>Classify a segment/frame without debounce gates.</p><p>Returns:
+    (best_command, probability, all_probabilities)</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-model_io">
+<h2>subvocal.emg_core.ml.model_io</h2>
+<p>Model I/O utilities for saving and loading classifiers.</p>
+<div class="api-member">
+<h3><code>get_model_path</code></h3>
+<pre><code>def get_model_path(user_id: str, model_type: str = 'rf') -&gt; str</code></pre>
+<p>Get the path to a user's model file.</p><p>Saves RF/SVM models as joblib, and CNN/GRU/Transformer models as .pth.</p>
+</div>
+<div class="api-member">
+<h3><code>save_model</code></h3>
+<pre><code>def save_model(model_data: dict[str, Any], user_id: str, model_type: str = 'rf') -&gt; str</code></pre>
+<p>Save a model and its associated metadata to disk.</p>
+</div>
+<div class="api-member">
+<h3><code>load_model</code></h3>
+<pre><code>def load_model(user_id: str, model_type: str = 'rf') -&gt; dict[str, Any]</code></pre>
+<p>Load a model and its metadata from disk.</p>
+</div>
+<div class="api-member">
+<h3><code>model_exists</code></h3>
+<pre><code>def model_exists(user_id: str, model_type: str = 'rf') -&gt; bool</code></pre>
+<p>Check if a model exists for a user.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-pretrain">
+<h2>subvocal.emg_core.ml.pretrain</h2>
+<p>Pre-training script for deep neural sEMG classifiers on public baseline datasets.</p>
+<div class="api-member">
+<h3><code>generate_synthetic_dataset</code></h3>
+<pre><code>def generate_synthetic_dataset(user_id: str = 'pretrained', num_classes: int = 5, segments_per_class: int = 40)</code></pre>
+<p>Generate a reproducible multi-channel sEMG dataset to simulate a public dataset.</p><p>Each class is synthesized with unique harmonic and frequency patterns.</p>
+</div>
+<div class="api-member">
+<h3><code>run_pretraining</code></h3>
+<pre><code>def run_pretraining()</code></pre>
+<p>Run pre-training pipeline for all deep architectures.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-train">
+<h2>subvocal.emg_core.ml.train</h2>
+<p>Training pipeline for sEMG command classifiers.</p><p>Supports:
+1. RandomForest (Standard ML baseline using TD10 aggregated features).
+2. SVM (Feature-based Support Vector Machine baseline).
+3. 1D CNN (Deep learning model operating on raw time-series segments).
+4. GRU (Bidirectional temporal RNN operating on raw time-series segments).
+5. Transformer (Attention-based sequential encoder operating on raw segments).</p>
+<div class="api-member">
+<h3><code>class EMG1DCNN(nn.Module)</code></h3>
+<p>1D CNN for sEMG segment classification.</p><p>Applies convolutions over the temporal dimension of raw multichannel sEMG.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int, num_classes: int, segment_length: int = 150)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x)</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class EMGGRU(nn.Module)</code></h3>
+<p>Bidirectional GRU for temporal tracking of sEMG gestures.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int, num_classes: int, hidden_size: int = 64, num_layers: int = 2)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x)</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class EMGTransformer(nn.Module)</code></h3>
+<p>Small Transformer encoder for raw multichannel sEMG sequence classification.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int, num_classes: int, segment_length: int = 150, d_model: int = 64, nhead: int = 4, num_layers: int = 2, dim_feedforward: int = 128)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x)</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>load_dataset</code></h3>
+<pre><code>def load_dataset(user_id: str) -&gt; tuple[list[np.ndarray], list[str]]</code></pre>
+<p>Load the calibration dataset for a user.</p><p>Returns:
+    segments: list of raw 2D arrays, each (segment_length, num_channels)
+    labels: list of label strings corresponding to each segment</p>
+</div>
+<div class="api-member">
+<h3><code>preprocess_segments</code></h3>
+<pre><code>def preprocess_segments(segments: list[np.ndarray], fs: float, low: float, high: float) -&gt; np.ndarray</code></pre>
+<p>Preprocess raw segments and stack into a 3D numpy array of shape (N, C, T).</p>
+</div>
+<div class="api-member">
+<h3><code>train_model</code></h3>
+<pre><code>def train_model(user_id: str, model_type: str = 'rf', test_size: float = 0.2, config_obj: TrainingConfig | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Train a sEMG model for a user and save it to disk.</p><p>Args:
+    user_id: The ID of the user.
+    model_type: "rf", "svm", "cnn", "gru", or "transformer".
+    test_size: Split ratio for testing/validation.
+    config_obj: Optional TrainingConfig parameters object.</p><p>Returns:
+    A dictionary containing training metrics and results.</p>
+</div>
+<div class="api-member">
+<h3><code>calibrate_model</code></h3>
+<pre><code>def calibrate_model(user_id: str, pretrained_model_type: str, calibration_config: TrainingConfig | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Calibrate / fine-tune a pre-trained model for a new user.</p><p>For PyTorch models (CNN, GRU, Transformer), it loads pre-trained weights,
+replaces/adjusts the classification head to match the user's classes,
+freezes base layers (optionally), and fine-tunes on user calibration data.
+For classical models (RF, SVM), it fits a new pipeline on user data.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-mcp-server">
+<h2>subvocal.mcp.server</h2>
+<p>Model Context Protocol (MCP) reference server for Subvocal Middleware.</p>
+<div class="api-member">
+<h3><code>class MockLLMProvider(LLMProvider)</code></h3>
+<p>Fallback LLM Provider that maps command abbreviations to intents.</p>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -&gt; Intent</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class MockContextProvider(ContextProvider)</code></h3>
+<p>Exposes mock system context state.</p>
+<div class="api-member">
+<h4>get_context</h4>
+<pre><code>def get_context(self) -&gt; UserContext</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class MockActionExecutor(ActionExecutor)</code></h3>
+<p>Executes actions and logs execution history.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>execute</h4>
+<pre><code>def execute(self, action: Action) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>can_execute</h4>
+<pre><code>def can_execute(self, action: Action) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SubvocalMCPServer</code></h3>
+<p>Zero-dependency Model Context Protocol server communicating via stdio.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>handle_request</h4>
+<pre><code>def handle_request(self, req: dict[str, Any]) -&gt; dict[str, Any] | None</code></pre>
+<p>Process an incoming JSON-RPC 2.0 request and return the response dictionary.</p>
+</div>
+<div class="api-member">
+<h4>run</h4>
+<pre><code>def run(self)</code></pre>
+<p>Standard input/output reader loop.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>main</code></h3>
+<pre><code>def main() -&gt; None</code></pre>
+<p>Console entry point for the ``subvocal-mcp`` stdio server.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-shorthand-decoder">
+<h2>subvocal.shorthand.decoder</h2>
+<p>Hybrid decoder for subvocal compressed shorthand.</p><p>Combines an articulatory-distance heuristic alignment algorithm (dynamic programming)
+with a model-agnostic LLM reconstruction layer.</p>
+<div class="api-member">
+<h3><code>articulatory_distance</code></h3>
+<pre><code>def articulatory_distance(word1: str, word2: str) -&gt; float</code></pre>
+<p>Calculates Levenshtein distance customized for sEMG articulatory phonetic groups.</p><p>Substitutions between letters in the same articulatory group cost 0.25 (highly likely sEMG error).
+Substitutions across different articulatory groups cost 1.0.
+Deletion in candidate (extra character in query) costs 1.0.
+Insertion in candidate (skipped character in query shorthand) costs 0.4.</p>
+</div>
+<div class="api-member">
+<h3><code>find_best_shorthand_match</code></h3>
+<pre><code>def find_best_shorthand_match(noisy_token: str, candidate_words: list[str]) -&gt; list[tuple[str, float]]</code></pre>
+<p>Scores a noisy shorthand token against a list of candidate words.</p><p>Compresses candidates to shorthand and computes articulatory distance.
+Returns a list of tuples (candidate, distance) sorted by distance.</p>
+</div>
+<div class="api-member">
+<h3><code>heuristic_decode_phrase</code></h3>
+<pre><code>def heuristic_decode_phrase(noisy_phrase: str, web_context_words: list[str] | None = None, calendar_words: list[str] | None = None, contacts_words: list[str] | None = None, ui_elements: list[str] | None = None, contacts: list[str] | None = None, calendar_events: list[str] | None = None) -&gt; tuple[str, float]</code></pre>
+<p>Decodes a full noisy shorthand phrase using articulatory heuristics.</p><p>Uses Command-Aware Context Prioritization and Phrase-Level Matching.
+If structured contexts are provided, they are prioritized based on the command.
+Otherwise, falls back to flat context words.</p>
+</div>
+<div class="api-member">
+<h3><code>call_llm_api</code></h3>
+<pre><code>def call_llm_api(provider: str, api_key: str, model: str | None, prompt: str) -&gt; str | None</code></pre>
+<p>Helper to perform model-agnostic LLM calls via urllib without external SDK dependencies.</p>
+</div>
+<div class="api-member">
+<h3><code>reconstruct_intent_llm</code></h3>
+<pre><code>def reconstruct_intent_llm(noisy_input: str, heuristic_candidate: str, web_context: str | None = None, calendar: str | None = None, contacts: str | None = None, history: str | None = None) -&gt; str | None</code></pre>
+<p>Reconstructs the target command phrase from noisy shorthand using a model-agnostic LLM.</p><p>Discovers API keys dynamically from the environment.</p>
+</div>
+<div class="api-member">
+<h3><code>hybrid_decode</code></h3>
+<pre><code>def hybrid_decode(noisy_phrase: str, web_context_words: list[str] | None = None, calendar_words: list[str] | None = None, contacts_words: list[str] | None = None, history: str | None = None, ui_elements: list[str] | None = None, contacts: list[str] | None = None, calendar_events: list[str] | None = None) -&gt; tuple[str, float, str]</code></pre>
+<p>Combines heuristic alignment and LLM disambiguation for premium accuracy.</p><p>Returns:
+    A tuple of (decoded_phrase, confidence, method_used)
+    Method used is either "heuristic" or "llm".</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-shorthand-simulator">
+<h2>subvocal.shorthand.simulator</h2>
+<p>Noisy channel simulator for subvocal compressed shorthand.</p><p>Converts target command phrases to compressed shorthand and applies realistic
+articulatory sEMG noise (substitutions, insertions, and deletions).</p>
+<div class="api-member">
+<h3><code>get_articulatory_substitution</code></h3>
+<pre><code>def get_articulatory_substitution(char: str) -&gt; str</code></pre>
+<p>Get a random alternative character from the same articulatory group to simulate sEMG confusion.</p>
+</div>
+<div class="api-member">
+<h3><code>simulate_emg_noise</code></h3>
+<pre><code>def simulate_emg_noise(shorthand_word: str, sub_rate: float = 0.1, del_rate: float = 0.05, ins_rate: float = 0.05) -&gt; str</code></pre>
+<p>Applies deletion, insertion, and substitution noise to a shorthand word.</p><p>- Substitution: Replaces char with another from the same articulatory group (sEMG confusion).
+- Deletion: Drops the character (packet drop / weak signal).
+- Insertion: Inserts a random character (muscle twitch / swallow artifact).</p>
+</div>
+<div class="api-member">
+<h3><code>phrase_to_noisy_shorthand</code></h3>
+<pre><code>def phrase_to_noisy_shorthand(phrase: str, sub_rate: float = 0.1, del_rate: float = 0.05, ins_rate: float = 0.05) -&gt; tuple[str, str]</code></pre>
+<p>Convert a full phrase to clean shorthand and simulated noisy shorthand.</p><p>Returns:
+    A tuple of (clean_shorthand_phrase, noisy_shorthand_phrase)</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-shorthand-spec">
+<h2>subvocal.shorthand.spec</h2>
+<p>Shorthand and phonetic specifications for the subvocal interface.</p><p>Defines the articulatory phonetic groups representing sEMG jaw/throat
+activation clusters, and compression rules to construct the shorthand representation.</p>
+<div class="api-member">
+<h3><code>compress_word</code></h3>
+<pre><code>def compress_word(word: str) -&gt; str</code></pre>
+<p>Compress a single English word into its skeletal shorthand format.</p><p>Rules:
+1. Lowercase the word.
+2. Check if the word has a common abbreviation.
+3. Otherwise:
+   a. Keep the first letter.
+   b. Remove subsequent vowels (a, e, i, o, u, y) and 'h'.
+   c. Deduplicate consecutive identical consonants (e.g. 'gg' -&gt; 'g').</p>
+</div>
+<div class="api-member">
+<h3><code>word_to_articulatory_sequence</code></h3>
+<pre><code>def word_to_articulatory_sequence(shorthand_word: str) -&gt; list[str]</code></pre>
+<p>Convert a shorthand word to its articulatory group sequence.</p><p>Non-alphabet characters (like numbers and punctuation) are preserved as-is.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-shorthand-vocab">
+<h2>subvocal.shorthand.vocab</h2>
+<p>Target command vocabulary for the Subvocal interface.</p><p>Defines a phonetically diverse set of 17 commands optimized for throat/jaw
+surface Electromyography (sEMG) classification.</p>
+<div class="api-member">
+<h3><code>get_command_list</code></h3>
+<pre><code>def get_command_list() -&gt; list[str]</code></pre>
+<p>Return a list of all command names in the vocabulary.</p>
+</div>
+<div class="api-member">
+<h3><code>get_command_details</code></h3>
+<pre><code>def get_command_details(name: str) -&gt; dict[str, Any]</code></pre>
+<p>Retrieve details for a specific command.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-tts-engine">
+<h2>subvocal.tts.engine</h2>
+<p>Text-to-Speech (TTS) engine for subvocal feedback.</p><p>Supports native macOS 'say' / 'afplay' utilities, OpenAI Audio API, and pyttsx3.</p>
+<div class="api-member">
+<h3><code>class TTSEngine</code></h3>
+<p>Multi-backend Text-to-Speech generator and player.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, config: TTSConfig | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>speak</h4>
+<pre><code>def speak(self, text: str, filename: str | None = None) -&gt; str</code></pre>
+<p>Synthesize and speak the text, saving the audio to a file.</p><p>Args:
+    text: The plain text statement to speak.
+    filename: Target file name (optional). If omitted, a file name
+              is auto-generated based on text hash.
+              
+Returns:
+    The absolute path of the generated audio file.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-tts-schema">
+<h2>subvocal.tts.schema</h2>
+<p>Pydantic schemas for the Text-to-Speech (TTS) engine.</p><p>Defines voices, speeds, formats, and configurations for audio feedback.</p>
+<div class="api-member">
+<h3><code>class TTSConfig(BaseModel)</code></h3>
+<p>Configuration settings for text-to-speech audio feedback.</p>
+</div>
+</section>
+</article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="./docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+</body>
+</html>
