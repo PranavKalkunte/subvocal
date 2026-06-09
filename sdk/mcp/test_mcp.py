@@ -22,7 +22,11 @@ class TestSubvocalMCPServer(unittest.TestCase):
         self.server.handle_request({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
     def test_01_initialize_handshake(self):
-        """Test initialize handshake request and notification lifecycle."""
+        """Test initialize handshake request and notification lifecycle on a fresh server."""
+        # Use a fresh server so the assertions are not trivially satisfied by setUp
+        server = SubvocalMCPServer()
+        self.assertFalse(server.initialized)
+
         # 1. Send initialize request
         req = {
             "jsonrpc": "2.0",
@@ -33,22 +37,23 @@ class TestSubvocalMCPServer(unittest.TestCase):
                 "clientInfo": {"name": "TestClient", "version": "1.0.0"}
             }
         }
-        resp = self.server.handle_request(req)
+        resp = server.handle_request(req)
         self.assertIsNotNone(resp)
         self.assertEqual(resp["jsonrpc"], "2.0")
         self.assertEqual(resp["id"], 1)
         self.assertEqual(resp["result"]["protocolVersion"], "2025-03-26")
         self.assertIn("tools", resp["result"]["capabilities"])
         self.assertIn("resources", resp["result"]["capabilities"])
+        self.assertFalse(server.initialized)  # notification not sent yet
 
         # 2. Complete initialized notification
         notif = {
             "jsonrpc": "2.0",
             "method": "notifications/initialized"
         }
-        resp_notif = self.server.handle_request(notif)
+        resp_notif = server.handle_request(notif)
         self.assertIsNone(resp_notif)
-        self.assertTrue(self.server.initialized)
+        self.assertTrue(server.initialized)
 
     def test_02_tools_list(self):
         """Test tools discovery schema properties."""

@@ -1,7 +1,7 @@
 """End-to-end integration tests for sEMG DSP and ML components."""
 
 import os
-import shutil
+import glob
 import numpy as np
 import unittest
 
@@ -16,6 +16,7 @@ from emg_core.ml.train import train_model, calibrate_model
 from emg_core.ml.infer import InferenceEngine
 from emg_core.ml.export import export_to_onnx, quantize_model_int8
 from emg_core.ml.benchmark import run_benchmark
+from emg_core.ml.model_io import get_model_path
 
 
 class TestEMGCoreML(unittest.TestCase):
@@ -34,9 +35,9 @@ class TestEMGCoreML(unittest.TestCase):
         labels = []
 
         np.random.seed(42)
-        # Create 15 samples per class = 60 segments total
+        # Create 8 samples per class = 32 segments total (enough for train/test split, faster on CI)
         for i, cmd in enumerate(cls.commands):
-            for _ in range(15):
+            for _ in range(8):
                 # Generate random base noise
                 seg = np.random.normal(0.0, 1.0, (150, 4))
                 # Add command-specific pattern (frequency) to make it highly classifiable
@@ -63,18 +64,10 @@ class TestEMGCoreML(unittest.TestCase):
         if os.path.exists(calib_user_data):
             os.remove(calib_user_data)
 
-        # Remove models
-        for m_type in ["rf", "svm", "cnn", "gru", "transformer", "cnn_quantized", "gru_quantized", "transformer_quantized"]:
-            for uid in [cls.user_id, "test_user_calib"]:
-                for ext in ["joblib", "pth"]:
-                    model_path = os.path.join(config.MODELS_DIR, f"{uid}_model_{m_type}.{ext}")
-                    if os.path.exists(model_path):
-                        os.remove(model_path)
-
-        # Remove ONNX files
-        onnx_path = os.path.join(config.MODELS_DIR, f"{cls.user_id}_model_cnn.onnx")
-        if os.path.exists(onnx_path):
-            os.remove(onnx_path)
+        # Remove all model artifacts for the test users (glob catches any extension or naming variant)
+        for uid in [cls.user_id, "test_user_calib"]:
+            for path in glob.glob(os.path.join(config.MODELS_DIR, f"{uid}_model_*")):
+                os.remove(path)
 
     def test_01_dsp_pipeline(self):
         """Test preprocessing and feature extraction."""
@@ -165,6 +158,10 @@ class TestEMGCoreML(unittest.TestCase):
 
     def test_07_calibration_pipeline(self):
         """Test per-user calibration / fine-tuning routine."""
+        pretrained_path = get_model_path("pretrained", "cnn")
+        if not os.path.exists(pretrained_path):
+            self.skipTest("Pretrained CNN weights not found; calibration transfer-learning path cannot be tested. Run sdk/emg_core/ml/pretrain.py first.")
+
         # Create a calibration user dataset
         calib_user = "test_user_calib"
         calib_data_path = os.path.join(config.DATA_DIR, f"{calib_user}_calib.npz")

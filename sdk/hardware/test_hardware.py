@@ -1,25 +1,26 @@
 """Unit and mock integration tests for the Subvocal SDK Hardware Abstraction Layer (HAL).
 """
 
-import unittest
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import unittest
 import time
 import tempfile
 import csv
 import socket
 import struct
 import threading
-from typing import List
 
 import numpy as np
-from core.models import Sample, Frame
 from hardware.drivers import (
     FileReplayDriver,
     SyntheticSignalGenerator,
     OpenBCICytonDriver,
     DelsysTrignoDriver,
 )
-from hardware.datasets import NinaproDriver, PutEMGDriver, CSLHDEMGDriver
+from hardware.datasets import PutEMGDriver
 
 
 # --- Mock TCP Server for Delsys Trigno Tests ---
@@ -114,7 +115,7 @@ class MockDelsysStation:
                 sample_count = 0
                 while not self._stop_event.is_set() and sample_count < 1000:
                     # Packet: 8 channels * 4 bytes each = 32 bytes
-                    channels = [float(i + 0.1) for i in range(8)]
+                    channels = [i + 0.1 for i in range(8)]
                     packet = struct.pack("<8f", *channels)
                     conn.sendall(packet)
                     sample_count += 1
@@ -253,3 +254,31 @@ class TestHardwareAbstraction(unittest.TestCase):
             self.assertFalse(driver.is_connected())
         finally:
             mock_station.stop()
+
+    def test_file_replay_driver_no_loop(self):
+        """Test FileReplayDriver with loop=False pads with the last sample after EOF."""
+        with tempfile.NamedTemporaryFile(suffix=".csv", mode="w", delete=False, newline="") as tmp:
+            writer = csv.writer(tmp)
+            writer.writerow(["ch1", "ch2"])
+            writer.writerow([1.0, 2.0])
+            writer.writerow([3.0, 4.0])
+            tmp_path = tmp.name
+
+        try:
+            driver = FileReplayDriver(file_path=tmp_path, fs=100.0, loop=False)
+            driver.start()
+
+            # Read 2 samples (exhausts the file)
+            frame1 = driver.read_frame(window_ms=20)
+            self.assertEqual(frame1.samples[0].channels, [1.0, 2.0])
+            self.assertEqual(frame1.samples[1].channels, [3.0, 4.0])
+
+            # Read 2 more — driver should pad with the last row [3.0, 4.0]
+            frame2 = driver.read_frame(window_ms=20)
+            self.assertEqual(frame2.samples[0].channels, [3.0, 4.0])
+            self.assertEqual(frame2.samples[1].channels, [3.0, 4.0])
+
+            driver.stop()
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)

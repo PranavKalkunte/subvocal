@@ -14,7 +14,7 @@ from typing import List, Optional
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.models import Frame, CommandToken, Intent, Action
-from core.interfaces import HardwareSource, LLMProvider, ActionExecutor, ContextProvider
+from core.interfaces import LLMProvider, ActionExecutor, ContextProvider
 from core.pipeline import SubvocalPipeline
 from context.schema import UserContext, AppState
 from hardware.drivers import SyntheticSignalGenerator
@@ -34,7 +34,7 @@ class SmokeExecutor(ActionExecutor):
 
 class SmokeLLM(LLMProvider):
     """Intent decoder translating shorthand tokens."""
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
         phrase = " ".join([t.text for t in tokens])
         if "clk" in phrase:
             return Intent(
@@ -123,8 +123,8 @@ class TestSubvocalEndToEndSmoke(unittest.TestCase):
             self.assertEqual(len(pipeline.token_buffer), 1)
             self.assertEqual(pipeline.token_buffer[0].text, "clk")
 
-            # Step C: Let the phrase timeout elapse (0.4s) to trigger reconstruction
-            time.sleep(0.45)
+            # Step C: Let the phrase timeout elapse (0.4s) to trigger reconstruction (2× margin for CI)
+            time.sleep(0.8)
             
             # Step the pipeline again, which triggers phrase processing due to timeout
             action_result = pipeline.step(window_ms=50)
