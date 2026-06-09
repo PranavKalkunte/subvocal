@@ -139,6 +139,14 @@ def get_api_key(provider_name: str) -&gt; str:
     env_var = f&quot;{provider_name.upper()}_API_KEY&quot;
     return os.environ.get(env_var, &quot;&quot;)
 </code></pre>
+<h3>2.3 HMAC-SHA256 Signed Capability Tokens</h3>
+<p>For deployments exposing the subvocal pipeline to external clients via the MCP/HTTP network interfaces, session authorization is guarded by capability-scoped tokens. 
+* <strong>HMAC Signature Checks</strong>: Tokens carry serialized <code>ActionGrants</code> claims (e.g. allowed command whitelist, minimum confidence floor, and dry-run policies). The payload is signed using HMAC-SHA256 against a server-side API secret key to prevent credential tampering.
+* <strong>Context Isolation</strong>: Validated token claims are bound to the execution thread/coroutine context using <code>contextvars</code> context propagation, preventing credential leakage across simultaneous sessions.</p>
+<h3>2.4 SQLite Persistent Store Access Controls</h3>
+<p>The persistent session store maintains session configurations and active states on disk.
+* <strong>Database Isolation</strong>: The SQLite database file (typically <code>sessions.db</code>) is stored inside the user's localized app data directory. The SDK applies strict filesystem permissions (e.g., owner read/write only, Unix mode <code>0600</code>) to prevent local privilege escalation.
+* <strong>Configuration Scrubbing</strong>: When config YAML states are stored, highly sensitive parameters (like raw provider API keys) are scrubbed before persistence, leaving credential validation to runtime keyring retrievals.</p>
 <hr />
 <h2>3. Data Residency and Sovereignty</h2>
 <p>Silent speech applications ingest deeply intimate biometric signals. Standardizing where data is processed is crucial to user trust and regulatory compliance.</p>

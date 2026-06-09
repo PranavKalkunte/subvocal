@@ -208,7 +208,7 @@ def main():
     print(f"Generating API references from {SDK_DIR} into {OUTPUT_DIR}...")
     
     # We target key packages
-    target_packages = ["core", "context", "hardware", "emg_core", "mcp", "shorthand", "tts"]
+    target_packages = ["core", "context", "hardware", "emg_core", "mcp", "shorthand", "tts", "routing", "runtime", "stream"]
     
     for pkg in target_packages:
         pkg_dir = os.path.join(SDK_DIR, pkg)

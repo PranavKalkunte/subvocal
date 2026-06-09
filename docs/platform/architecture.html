@@ -283,7 +283,34 @@
 3. <strong>Purely Covert Speech:</strong> The system cannot decode purely mental rehearsal (where the user thinks the word without any muscle innervation). The system requires <strong>subvocally mouthed speech</strong> (involving micro-contractions and subtle articulatory movements).
 4. <strong>Cross-User Generalization:</strong> Due to anatomical variations, the classifier is not zero-shot. It requires user-specific training data to construct the initial classifier weights.</p>
 <hr />
-<h2>7. The One Ask: Beta Program Call to Action</h2>
+<h2>7. LiveKit-Inspired Asynchronous Middleware Rebuild (v2.0)</h2>
+<p>To transition from a simple local pipeline runner to an enterprise-grade biometric agent service, the subvocal SDK has been completely re-architected on modern concurrent primitives modeled after LiveKit's server and agent frameworks.</p>
+<pre><code>                  ┌────────────────────────────────────────┐
+                  │            IngressManager              │
+                  │   [Primary Cyton] ──&gt; (Failover)       │
+                  └───────────────────┬────────────────────┘
+                                      ▼
+                  ┌────────────────────────────────────────┐
+                  │                Session                 │
+                  │   [OpsQueue Serialized Execution]      │
+                  └──────┬────────────┬─────────────┬──────┘
+                         │            │             │
+                         ▼            ▼             ▼
+  ┌──────────────────────────┐ ┌──────────────┐ ┌───────────────────────────┐
+  │  SQLiteSessionStore      │ │  Telemetry   │ │  BiometricDataChannel    │
+  │  [Config/State Registry] │ │  [Prometheus]│ │  [Live TCP Streaming]     │
+  └──────────────────────────┘ └──────────────┘ └───────────────────────────┘
+</code></pre>
+<ul>
+<li><strong>Serialized Work Execution (OpsQueue)</strong>: All frame classification and intent resolutions are enqueued on a background worker thread (<code>OpsQueue</code>) to ensure deterministic processing times and eliminate concurrency race conditions.</li>
+<li><strong>Persistent Session Storage</strong>: The worker pool integrates a <code>SessionStore</code> (with in-memory and SQLite-backed implementations) that serializes session config settings, liveness statistics, and current state profiles to disk, allowing state recovery across host restarts.</li>
+<li><strong>Live Biometric Data Channels</strong>: A high-performance TCP socket server streams real-time biometric metrics (e.g. signal levels, quality states, classifier outputs) to multiple connected dashboard clients simultaneously.</li>
+<li><strong>Dynamic Ingress/Egress Managers</strong>: </li>
+<li>The <code>IngressManager</code> unifies acquisition feeds ( simulated generator, file replays, physical board drivers) and automates fallback switching (failover) to simulation mode when hardware connection dropouts occur.</li>
+<li>The <code>EgressManager</code> coordinates text-to-speech audio feedback playouts, trace databases, and raw sEMG dataset recordings.</li>
+</ul>
+<hr />
+<h2>8. The One Ask: Beta Program Call to Action</h2>
 <p>The viability of the intent-reconstruction layer has been proven in simulation. The next step is validating the architecture under real-world operational constraints:</p>
 <blockquote>
 <p>[!IMPORTANT]

@@ -12,6 +12,7 @@ from .drivers import (
     OpenBCICytonDriver,
     SyntheticSignalGenerator,
 )
+from .brainflow_compat import BoardShim, BoardIds, BrainFlowInputParams
 
 __all__ = [
     "FileReplayDriver",
@@ -21,4 +22,7 @@ __all__ = [
     "NinaproDriver",
     "PutEMGDriver",
     "CSLHDEMGDriver",
+    "BoardShim",
+    "BoardIds",
+    "BrainFlowInputParams",
 ]

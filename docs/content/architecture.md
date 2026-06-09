@@ -205,7 +205,42 @@ A practical systems design must be transparent about its physiological and engin
 
 ---
 
-## 7. The One Ask: Beta Program Call to Action
+## 7. LiveKit-Inspired Asynchronous Middleware Rebuild (v2.0)
+
+To transition from a simple local pipeline runner to an enterprise-grade biometric agent service, the subvocal SDK has been completely re-architected on modern concurrent primitives modeled after LiveKit's server and agent frameworks.
+
+```
+                  ┌────────────────────────────────────────┐
+                  │            IngressManager              │
+                  │   [Primary Cyton] ──> (Failover)       │
+                  └───────────────────┬────────────────────┘
+                                      ▼
+                  ┌────────────────────────────────────────┐
+                  │                Session                 │
+                  │   [OpsQueue Serialized Execution]      │
+                  └──────┬────────────┬─────────────┬──────┘
+                         │            │             │
+                         ▼            ▼             ▼
+  ┌──────────────────────────┐ ┌──────────────┐ ┌───────────────────────────┐
+  │  SQLiteSessionStore      │ │  Telemetry   │ │  BiometricDataChannel    │
+  │  [Config/State Registry] │ │  [Prometheus]│ │  [Live TCP Streaming]     │
+  └──────────────────────────┘ └──────────────┘ └───────────────────────────┘
+```
+
+* **Serialized Work Execution (OpsQueue)**: All frame classification and intent resolutions are enqueued on a background worker thread (`OpsQueue`) to ensure deterministic processing times and eliminate concurrency race conditions.
+* **Persistent Session Storage**: The worker pool integrates a `SessionStore` (with in-memory and SQLite-backed implementations) that serializes session config settings, liveness statistics, and current state profiles to disk, allowing state recovery across host restarts.
+* **Live Biometric Data Channels**: A high-performance TCP socket server streams real-time biometric metrics (e.g. signal levels, quality states, classifier outputs) to multiple connected dashboard clients simultaneously.
+* **Dynamic Ingress/Egress Managers**: 
+  * The `IngressManager` unifies acquisition feeds ( simulated generator, file replays, physical board drivers) and automates fallback switching (failover) to simulation mode when hardware connection dropouts occur.
+  * The `EgressManager` coordinates text-to-speech audio feedback playouts, trace databases, and raw sEMG dataset recordings.
+* **Zero-Dependency BrainFlow Compatibility**: To support lightweight edge nodes (e.g., Raspberry Pi) where compiled C++ libraries cannot be easily run or compiled, the SDK includes a pure-Python fallback for the BrainFlow driver and DSP layers:
+  - *Dynamic Proxying*: Checks for the official C++ BrainFlow module; if missing, falls back to the native Python compatibility layer transparently.
+  - *Cyton Serial Parser*: Integrates a direct parser that reads raw 33-byte binary packets from OpenBCI Cyton USB serial ports.
+  - *SciPy DSP Library*: Re-implements causal and zero-phase filtering, Welch PSD estimation, and bandpower integration using standard SciPy and NumPy functions.
+
+---
+
+## 8. The One Ask: Beta Program Call to Action
 
 The viability of the intent-reconstruction layer has been proven in simulation. The next step is validating the architecture under real-world operational constraints:
 

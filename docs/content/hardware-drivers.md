@@ -140,3 +140,30 @@ for _ in range(10):
 
 hardware.stop()
 ```
+
+---
+
+## 6. Unified Ingress Manager for Multi-Source Feeds (v2.0)
+
+For high-reliability consumer and clinical deployments, the SDK provides the `IngressManager` in `subvocal.runtime.ingress` to orchestrate multiple sensor inputs and automate failovers:
+
+* **Source Registration**: Register primary acquisition feeds (e.g. Cyton or Delsys boards) along with fallback simulation replays.
+* **Biometric Failover Policy**: The manager detects device dropouts (e.g. flatline anomalies or connection lost states) and seamlessly switches the active pipeline feed to the fallback replayer without interrupting downstream execution loops.
+
+```python
+from subvocal.runtime import IngressManager
+from subvocal.hardware.drivers import SyntheticSignalGenerator
+
+ingress = IngressManager()
+
+# Register primary and fallback streams
+ingress.register_source("cyton_board", OpenBCICytonDriver(port="/dev/tty.usb"), is_fallback=False)
+ingress.register_source("simulated_fallback", SyntheticSignalGenerator(), is_fallback=True)
+
+# Start active hardware source
+ingress.start()
+
+# Switch active source to fallback simulation on hardware dropouts
+ingress.trigger_failover()
+```
+

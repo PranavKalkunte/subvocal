@@ -60,11 +60,13 @@
 </ul>
 <h4>subvocal.hardware</h4>
 <ul>
+<li><a href="#subvocal-hardware-brainflow_compat"><span>[*]</span> brainflow_compat</a></li>
 <li><a href="#subvocal-hardware-datasets"><span>[*]</span> datasets</a></li>
 <li><a href="#subvocal-hardware-drivers"><span>[*]</span> drivers</a></li>
 </ul>
 <h4>subvocal.emg_core</h4>
 <ul>
+<li><a href="#subvocal-emg_core-dsp-brainflow_filter"><span>[*]</span> brainflow_filter</a></li>
 <li><a href="#subvocal-emg_core-dsp-features"><span>[*]</span> features</a></li>
 <li><a href="#subvocal-emg_core-dsp-filters"><span>[*]</span> filters</a></li>
 <li><a href="#subvocal-emg_core-ml-benchmark"><span>[*]</span> benchmark</a></li>
@@ -91,10 +93,30 @@
 <li><a href="#subvocal-tts-engine"><span>[*]</span> engine</a></li>
 <li><a href="#subvocal-tts-schema"><span>[*]</span> schema</a></li>
 </ul>
+<h4>subvocal.routing</h4>
+<ul>
+<li><a href="#subvocal-routing-selector"><span>[*]</span> selector</a></li>
+</ul>
+<h4>subvocal.runtime</h4>
+<ul>
+<li><a href="#subvocal-runtime-egress"><span>[*]</span> egress</a></li>
+<li><a href="#subvocal-runtime-ingress"><span>[*]</span> ingress</a></li>
+<li><a href="#subvocal-runtime-session"><span>[*]</span> session</a></li>
+<li><a href="#subvocal-runtime-store"><span>[*]</span> store</a></li>
+<li><a href="#subvocal-runtime-worker"><span>[*]</span> worker</a></li>
+</ul>
+<h4>subvocal.stream</h4>
+<ul>
+<li><a href="#subvocal-stream-buffer"><span>[*]</span> buffer</a></li>
+<li><a href="#subvocal-stream-datachannel"><span>[*]</span> datachannel</a></li>
+<li><a href="#subvocal-stream-level"><span>[*]</span> level</a></li>
+<li><a href="#subvocal-stream-quality"><span>[*]</span> quality</a></li>
+<li><a href="#subvocal-stream-tracker"><span>[*]</span> tracker</a></li>
+</ul>
 </aside>
 <article class="docs-body">
 <h1>API Reference</h1>
-<p>Auto-generated from docstrings across 32 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
+<p>Auto-generated from docstrings across 45 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
 <section class="api-module" id="subvocal-exceptions">
 <h2>subvocal.exceptions</h2>
 <p>Typed exception hierarchy for the Subvocal SDK.</p><p>Every error the SDK raises derives from :class:`SubvocalError`, so integrators
@@ -482,29 +504,108 @@ present in the environment, then the offline :class:`HeuristicProvider`.</p><p>A
 <p>Orchestrates hardware ingestion, classifier decoding, intent reconstruction, and action execution.</p>
 <div class="api-member">
 <h4>__init__</h4>
-<pre><code>def __init__(self, hardware: HardwareSource, classify_fn: Callable[[Frame], CommandToken | None], llm_provider: LLMProvider, context_provider: ContextProvider, executor: ActionExecutor, phrase_timeout_seconds: float = 1.5, policy_engine: Any | None = None, dry_run: bool = False, trace_path: str | None = None, raise_on_policy_violation: bool = False, on_token: Callable[[CommandToken], None] | None = None, on_intent: Callable[[Intent], None] | None = None, on_action: Callable[[Action, str], None] | None = None, on_error: Callable[[Exception], None] | None = None)</code></pre>
-<p>Initializes the subvocal pipeline.</p><p>Args:
-    hardware: The hardware source to read sEMG frames from.
-    classify_fn: A function that takes a Frame and returns an optional CommandToken.
-    llm_provider: The LLM intent decoder.
-    context_provider: The active user context source.
-    executor: The device or tool action dispatcher.
-    phrase_timeout_seconds: Duration of silence (no tokens) to wait before triggering intent reconstruction.
-    policy_engine: Optional authorization and security policy checker.
-    dry_run: If True, resolves intents and compiles actions but does not run them.
-    trace_path: Destination JSONL file for execution traces. Defaults to
-        ``pipeline_traces.jsonl`` inside the user data directory
-        (see :mod:`subvocal.paths`).
-    raise_on_policy_violation: If True, a policy rejection raises
-        :class:`subvocal.exceptions.PolicyViolationError` instead of
-        being silently traced.
-    on_token: Observer invoked with each classified CommandToken.
-    on_intent: Observer invoked with each reconstructed Intent.
-    on_action: Observer invoked with each terminal (action, status)
-        pair; status is one of SUCCESS, DRY_RUN, REJECTED_UNAUTHORIZED,
-        FAILED_CANNOT_EXECUTE.
-    on_error: Observer invoked with exceptions raised during phrase
-        processing. Observer failures are logged, never propagated.</p>
+<pre><code>def __init__(self, hardware: HardwareSource, classify_fn: Callable[[Frame], CommandToken | None], llm_provider: LLMProvider, context_provider: ContextProvider, executor: ActionExecutor, phrase_timeout_seconds: float = 1.5, policy_engine: Any | None = None, dry_run: bool = False, trace_path: str | None = None, raise_on_policy_violation: bool = False, on_token: Callable[[CommandToken], None] | None = None, on_intent: Callable[[Intent], None] | None = None, on_action: Callable[[Action, str], None] | None = None, on_error: Callable[[Exception], None] | None = None, telemetry_service: Any | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>trace_path</h4>
+<pre><code>def trace_path(self) -&gt; str | None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>trace_path</h4>
+<pre><code>def trace_path(self, val: str | None) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>hardware</h4>
+<pre><code>def hardware(self) -&gt; HardwareSource</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>hardware</h4>
+<pre><code>def hardware(self, val: HardwareSource) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>classify_fn</h4>
+<pre><code>def classify_fn(self) -&gt; Callable[[Frame], CommandToken | None]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>classify_fn</h4>
+<pre><code>def classify_fn(self, val: Callable[[Frame], CommandToken | None]) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>llm_provider</h4>
+<pre><code>def llm_provider(self) -&gt; LLMProvider</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>llm_provider</h4>
+<pre><code>def llm_provider(self, val: LLMProvider) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>context_provider</h4>
+<pre><code>def context_provider(self) -&gt; ContextProvider</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>context_provider</h4>
+<pre><code>def context_provider(self, val: ContextProvider) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>executor</h4>
+<pre><code>def executor(self) -&gt; ActionExecutor</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>executor</h4>
+<pre><code>def executor(self, val: ActionExecutor) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>policy_engine</h4>
+<pre><code>def policy_engine(self) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>policy_engine</h4>
+<pre><code>def policy_engine(self, val: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>phrase_timeout_seconds</h4>
+<pre><code>def phrase_timeout_seconds(self) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>phrase_timeout_seconds</h4>
+<pre><code>def phrase_timeout_seconds(self, val: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>dry_run</h4>
+<pre><code>def dry_run(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>dry_run</h4>
+<pre><code>def dry_run(self, val: bool) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>raise_on_policy_violation</h4>
+<pre><code>def raise_on_policy_violation(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>raise_on_policy_violation</h4>
+<pre><code>def raise_on_policy_violation(self, val: bool) -&gt; None</code></pre>
+<p>No description.</p>
 </div>
 <div class="api-member">
 <h4>token_buffer</h4>
@@ -519,10 +620,7 @@ present in the environment, then the offline :class:`HeuristicProvider`.</p><p>A
 <div class="api-member">
 <h4>step</h4>
 <pre><code>def step(self, window_ms: int = 100) -&gt; Action | None</code></pre>
-<p>Performs a single step of the pipeline.</p><p>1. Ingests a new frame of raw sEMG data from the hardware source.
-2. Classifies the frame into a potential command token.
-3. Accumulates the token and checks for phrase completion timeout.
-4. If timed out, reconstructs the intent and executes the action.</p><p>Args:
+<p>Performs a single step of the pipeline.</p><p>Args:
     window_ms: Buffer window duration in milliseconds to acquire.</p><p>Returns:
     An executed Action if an intent was resolved and dispatched, otherwise None.</p>
 </div>
@@ -947,6 +1045,139 @@ and app state (including visible interactive elements).</p>
 <p>Root model for the complete user context state.</p>
 </div>
 </section>
+<section class="api-module" id="subvocal-hardware-brainflow_compat">
+<h2>subvocal.hardware.brainflow_compat</h2>
+
+<div class="api-member">
+<h3><code>class BoardIds(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class LogLevels(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class BrainFlowPresets(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class BrainFlowError(Exception)</code></h3>
+<p>No description.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, message: str, exit_code: int)</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class BrainFlowInputParams</code></h3>
+<p>No description.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>to_json</h4>
+<pre><code>def to_json(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class BoardShim</code></h3>
+<p>Fallback compatible BoardShim class implementing a pure-Python biosensor stream.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, board_id: int, input_params: BrainFlowInputParams) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>prepare_session</h4>
+<pre><code>def prepare_session(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>start_stream</h4>
+<pre><code>def start_stream(self, buffer_size: int = 200000, streamer_params: str = '') -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop_stream</h4>
+<pre><code>def stop_stream(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>release_session</h4>
+<pre><code>def release_session(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_board_data</h4>
+<pre><code>def get_board_data(self, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_current_board_data</h4>
+<pre><code>def get_current_board_data(self, num_samples: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_prepared</h4>
+<pre><code>def is_prepared(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_sampling_rate</h4>
+<pre><code>def get_sampling_rate(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_num_rows</h4>
+<pre><code>def get_num_rows(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_eeg_channels</h4>
+<pre><code>def get_eeg_channels(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; list[int]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_exg_channels</h4>
+<pre><code>def get_exg_channels(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; list[int]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_emg_channels</h4>
+<pre><code>def get_emg_channels(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; list[int]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_timestamp_channel</h4>
+<pre><code>def get_timestamp_channel(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_package_num_channel</h4>
+<pre><code>def get_package_num_channel(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_battery_channel</h4>
+<pre><code>def get_battery_channel(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_accel_channels</h4>
+<pre><code>def get_accel_channels(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; list[int]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_gyro_channels</h4>
+<pre><code>def get_gyro_channels(cls, board_id: int, preset: int = BrainFlowPresets.DEFAULT_PRESET.value) -&gt; list[int]</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
 <section class="api-module" id="subvocal-hardware-datasets">
 <h2>subvocal.hardware.datasets</h2>
 <p>Dataset drivers for public electromyography databases (Ninapro, PutEMG, CSL-HDEMG).</p>
@@ -1173,6 +1404,89 @@ and app state (including visible interactive elements).</p>
 <div class="api-member">
 <h4>read_frame</h4>
 <pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-dsp-brainflow_filter">
+<h2>subvocal.emg_core.dsp.brainflow_filter</h2>
+
+<div class="api-member">
+<h3><code>class FilterTypes(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class AggOperations(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class WindowOperations(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class DetrendOperations(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class NoiseTypes(enum.IntEnum)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class DataFilter</code></h3>
+<p>Pure Python/SciPy re-implementation of BrainFlow's DataFilter processing methods.</p>
+<div class="api-member">
+<h4>perform_lowpass</h4>
+<pre><code>def perform_lowpass(cls, data: np.ndarray, sampling_rate: int, cutoff: float, order: int, filter_type: int, ripple: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>perform_highpass</h4>
+<pre><code>def perform_highpass(cls, data: np.ndarray, sampling_rate: int, cutoff: float, order: int, filter_type: int, ripple: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>perform_bandpass</h4>
+<pre><code>def perform_bandpass(cls, data: np.ndarray, sampling_rate: int, start_freq: float, stop_freq: float, order: int, filter_type: int, ripple: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>perform_bandstop</h4>
+<pre><code>def perform_bandstop(cls, data: np.ndarray, sampling_rate: int, start_freq: float, stop_freq: float, order: int, filter_type: int, ripple: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>remove_environmental_noise</h4>
+<pre><code>def remove_environmental_noise(cls, data: np.ndarray, sampling_rate: int, noise_type: int) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>perform_rolling_filter</h4>
+<pre><code>def perform_rolling_filter(cls, data: np.ndarray, period: int, agg_operation: int) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>perform_downsampling</h4>
+<pre><code>def perform_downsampling(cls, data: np.ndarray, period: int, agg_operation: int) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_window</h4>
+<pre><code>def get_window(cls, window_function: int, window_len: int) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_psd</h4>
+<pre><code>def get_psd(cls, data: np.ndarray, sampling_rate: int, window: int) -&gt; tuple[np.ndarray, np.ndarray]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_psd_welch</h4>
+<pre><code>def get_psd_welch(cls, data: np.ndarray, nfft: int, overlap: int, sampling_rate: int, window: int) -&gt; tuple[np.ndarray, np.ndarray]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_band_power</h4>
+<pre><code>def get_band_power(cls, psd: tuple[np.ndarray, np.ndarray], freq_start: float, freq_end: float) -&gt; float</code></pre>
 <p>No description.</p>
 </div>
 </div>
@@ -1682,6 +1996,528 @@ Returns:
 <div class="api-member">
 <h3><code>class TTSConfig(BaseModel)</code></h3>
 <p>Configuration settings for text-to-speech audio feedback.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-routing-selector">
+<h2>subvocal.routing.selector</h2>
+
+<div class="api-member">
+<h3><code>class WorkerNode(Protocol)</code></h3>
+<p>Protocol matching standard attributes of routing nodes.</p>
+<div class="api-member">
+<h4>id</h4>
+<pre><code>def id(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>load</h4>
+<pre><code>def load(self) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>status</h4>
+<pre><code>def status(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>cpu_usage</h4>
+<pre><code>def cpu_usage(self) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class NodeSelector(ABC)</code></h3>
+<p>Base interface for all worker node routing selectors.</p>
+<div class="api-member">
+<h4>select_node</h4>
+<pre><code>def select_node(self, nodes: list[WorkerNode]) -&gt; WorkerNode</code></pre>
+<p>Selects the best node from candidate worker nodes.</p><p>Args:
+    nodes: Candidates list.</p><p>Returns:
+    The chosen WorkerNode.</p><p>Raises:
+    ValueError: If nodes list is empty.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SessionCountSelector(NodeSelector)</code></h3>
+<p>Selects the worker node with the minimum active session load.</p>
+<div class="api-member">
+<h4>select_node</h4>
+<pre><code>def select_node(self, nodes: list[WorkerNode]) -&gt; WorkerNode</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CPULoadSelector(NodeSelector)</code></h3>
+<p>Selects the worker node with the lowest CPU load report.</p>
+<div class="api-member">
+<h4>select_node</h4>
+<pre><code>def select_node(self, nodes: list[WorkerNode]) -&gt; WorkerNode</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-runtime-egress">
+<h2>subvocal.runtime.egress</h2>
+
+<div class="api-member">
+<h3><code>class EgressManager</code></h3>
+<p>Coordinates downstream data exports, JSONL tracing, and audio speech feedback.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, trace_path: str | None = None, tts_engine: Any | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>speak</h4>
+<pre><code>def speak(self, text: str) -&gt; None</code></pre>
+<p>Plays speech feedback to the user via TTS.</p>
+</div>
+<div class="api-member">
+<h4>write_trace</h4>
+<pre><code>def write_trace(self, trace_entry: dict) -&gt; None</code></pre>
+<p>Appends a trace entry to the pipeline trace log file.</p>
+</div>
+<div class="api-member">
+<h4>record_signal</h4>
+<pre><code>def record_signal(self, output_path: str, frames: list[Any]) -&gt; None</code></pre>
+<p>Saves raw biometric frames to a JSON document for training/fine-tuning models.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-runtime-ingress">
+<h2>subvocal.runtime.ingress</h2>
+
+<div class="api-member">
+<h3><code>class IngressManager</code></h3>
+<p>Manages active hardware source registration, monitoring, and failovers.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>register_source</h4>
+<pre><code>def register_source(self, name: str, source: HardwareSource, is_fallback: bool = False) -&gt; None</code></pre>
+<p>Registers a biometric input source.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>Starts the active ingress source stream.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>Stops all registered ingress sources.</p>
+</div>
+<div class="api-member">
+<h4>active_name</h4>
+<pre><code>def active_name(self) -&gt; str | None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_active_source</h4>
+<pre><code>def get_active_source(self) -&gt; HardwareSource | None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>trigger_failover</h4>
+<pre><code>def trigger_failover(self) -&gt; None</code></pre>
+<p>Fails over dynamically to the registered fallback source.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-runtime-session">
+<h2>subvocal.runtime.session</h2>
+
+<div class="api-member">
+<h3><code>class Session</code></h3>
+<p>Represents an active silent speech processing session.</p><p>Co-ordinates real-time signal level monitoring, stream tracking, quality scoring,
+and intent decoding on a background OpsQueue thread.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, id: str, config: SubvocalConfig, hardware: HardwareSource, classify_fn: Callable[[Frame], CommandToken | None], llm_provider: LLMProvider, context_provider: ContextProvider, executor: ActionExecutor, policy_engine: Any | None = None, trace_path: str | None = None, on_state_changed: Callable[[str], None] | None = None, on_token: Callable[[CommandToken], None] | None = None, on_intent: Callable[[Intent], None] | None = None, on_action: Callable[[Action, str], None] | None = None, on_error: Callable[[Exception], None] | None = None, telemetry: Any | None = None, data_channel: Any | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>state</h4>
+<pre><code>def state(self) -&gt; str</code></pre>
+<p>Returns the current state of the session state machine.</p>
+</div>
+<div class="api-member">
+<h4>token_buffer</h4>
+<pre><code>def token_buffer(self) -&gt; list[CommandToken]</code></pre>
+<p>Returns the raw reference to the accumulated token buffer.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>Initializes and starts the session.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>Gracefully stops and closes the session.</p>
+</div>
+<div class="api-member">
+<h4>push_frame</h4>
+<pre><code>def push_frame(self, frame: Frame) -&gt; None</code></pre>
+<p>Ingests a new Frame, running stream checks and classification asynchronously on OpsQueue.</p>
+</div>
+<div class="api-member">
+<h4>process_phrase</h4>
+<pre><code>def process_phrase(self) -&gt; Action | None</code></pre>
+<p>Forces immediate decoding of the current token buffer and runs the resolved action.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-runtime-store">
+<h2>subvocal.runtime.store</h2>
+
+<div class="api-member">
+<h3><code>class SessionStore(ABC)</code></h3>
+<p>Abstract interface for session configuration and state storage.</p>
+<div class="api-member">
+<h4>save_session</h4>
+<pre><code>def save_session(self, session_id: str, state: str, config_yaml: str, metadata: dict[str, Any]) -&gt; None</code></pre>
+<p>Saves or updates a session configuration and state snapshot.</p>
+</div>
+<div class="api-member">
+<h4>get_session</h4>
+<pre><code>def get_session(self, session_id: str) -&gt; dict[str, Any] | None</code></pre>
+<p>Retrieves a session snapshot by ID, returning metadata, config, and state.</p>
+</div>
+<div class="api-member">
+<h4>delete_session</h4>
+<pre><code>def delete_session(self, session_id: str) -&gt; None</code></pre>
+<p>Deletes a session snapshot by ID.</p>
+</div>
+<div class="api-member">
+<h4>list_sessions</h4>
+<pre><code>def list_sessions(self) -&gt; list[dict[str, Any]]</code></pre>
+<p>Lists all stored sessions.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class InMemorySessionStore(SessionStore)</code></h3>
+<p>In-memory session registry for lightweight, transient deployments.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>save_session</h4>
+<pre><code>def save_session(self, session_id: str, state: str, config_yaml: str, metadata: dict[str, Any]) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_session</h4>
+<pre><code>def get_session(self, session_id: str) -&gt; dict[str, Any] | None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>delete_session</h4>
+<pre><code>def delete_session(self, session_id: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>list_sessions</h4>
+<pre><code>def list_sessions(self) -&gt; list[dict[str, Any]]</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SQLiteSessionStore(SessionStore)</code></h3>
+<p>SQLite-backed session registry for persistent edge configurations.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, db_path: str)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>save_session</h4>
+<pre><code>def save_session(self, session_id: str, state: str, config_yaml: str, metadata: dict[str, Any]) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_session</h4>
+<pre><code>def get_session(self, session_id: str) -&gt; dict[str, Any] | None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>delete_session</h4>
+<pre><code>def delete_session(self, session_id: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>list_sessions</h4>
+<pre><code>def list_sessions(self) -&gt; list[dict[str, Any]]</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-runtime-worker">
+<h2>subvocal.runtime.worker</h2>
+
+<div class="api-member">
+<h3><code>class SessionWorker</code></h3>
+<p>Manages active sessions and load-tracking across a pool of silent speech sessions.</p><p>Equivalent to LiveKit's SessionWorker/AgentWorker.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, config: SubvocalConfig, max_sessions: int = 10, store: Any | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>load</h4>
+<pre><code>def load(self) -&gt; float</code></pre>
+<p>Returns the current load fraction of the worker (0.0 to 1.0).</p>
+</div>
+<div class="api-member">
+<h4>status</h4>
+<pre><code>def status(self) -&gt; str</code></pre>
+<p>Returns status string based on load.</p>
+</div>
+<div class="api-member">
+<h4>create_session</h4>
+<pre><code>def create_session(self, session_id: str, *args, **kwargs) -&gt; Session</code></pre>
+<p>Creates, registers, and returns a new Session.</p><p>Raises ValueError if session pool capacity is exhausted.</p>
+</div>
+<div class="api-member">
+<h4>get_session</h4>
+<pre><code>def get_session(self, session_id: str) -&gt; Session | None</code></pre>
+<p>Retrieves a registered Session by ID, or None if not found.</p>
+</div>
+<div class="api-member">
+<h4>remove_session</h4>
+<pre><code>def remove_session(self, session_id: str) -&gt; Session | None</code></pre>
+<p>Stops and unregisters a Session by ID.</p>
+</div>
+<div class="api-member">
+<h4>start_session</h4>
+<pre><code>def start_session(self, session_id: str) -&gt; None</code></pre>
+<p>Starts a registered session by ID.</p>
+</div>
+<div class="api-member">
+<h4>close</h4>
+<pre><code>def close(self) -&gt; None</code></pre>
+<p>Gracefully closes all sessions and stops the worker.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-stream-buffer">
+<h2>subvocal.stream.buffer</h2>
+
+<div class="api-member">
+<h3><code>class FrameRing</code></h3>
+<p>Thread-safe circular queue (ring buffer) storing biometric Frame segments.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, max_size: int = 100)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>push</h4>
+<pre><code>def push(self, frame: Frame) -&gt; None</code></pre>
+<p>Pushes a new Frame onto the ring buffer, evicting the oldest if full.</p>
+</div>
+<div class="api-member">
+<h4>pop</h4>
+<pre><code>def pop(self) -&gt; Frame | None</code></pre>
+<p>Pops and returns the oldest Frame from the ring buffer, or None if empty.</p>
+</div>
+<div class="api-member">
+<h4>clear</h4>
+<pre><code>def clear(self) -&gt; None</code></pre>
+<p>Clears the ring buffer.</p>
+</div>
+<div class="api-member">
+<h4>get_all</h4>
+<pre><code>def get_all(self) -&gt; list[Frame]</code></pre>
+<p>Returns a copy of all current frames in chronological order.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class StreamStats</code></h3>
+<p>Windowed tracking for frame arrivals, sample count, gaps, and inter-frame arrival jitter.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>observe</h4>
+<pre><code>def observe(self, frame: Frame) -&gt; None</code></pre>
+<p>Observes a new frame and updates statistics.</p>
+</div>
+<div class="api-member">
+<h4>get_stats</h4>
+<pre><code>def get_stats(self) -&gt; dict[str, Any]</code></pre>
+<p>Returns a snapshot of the current stats.</p>
+</div>
+<div class="api-member">
+<h4>reset</h4>
+<pre><code>def reset(self) -&gt; None</code></pre>
+<p>Resets all stats to zero.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-stream-datachannel">
+<h2>subvocal.stream.datachannel</h2>
+
+<div class="api-member">
+<h3><code>class BiometricDataChannelServer</code></h3>
+<p>TCP server that broadcasts real-time biometric metrics to connected dashboard/client nodes.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, host: str = '127.0.0.1', port: int = 8100)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>Starts the TCP server in a background thread.</p>
+</div>
+<div class="api-member">
+<h4>broadcast</h4>
+<pre><code>def broadcast(self, payload: dict[str, Any]) -&gt; None</code></pre>
+<p>Sends a JSON-serialized dictionary to all active listeners.</p>
+</div>
+<div class="api-member">
+<h4>close</h4>
+<pre><code>def close(self) -&gt; None</code></pre>
+<p>Closes the server and drops all client connections.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class BiometricDataChannelClient</code></h3>
+<p>Helper client to connect to the BiometricDataChannelServer and parse message frames.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, host: str = '127.0.0.1', port: int = 8100)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>connect</h4>
+<pre><code>def connect(self) -&gt; None</code></pre>
+<p>Connects to the server socket.</p>
+</div>
+<div class="api-member">
+<h4>read_messages</h4>
+<pre><code>def read_messages(self)</code></pre>
+<p>Generator yielding parsed messages from the streaming buffer.</p>
+</div>
+<div class="api-member">
+<h4>close</h4>
+<pre><code>def close(self) -&gt; None</code></pre>
+<p>Disconnects the client socket.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-stream-level">
+<h2>subvocal.stream.level</h2>
+
+<div class="api-member">
+<h3><code>class SignalLevel</code></h3>
+<p>Tracks and smooths the biological/electrical signal level of sEMG channels.</p><p>Equivalent to LiveKit's AudioLevel.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, active_level: float = 0.1, min_percentile: float = 40.0, update_interval_ms: int = 400, smooth_intervals: int = 2)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>observe</h4>
+<pre><code>def observe(self, frame: Frame) -&gt; None</code></pre>
+<p>Observes a new Frame, computes its MAV, and updates sliding window metrics.</p>
+</div>
+<div class="api-member">
+<h4>get_level</h4>
+<pre><code>def get_level(self, now: float) -&gt; tuple[float, bool]</code></pre>
+<p>Returns the current smoothed signal level and active status.</p><p>Resets level to 0 if signal is stale (no updates received for 2x update_interval).</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-stream-quality">
+<h2>subvocal.stream.quality</h2>
+
+<div class="api-member">
+<h3><code>class SignalQualityScorer</code></h3>
+<p>Scores sEMG signal quality using physical metrics (saturation, drift, dropouts, SNR).</p><p>Outputs a MOS-like score mapped to EXCELLENT, GOOD, POOR, and LOST states.
+Equivalent to LiveKit's connectionquality Scorer.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, clip_max: float = 5.0, increase_factor: float = 0.4, decrease_factor: float = 0.8)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>score</h4>
+<pre><code>def score(self) -&gt; float</code></pre>
+<p>Returns the current MOS-like quality score (1.0 - 4.5).</p>
+</div>
+<div class="api-member">
+<h4>quality</h4>
+<pre><code>def quality(self) -&gt; str</code></pre>
+<p>Returns the current mapped quality state.</p>
+</div>
+<div class="api-member">
+<h4>on_status_changed</h4>
+<pre><code>def on_status_changed(self, callback: Callable[[str], None]) -&gt; None</code></pre>
+<p>Registers a callback to be run on quality state transitions.</p>
+</div>
+<div class="api-member">
+<h4>update</h4>
+<pre><code>def update(self, frame: Frame) -&gt; None</code></pre>
+<p>Evaluates a Frame, computes metrics, updates the quality score, and checks transitions.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-stream-tracker">
+<h2>subvocal.stream.tracker</h2>
+
+<div class="api-member">
+<h3><code>class StreamTracker</code></h3>
+<p>Monitors whether a biometric sEMG stream is active or stopped.</p><p>Applies a hysteresis threshold to prevent bouncing between states. Equivalent
+to LiveKit's StreamTracker.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, samples_required: int = 3, cycles_required: int = 5)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>status</h4>
+<pre><code>def status(self) -&gt; str</code></pre>
+<p>Returns the current status (active/stopped).</p>
+</div>
+<div class="api-member">
+<h4>generation</h4>
+<pre><code>def generation(self) -&gt; int</code></pre>
+<p>Returns the current tracker worker generation.</p>
+</div>
+<div class="api-member">
+<h4>on_status_changed</h4>
+<pre><code>def on_status_changed(self, callback: Callable[[str], None]) -&gt; None</code></pre>
+<p>Registers a callback to execute on status transitions.</p>
+</div>
+<div class="api-member">
+<h4>observe</h4>
+<pre><code>def observe(self, has_activity: bool) -&gt; None</code></pre>
+<p>Observes an activity tick and updates status state using hysteresis.</p>
+</div>
+<div class="api-member">
+<h4>set_paused</h4>
+<pre><code>def set_paused(self, paused: bool) -&gt; None</code></pre>
+<p>Pauses or resumes tracking.</p><p>Increments generation to invalidate older checks.</p>
+</div>
+<div class="api-member">
+<h4>reset</h4>
+<pre><code>def reset(self) -&gt; None</code></pre>
+<p>Resets the tracker to initial stopped state.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>Permanently stops the tracker.</p>
+</div>
 </div>
 </section>
 </article>

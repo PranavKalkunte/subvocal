@@ -29,6 +29,7 @@ dependencies = [
     "pydantic>=2.0",
     "numpy>=1.20",
     "platformdirs>=3.0",
+    "pyyaml>=6.0",
 ]
 
 [project.urls]
@@ -47,9 +48,10 @@ hardware = [
     "scipy>=1.7",
     "h5py>=3.0",
 ]
+metrics = ["prometheus-client>=0.14.0"]
 tts = ["pyttsx3>=2.90"]
 export = ["onnx>=1.14"]
-all = ["subvocal[ml,hardware,tts,export]"]
+all = ["subvocal[ml,hardware,tts,export,metrics]"]
 dev = [
     "subvocal[all]",
     "pytest>=7",

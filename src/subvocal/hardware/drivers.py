@@ -223,24 +223,16 @@ class OpenBCICytonDriver(HardwareSource):
         self._connected = False
         self._board = None
 
-        # Load BrainFlow dynamically
-        try:
-            import brainflow
-            from brainflow.board_shim import BoardIds, BoardShim, BrainFlowInputParams
-            self._brainflow = brainflow
-            self._BoardShim = BoardShim
-            self._params = BrainFlowInputParams()
-            if self.simulated:
-                self._board_id = BoardIds.SYNTHETIC_BOARD
-            else:
-                self._board_id = BoardIds.CYTON_BOARD
-                if self.port:
-                    self._params.serial_port = self.port
-        except ImportError as e:
-            raise MissingDependencyError(
-                "BrainFlow is required to use the OpenBCICytonDriver. "
-                "Please install it using: pip install brainflow"
-            ) from e
+        # Load BrainFlow dynamically from our compatibility layer
+        from subvocal.hardware.brainflow_compat import BoardIds, BoardShim, BrainFlowInputParams
+        self._BoardShim = BoardShim
+        self._params = BrainFlowInputParams()
+        if self.simulated:
+            self._board_id = int(BoardIds.SYNTHETIC_BOARD)
+        else:
+            self._board_id = int(BoardIds.CYTON_BOARD)
+            if self.port:
+                self._params.serial_port = self.port
 
     def start(self) -> None:
         if self._connected:

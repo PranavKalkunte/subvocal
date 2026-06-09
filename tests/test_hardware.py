@@ -217,9 +217,9 @@ class TestHardwareAbstraction(unittest.TestCase):
 
     def test_openbci_cyton_import_error(self):
         """Verify that OpenBCICytonDriver raises ImportError gracefully if brainflow is missing."""
-        # BrainFlow is not installed in the environment, so constructing it should throw ImportError
-        with self.assertRaises(ImportError) as ctx:
-            OpenBCICytonDriver(simulated=True)
+        with unittest.mock.patch.dict(sys.modules, {"subvocal.hardware.brainflow_compat": None}):
+            with self.assertRaises(ImportError) as ctx:
+                OpenBCICytonDriver(simulated=True)
         self.assertIn("brainflow", str(ctx.exception).lower())
 
     def test_putemg_import_error(self):

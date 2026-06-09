@@ -85,6 +85,18 @@ def get_api_key(provider_name: str) -> str:
     return os.environ.get(env_var, "")
 ```
 
+### 2.3 HMAC-SHA256 Signed Capability Tokens
+
+For deployments exposing the subvocal pipeline to external clients via the MCP/HTTP network interfaces, session authorization is guarded by capability-scoped tokens. 
+* **HMAC Signature Checks**: Tokens carry serialized `ActionGrants` claims (e.g. allowed command whitelist, minimum confidence floor, and dry-run policies). The payload is signed using HMAC-SHA256 against a server-side API secret key to prevent credential tampering.
+* **Context Isolation**: Validated token claims are bound to the execution thread/coroutine context using `contextvars` context propagation, preventing credential leakage across simultaneous sessions.
+
+### 2.4 SQLite Persistent Store Access Controls
+
+The persistent session store maintains session configurations and active states on disk.
+* **Database Isolation**: The SQLite database file (typically `sessions.db`) is stored inside the user's localized app data directory. The SDK applies strict filesystem permissions (e.g., owner read/write only, Unix mode `0600`) to prevent local privilege escalation.
+* **Configuration Scrubbing**: When config YAML states are stored, highly sensitive parameters (like raw provider API keys) are scrubbed before persistence, leaving credential validation to runtime keyring retrievals.
+
 ---
 
 ## 3. Data Residency and Sovereignty
