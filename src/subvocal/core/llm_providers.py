@@ -1,16 +1,16 @@
 """Concrete implementations of the LLMProvider interface using urllib.
 """
 
-import os
 import json
+import os
 import time
-import urllib.request
 import urllib.error
-from typing import List, Optional, Any, Dict
+import urllib.request
 
 from subvocal.context.schema import UserContext
-from .models import CommandToken, Intent
+
 from .interfaces import LLMProvider
+from .models import CommandToken, Intent
 from .prompts import PromptManager
 
 
@@ -19,9 +19,9 @@ class BaseLLMProvider(LLMProvider):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model_name: Optional[str] = None,
-        mock_response: Optional[str] = None,
+        api_key: str | None = None,
+        model_name: str | None = None,
+        mock_response: str | None = None,
         prompt_version: str = "v1",
     ):
         """Initializes the base LLM provider.
@@ -46,7 +46,7 @@ class BaseLLMProvider(LLMProvider):
             )
         return key or ""
 
-    def _execute_http_post(self, url: str, data: bytes, headers: Dict[str, str]) -> str:
+    def _execute_http_post(self, url: str, data: bytes, headers: dict[str, str]) -> str:
         """Sends an HTTP POST request synchronously using urllib."""
         if self.mock_response is not None:
             return self.mock_response
@@ -57,11 +57,11 @@ class BaseLLMProvider(LLMProvider):
                 return response.read().decode("utf-8")
         except urllib.error.HTTPError as e:
             err_body = e.read().decode("utf-8") if e.fp else ""
-            raise RuntimeError(f"HTTP request to {url} failed with status {e.code}: {e.reason}. Detail: {err_body}")
+            raise RuntimeError(f"HTTP request to {url} failed with status {e.code}: {e.reason}. Detail: {err_body}") from e
         except Exception as e:
-            raise RuntimeError(f"Failed to connect to {url}: {e}")
+            raise RuntimeError(f"Failed to connect to {url}: {e}") from e
 
-    def _format_context(self, context: UserContext) -> Dict[str, str]:
+    def _format_context(self, context: UserContext) -> dict[str, str]:
         """Utility to format structured context into raw strings for prompts."""
         contacts_str = ", ".join([f"{c.name} ({c.shorthand_name})" for c in context.contacts])
         calendar_str = ", ".join(
@@ -112,7 +112,7 @@ class ClaudeProvider(BaseLLMProvider):
     def get_provider_name(self) -> str:
         return "anthropic"
 
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         key = self._get_api_key("ANTHROPIC_API_KEY")
         model = self.model_name or "claude-3-5-sonnet-20241022"
 
@@ -166,7 +166,7 @@ class OpenAIProvider(BaseLLMProvider):
     def get_provider_name(self) -> str:
         return "openai"
 
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         key = self._get_api_key("OPENAI_API_KEY")
         model = self.model_name or "gpt-4o"
 
@@ -217,7 +217,7 @@ class GeminiProvider(BaseLLMProvider):
     def get_provider_name(self) -> str:
         return "gemini"
 
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         key = self._get_api_key("GEMINI_API_KEY")
         model = self.model_name or "gemini-1.5-flash"
 
@@ -264,9 +264,9 @@ class LlamaProvider(BaseLLMProvider):
 
     def __init__(
         self,
-        ollama_host: Optional[str] = None,
-        model_name: Optional[str] = None,
-        mock_response: Optional[str] = None,
+        ollama_host: str | None = None,
+        model_name: str | None = None,
+        mock_response: str | None = None,
         prompt_version: str = "v1",
     ):
         """Initializes the Ollama Llama provider client."""
@@ -276,7 +276,7 @@ class LlamaProvider(BaseLLMProvider):
     def get_provider_name(self) -> str:
         return "llama"
 
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         model = self.model_name or "llama3"
 
         raw_shorthand = " ".join([t.text for t in tokens])

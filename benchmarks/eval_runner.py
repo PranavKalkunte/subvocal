@@ -5,16 +5,12 @@ accuracy, average latencies, category breakdowns, and trace failure analysis.
 """
 
 import os
-import sys
 import time
-from typing import Dict, List, Any
 
-from subvocal.shorthand.eval_set import EVAL_SET
 from subvocal.shorthand.decoder import heuristic_decode_phrase, hybrid_decode
-from subvocal.shorthand.vocab import get_command_list
-
-
+from subvocal.shorthand.eval_set import EVAL_SET
 from subvocal.shorthand.spec import compress_word
+
 
 def run_evaluation():
     print("=" * 80)

@@ -1,14 +1,14 @@
 import time
+
 import numpy as np
 import torch
-from typing import Optional, List, Dict, Any, Tuple, Union
 
+from subvocal.core.interfaces import Classifier
+from subvocal.core.models import CommandToken, Frame
 from subvocal.emg_core import config
 from subvocal.emg_core.dsp.features import extract_features
 from subvocal.emg_core.dsp.filters import preprocess_multichannel
 from subvocal.emg_core.ml.model_io import load_model
-from subvocal.core.interfaces import Classifier
-from subvocal.core.models import Frame, CommandToken
 
 
 class InferenceEngine(Classifier):
@@ -27,11 +27,11 @@ class InferenceEngine(Classifier):
         self._model_type = model_type
         self._threshold = confidence_threshold
         self._cooldown_ms = cooldown_ms
-        self._last_fired: Dict[str, float] = {}
+        self._last_fired: dict[str, float] = {}
 
         # Load saved model dictionary
         model_data = load_model(user_id, model_type)
-        self._labels: List[str] = model_data["labels"]
+        self._labels: list[str] = model_data["labels"]
 
         if model_type in ["rf", "svm"]:
             self._model = model_data["model"]
@@ -75,10 +75,10 @@ class InferenceEngine(Classifier):
             self._model = self._model.to(self._device)
 
     @property
-    def labels(self) -> List[str]:
+    def labels(self) -> list[str]:
         return self._labels
 
-    def predict(self, frame: Union[Frame, np.ndarray]) -> Optional[CommandToken]:
+    def predict(self, frame: Frame | np.ndarray) -> CommandToken | None:
         """Classify a segment and apply gating logic.
 
         Args:
@@ -107,7 +107,7 @@ class InferenceEngine(Classifier):
             metadata={"cooldown_ms": self._cooldown_ms, "probabilities": proba}
         )
 
-    def predict_raw(self, frame: Union[Frame, np.ndarray]) -> Tuple[str, float, List[float]]:
+    def predict_raw(self, frame: Frame | np.ndarray) -> tuple[str, float, list[float]]:
         """Classify a segment/frame without debounce gates.
 
         Returns:
@@ -130,7 +130,7 @@ class InferenceEngine(Classifier):
         if self._model_type in ["rf", "svm"]:
             # Extract features for scikit-learn models
             features = extract_features(seg_pre, sample_rate=config.SAMPLE_RATE).reshape(1, -1)
-            proba = self._model.predict_proba(features)[0]
+            proba = self._model.predict_proba(features)[0]  # pyright: ignore
         else:
             # PyTorch inference
             # Transpose to (num_channels, segment_length) and add batch dimension

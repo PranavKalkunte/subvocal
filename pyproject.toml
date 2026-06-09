@@ -79,6 +79,9 @@ src = ["src", "tests", "benchmarks", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+# E501: long lines are tolerated in docstrings/log messages; E741: single-letter
+# math variable names are conventional in the DSP/ML code.
+ignore = ["E501", "E741"]
 
 [tool.pyright]
 include = ["src"]

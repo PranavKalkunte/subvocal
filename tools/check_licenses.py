@@ -6,11 +6,11 @@ compatible with commercial use and open-source distribution.
 """
 
 import os
+import re
 import sys
-from typing import List, Dict, Any
 
 # Target files
-REQ_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "requirements.txt")
+PYPROJECT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "pyproject.toml")
 
 # Approved license categories
 APPROVED_LICENSES = ["mit", "apache", "bsd", "psf", "public-domain", "isc", "python-software-foundation"]
@@ -26,25 +26,44 @@ OFFLINE_LICENSES = {
     "keyring": "mit",
     "onnx": "apache",
     "h5py": "bsd",
-    "brainflow": "mit"
+    "brainflow": "mit",
+    "platformdirs": "mit",
+    "pyttsx3": "mozilla public license 2.0 (mpl 2.0)",
+    "pytest": "mit",
+    "pytest-cov": "mit",
+    "ruff": "mit",
+    "pyright": "mit",
+    "build": "mit",
+    "twine": "apache"
 }
 
 
-def parse_requirements(filepath: str) -> List[str]:
-    """Parse package names from requirements file."""
-    packages = []
+def parse_pyproject_dependencies(filepath: str) -> list[str]:
+    """Parse package names from [project] dependencies and optional-dependencies in pyproject.toml."""
     if not os.path.exists(filepath):
-        return packages
-        
-    with open(filepath, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            # Strip versions, extras, environment selectors
-            pkg = line.split("==")[0].split(">=")[0].split("<=")[0].split("<")[0].split(">")[0].split(";")[0].strip()
-            if pkg:
-                packages.append(pkg)
+        return []
+
+    try:
+        import tomllib
+        with open(filepath, "rb") as f:
+            data = tomllib.load(f)
+    except ImportError:  # Python < 3.11
+        import tomli as tomllib  # type: ignore[import-not-found]
+        with open(filepath, "rb") as f:
+            data = tomllib.load(f)
+
+    project = data.get("project", {})
+    specs: list[str] = list(project.get("dependencies", []))
+    for extra_specs in project.get("optional-dependencies", {}).values():
+        specs.extend(extra_specs)
+
+    packages = []
+    for spec in specs:
+        # Strip extras markers, versions, and environment selectors
+        pkg = re.split(r"[<>=!;\[ ]", spec.strip(), maxsplit=1)[0]
+        # Skip self-references like subvocal[ml,...] used by aggregate extras
+        if pkg and pkg.lower() != "subvocal" and pkg not in packages:
+            packages.append(pkg)
     return packages
 
 
@@ -54,21 +73,20 @@ def get_package_license(package_name: str) -> str:
     
     # 1. Try local metadata lookup
     try:
-        if sys.version_info >= (3, 8):
-            import importlib.metadata as metadata
-            try:
-                meta = metadata.metadata(package_name)
-                # Check License field
-                lic = meta.get("License", "")
-                if lic:
-                    return lic
-                # Check classifiers
-                classifiers = meta.get_all("Classifier", [])
-                for c in classifiers:
-                    if "License ::" in c:
-                        return c.split("::")[-1].strip()
-            except metadata.PackageNotFoundError:
-                pass
+        import importlib.metadata as metadata
+        try:
+            meta = metadata.metadata(package_name)
+            # Check License field
+            lic = meta.get("License", "")
+            if lic:
+                return lic
+            # Check classifiers
+            classifiers = meta.get_all("Classifier", [])
+            for c in classifiers:
+                if "License ::" in c:
+                    return c.split("::")[-1].strip()
+        except metadata.PackageNotFoundError:
+            pass
     except Exception:
         pass
         
@@ -81,12 +99,12 @@ def main():
     print("Subvocal Dependency & License Compliance Auditor")
     print("======================================================================")
     
-    packages = parse_requirements(REQ_FILE)
+    packages = parse_pyproject_dependencies(PYPROJECT_FILE)
     if not packages:
-        print("[!] No requirements found to scan.")
+        print("[!] No dependencies found to scan.")
         sys.exit(0)
-        
-    print(f"Scanning {len(packages)} packages listed in {os.path.basename(REQ_FILE)}...\n")
+
+    print(f"Scanning {len(packages)} packages listed in {os.path.basename(PYPROJECT_FILE)}...\n")
     
     violations = []
     

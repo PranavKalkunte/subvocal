@@ -4,9 +4,9 @@ Contains 50 test cases covering navigation, interactions, typing, searches,
 and system controls under various noisy environments.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
-EVAL_SET: List[Dict[str, Any]] = [
+EVAL_SET: list[dict[str, Any]] = [
     # --- Category 1: GOTO Navigation (10 cases) ---
     {
         "noisy": "gt ggl.cm",

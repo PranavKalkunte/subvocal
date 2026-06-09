@@ -1,9 +1,10 @@
 """Model I/O utilities for saving and loading classifiers."""
 
 import os
+from typing import Any
+
 import joblib
 import torch
-from typing import Any, Dict
 
 from subvocal.emg_core import config
 
@@ -18,7 +19,7 @@ def get_model_path(user_id: str, model_type: str = "rf") -> str:
     return os.path.join(config.MODELS_DIR, f"{user_id}_model_{model_type}.{ext}")
 
 
-def save_model(model_data: Dict[str, Any], user_id: str, model_type: str = "rf") -> str:
+def save_model(model_data: dict[str, Any], user_id: str, model_type: str = "rf") -> str:
     """Save a model and its associated metadata to disk."""
     path = get_model_path(user_id, model_type)
     if model_type in ("rf", "svm"):
@@ -29,7 +30,7 @@ def save_model(model_data: Dict[str, Any], user_id: str, model_type: str = "rf")
     return path
 
 
-def load_model(user_id: str, model_type: str = "rf") -> Dict[str, Any]:
+def load_model(user_id: str, model_type: str = "rf") -> dict[str, Any]:
     """Load a model and its metadata from disk."""
     path = get_model_path(user_id, model_type)
     if not os.path.exists(path):

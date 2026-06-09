@@ -1,9 +1,9 @@
 """Security policies and authorization gating for subvocal actions."""
 
 from abc import ABC, abstractmethod
-from typing import List, Set
-from subvocal.core.models import Action
+
 from subvocal.context.schema import UserContext
+from subvocal.core.models import Action
 
 
 class AuthorizationPolicy(ABC):
@@ -38,7 +38,7 @@ class ConfidenceThresholdPolicy(AuthorizationPolicy):
 class CommandWhitelistPolicy(AuthorizationPolicy):
     """Restricts commands to a strict whitelist of allowed actions."""
 
-    def __init__(self, allowed_commands: List[str]):
+    def __init__(self, allowed_commands: list[str]):
         self.allowed_commands = {cmd.lower() for cmd in allowed_commands}
 
     def is_authorized(self, action: Action, context: UserContext) -> bool:
@@ -48,7 +48,7 @@ class CommandWhitelistPolicy(AuthorizationPolicy):
 class ContextBoundPolicy(AuthorizationPolicy):
     """Blocks execution of sensitive commands unless the active application is safe."""
 
-    def __init__(self, sensitive_commands: List[str], safe_applications: List[str]):
+    def __init__(self, sensitive_commands: list[str], safe_applications: list[str]):
         self.sensitive_commands = {cmd.lower() for cmd in sensitive_commands}
         self.safe_applications = {app.lower() for app in safe_applications}
 
@@ -56,10 +56,10 @@ class ContextBoundPolicy(AuthorizationPolicy):
         if action.action_type.lower() in self.sensitive_commands:
             active_app = ""
             if context:
-                if hasattr(context, "app_state") and context.app_state:
+                if getattr(context, "app_state", None):
                     active_app = context.app_state.current_app
-                elif hasattr(context, "active_application"):
-                    active_app = context.active_application
+                else:
+                    active_app = getattr(context, "active_application", "")
             active_app = str(active_app or "").lower()
             return active_app in self.safe_applications
         return True
@@ -68,7 +68,7 @@ class ContextBoundPolicy(AuthorizationPolicy):
 class PolicyEngine:
     """Orchestrates authorization consensus across multiple active policies."""
 
-    def __init__(self, policies: List[AuthorizationPolicy] = None):
+    def __init__(self, policies: list[AuthorizationPolicy] | None = None):
         self.policies = policies or []
 
     def add_policy(self, policy: AuthorizationPolicy) -> None:

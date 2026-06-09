@@ -1,15 +1,23 @@
 """Model export and quantization pipeline for sEMG classifiers."""
 
+import logging
 import os
+from typing import Any
+
 import numpy as np
 import torch
 import torch.nn as nn
-from typing import Dict, Any
 
 from subvocal.emg_core import config
 from subvocal.emg_core.ml.model_io import load_model, save_model
-from subvocal.emg_core.ml.train import EMG1DCNN, EMGGRU, EMGTransformer, load_dataset, preprocess_segments, train_test_split
-import logging
+from subvocal.emg_core.ml.train import (
+    EMG1DCNN,
+    EMGGRU,
+    EMGTransformer,
+    load_dataset,
+    preprocess_segments,
+    train_test_split,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,12 +130,12 @@ def export_to_tflite(user_id: str, model_type: str, export_path: str) -> bool:
     Returns True on success, raises on failure.
     """
     try:
-        import tensorflow as tf
+        import tensorflow  # noqa: F401 — verify runtime is available
         import tf2onnx  # noqa: F401 — verify converter is available
     except ImportError as e:
         raise NotImplementedError(
             f"TFLite export requires tensorflow and tf2onnx: pip install tensorflow tf2onnx. Missing: {e}"
-        )
+        ) from e
 
     onnx_temp = export_path + ".temp.onnx"
     try:
@@ -149,7 +157,7 @@ def export_to_tflite(user_id: str, model_type: str, export_path: str) -> bool:
             os.remove(onnx_temp)
 
 
-def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) -> Dict[str, Any]:
+def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) -> dict[str, Any]:
     """Perform dynamic int8 quantization on a PyTorch model and run accuracy regression checks.
 
     Args:

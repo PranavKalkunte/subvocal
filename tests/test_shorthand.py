@@ -5,15 +5,13 @@ and hybrid LLM decoder under different simulated sEMG noise levels.
 """
 
 import os
-import sys
-from typing import Dict, List, Any
+from typing import Any
+
+from subvocal.shorthand.decoder import heuristic_decode_phrase, hybrid_decode
+from subvocal.shorthand.simulator import phrase_to_noisy_shorthand
 
 # Ensure parent directory is in search path
-
 from subvocal.shorthand.vocab import get_command_list
-from subvocal.shorthand.spec import compress_word
-from subvocal.shorthand.simulator import phrase_to_noisy_shorthand
-from subvocal.shorthand.decoder import heuristic_decode_phrase, hybrid_decode
 
 # Define evaluation dataset
 EVAL_DATASET = [
@@ -162,7 +160,7 @@ def run_benchmark():
     print("-" * 80)
     
     # Track metrics
-    results: Dict[str, Dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
     
     # Run test cases
     for noise_name, params in NOISE_LEVELS.items():

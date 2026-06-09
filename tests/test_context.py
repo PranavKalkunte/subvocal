@@ -5,12 +5,11 @@ contacts, and calendar, feeding it to the articulatory decoder to resolve noisy 
 """
 
 import os
-import sys
+
+from subvocal.context.manager import ContextManager
 
 # Ensure parent directory is in search path
-
 from subvocal.context.mock_data import generate_mock_context
-from subvocal.context.manager import ContextManager
 from subvocal.shorthand.decoder import heuristic_decode_phrase, hybrid_decode
 
 # Test cases representing noisy user inputs that require contextual vocabulary

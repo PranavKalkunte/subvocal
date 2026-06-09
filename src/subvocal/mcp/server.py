@@ -1,20 +1,17 @@
 """Model Context Protocol (MCP) reference server for Subvocal Middleware."""
 
-import sys
 import json
+import sys
+import threading
 import time
 import uuid
-import threading
-from typing import Dict, Any, List, Optional
-
-import os
+from typing import Any
 
 from subvocal import __version__ as _SDK_VERSION
-from subvocal.core.models import CommandToken, Intent, Action
-from subvocal.core.interfaces import LLMProvider, ActionExecutor, ContextProvider
+from subvocal.context.schema import AppState, UserContext
+from subvocal.core.interfaces import ActionExecutor, ContextProvider, LLMProvider
+from subvocal.core.models import Action, CommandToken, Intent
 from subvocal.core.pipeline import SubvocalPipeline
-from subvocal.context.schema import UserContext
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Mock Implementations for Reference Running
@@ -22,7 +19,7 @@ from subvocal.context.schema import UserContext
 
 class MockLLMProvider(LLMProvider):
     """Fallback LLM Provider that maps command abbreviations to intents."""
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
         shorthand = " ".join([t.text for t in tokens])
         # Simple heuristic mappings
         command = "GOTO"
@@ -51,10 +48,10 @@ class MockContextProvider(ContextProvider):
     """Exposes mock system context state."""
     def get_context(self) -> UserContext:
         return UserContext(
-            timestamp=time.time(),
-            active_application="Claude Desktop",
-            clipboard_content="https://modelcontextprotocol.io",
-            additional_metadata={"mcp_enabled": True}
+            app_state=AppState(
+                current_app="Claude Desktop",
+                page_url="https://modelcontextprotocol.io",
+            )
         )
 
     def get_provider_name(self) -> str:
@@ -64,7 +61,7 @@ class MockContextProvider(ContextProvider):
 class MockActionExecutor(ActionExecutor):
     """Executes actions and logs execution history."""
     def __init__(self):
-        self.history: List[Action] = []
+        self.history: list[Action] = []
 
     def execute(self, action: Action) -> Any:
         self.history.append(action)
@@ -111,7 +108,7 @@ class SubvocalMCPServer:
 
         self.initialized = False
 
-    def handle_request(self, req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def handle_request(self, req: dict[str, Any]) -> dict[str, Any] | None:
         """Process an incoming JSON-RPC 2.0 request and return the response dictionary."""
         method = req.get("method")
         msg_id = req.get("id")
@@ -201,7 +198,7 @@ class SubvocalMCPServer:
         # Fallback for unknown methods
         return self._error_response(msg_id, -32601, f"Method not found: {method}")
 
-    def _get_tools_schema(self) -> List[Dict[str, Any]]:
+    def _get_tools_schema(self) -> list[dict[str, Any]]:
         return [
             {
                 "name": "get_pipeline_status",
@@ -244,7 +241,7 @@ class SubvocalMCPServer:
             }
         ]
 
-    def _call_tool(self, msg_id: Any, name: str, args: Dict[str, Any]) -> Dict[str, Any]:
+    def _call_tool(self, msg_id: Any, name: str, args: dict[str, Any]) -> dict[str, Any]:
         try:
             if name == "get_pipeline_status":
                 status_text = (
@@ -311,7 +308,7 @@ class SubvocalMCPServer:
         except Exception as e:
             return self._error_response(msg_id, -32000, f"Tool execution failed: {str(e)}")
 
-    def _success_response(self, msg_id: Any, text: str) -> Dict[str, Any]:
+    def _success_response(self, msg_id: Any, text: str) -> dict[str, Any]:
         return {
             "jsonrpc": "2.0",
             "id": msg_id,
@@ -320,7 +317,7 @@ class SubvocalMCPServer:
             }
         }
 
-    def _error_response(self, msg_id: Any, code: int, message: str) -> Dict[str, Any]:
+    def _error_response(self, msg_id: Any, code: int, message: str) -> dict[str, Any]:
         return {
             "jsonrpc": "2.0",
             "id": msg_id,

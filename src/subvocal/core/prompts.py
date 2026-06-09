@@ -1,7 +1,7 @@
 """Prompt templates and version manager for intent reconstruction.
 """
 
-from typing import Dict, Optional
+
 from subvocal.shorthand.vocab import COMMANDS
 
 PROMPT_v1 = """You are the core intent reconstruction decoder for a silent speech subvocal interface neckband.
@@ -61,7 +61,7 @@ class PromptManager:
     """Manages versioned prompt templates for LLM intent decoding."""
 
     def __init__(self, default_version: str = "v1"):
-        self.templates: Dict[str, str] = {
+        self.templates: dict[str, str] = {
             "v1": PROMPT_v1,
             "v2": PROMPT_v2,
         }
@@ -76,7 +76,7 @@ class PromptManager:
         """Register a new custom prompt template version."""
         self.templates[version] = template
 
-    def get_template(self, version: Optional[str] = None) -> str:
+    def get_template(self, version: str | None = None) -> str:
         """Retrieve a raw prompt template string by version."""
         ver = version or self.default_version
         if ver not in self.templates:
@@ -91,7 +91,7 @@ class PromptManager:
         calendar: str,
         contacts: str,
         history: str,
-        version: Optional[str] = None,
+        version: str | None = None,
     ) -> str:
         """Formats the selected prompt template with active inputs."""
         template = self.get_template(version)

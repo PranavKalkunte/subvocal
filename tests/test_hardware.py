@@ -1,27 +1,26 @@
 """Unit and mock integration tests for the Subvocal SDK Hardware Abstraction Layer (HAL).
 """
 
-import os
-import sys
-
-import unittest
-import unittest.mock
-import time
-import tempfile
 import csv
+import os
 import socket
 import struct
+import sys
+import tempfile
 import threading
+import time
+import unittest
+import unittest.mock
 
 import numpy as np
-from subvocal.hardware.drivers import (
-    FileReplayDriver,
-    SyntheticSignalGenerator,
-    OpenBCICytonDriver,
-    DelsysTrignoDriver,
-)
-from subvocal.hardware.datasets import PutEMGDriver
 
+from subvocal.hardware.datasets import PutEMGDriver
+from subvocal.hardware.drivers import (
+    DelsysTrignoDriver,
+    FileReplayDriver,
+    OpenBCICytonDriver,
+    SyntheticSignalGenerator,
+)
 
 # --- Mock TCP Server for Delsys Trigno Tests ---
 
@@ -77,7 +76,7 @@ class MockDelsysStation:
                 s.settimeout(0.1)
                 conn, addr = s.accept()
                 s.settimeout(None)
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except Exception:
                 break
@@ -104,7 +103,7 @@ class MockDelsysStation:
                 s.settimeout(0.1)
                 conn, addr = s.accept()
                 s.settimeout(None)
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except Exception:
                 break

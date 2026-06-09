@@ -4,24 +4,20 @@ Simulates raw physiological signal ingestion, filters and classifies the frame,
 buffers the classified token, triggers intent reconstruction, and dispatches the action.
 """
 
-import os
-import sys
 import time
 import unittest
-from typing import List, Optional
 
-
-from subvocal.core.models import Frame, CommandToken, Intent, Action
-from subvocal.core.interfaces import LLMProvider, ActionExecutor, ContextProvider
+from subvocal.context.schema import AppState, UserContext
+from subvocal.core.interfaces import ActionExecutor, ContextProvider, LLMProvider
+from subvocal.core.models import Action, CommandToken, Frame, Intent
 from subvocal.core.pipeline import SubvocalPipeline
-from subvocal.context.schema import UserContext, AppState
 from subvocal.hardware.drivers import SyntheticSignalGenerator
 
 
 class SmokeExecutor(ActionExecutor):
     """Action executor recording dispatched commands for verification."""
     def __init__(self):
-        self.executed_actions: List[Action] = []
+        self.executed_actions: list[Action] = []
 
     def execute(self, action: Action):
         self.executed_actions.append(action)
@@ -32,7 +28,7 @@ class SmokeExecutor(ActionExecutor):
 
 class SmokeLLM(LLMProvider):
     """Intent decoder translating shorthand tokens."""
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:  # noqa: ARG002
         phrase = " ".join([t.text for t in tokens])
         if "clk" in phrase:
             return Intent(
@@ -78,7 +74,7 @@ class TestSubvocalEndToEndSmoke(unittest.TestCase):
         context = SmokeContext()
 
         # Simple RMS classifier function: if amplitude on channel 2 bursts, emit "clk"
-        def classify_fn(frame: Frame) -> Optional[CommandToken]:
+        def classify_fn(frame: Frame) -> CommandToken | None:
             import numpy as np
             arr = frame.to_numpy()
             if len(arr) == 0:

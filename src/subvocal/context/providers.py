@@ -1,13 +1,13 @@
 """Modular ContextProvider implementations for the Subvocal SDK.
 """
 
-from typing import List, Optional
+
 from subvocal.context.schema import (
-    UserContext,
-    Contact,
-    CalendarEvent,
-    LocationInfo,
     AppState,
+    CalendarEvent,
+    Contact,
+    LocationInfo,
+    UserContext,
 )
 from subvocal.core.interfaces import ContextProvider
 
@@ -29,7 +29,7 @@ class StaticContextProvider(ContextProvider):
 class CalendarContextProvider(ContextProvider):
     """Modular provider for retrieving calendar events."""
 
-    def __init__(self, events: Optional[List[CalendarEvent]] = None):
+    def __init__(self, events: list[CalendarEvent] | None = None):
         self.events = events or []
 
     def get_provider_name(self) -> str:
@@ -45,7 +45,7 @@ class CalendarContextProvider(ContextProvider):
 class ContactsContextProvider(ContextProvider):
     """Modular provider for retrieving user contact directory."""
 
-    def __init__(self, contacts: Optional[List[Contact]] = None):
+    def __init__(self, contacts: list[Contact] | None = None):
         self.contacts = contacts or []
 
     def get_provider_name(self) -> str:
@@ -61,7 +61,7 @@ class ContactsContextProvider(ContextProvider):
 class LocationContextProvider(ContextProvider):
     """Modular provider for retrieving current location details."""
 
-    def __init__(self, location: Optional[LocationInfo] = None):
+    def __init__(self, location: LocationInfo | None = None):
         self.location = location
 
     def get_provider_name(self) -> str:
@@ -77,7 +77,7 @@ class LocationContextProvider(ContextProvider):
 class AppStateContextProvider(ContextProvider):
     """Modular provider for retrieving active app state and visible elements."""
 
-    def __init__(self, app_state: Optional[AppState] = None):
+    def __init__(self, app_state: AppState | None = None):
         self.app_state = app_state or AppState(current_app="Launcher")
 
     def get_provider_name(self) -> str:
@@ -92,7 +92,7 @@ class AppStateContextProvider(ContextProvider):
 class CompositeContextProvider(ContextProvider):
     """Aggregates multiple individual ContextProviders into a single UserContext."""
 
-    def __init__(self, providers: List[ContextProvider]):
+    def __init__(self, providers: list[ContextProvider]):
         self.providers = providers
 
     def get_provider_name(self) -> str:

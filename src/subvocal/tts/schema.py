@@ -3,7 +3,6 @@
 Defines voices, speeds, formats, and configurations for audio feedback.
 """
 
-from typing import Optional
 from pydantic import BaseModel, Field
 
 

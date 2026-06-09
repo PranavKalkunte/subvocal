@@ -8,9 +8,11 @@ Enables pluggable integration of various:
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Any, Optional, Tuple, Dict, Union
+from typing import Any
+
 from subvocal.context.schema import UserContext
-from .models import Frame, CommandToken, Intent, Action
+
+from .models import Action, CommandToken, Frame, Intent
 
 
 class HardwareSource(ABC):
@@ -48,7 +50,7 @@ class LLMProvider(ABC):
     """Abstract interface for turning noisy classified shorthand into semantic Intents."""
 
     @abstractmethod
-    def reconstruct_intent(self, tokens: List[CommandToken], context: UserContext) -> Intent:
+    def reconstruct_intent(self, tokens: list[CommandToken], context: UserContext) -> Intent:
         """Resolves a noisy shorthand token stream to a structured Intent.
 
         Args:
@@ -109,12 +111,12 @@ class Classifier(ABC):
     """Abstract interface for classifying physiological raw signals into command tokens."""
 
     @abstractmethod
-    def predict(self, frame: Union[Frame, Any]) -> Optional[CommandToken]:
+    def predict(self, frame: Frame | Any) -> CommandToken | None:
         """Classifies a Frame of raw signals into a CommandToken (applies gating/cooldown if configured)."""
         pass
 
     @abstractmethod
-    def predict_raw(self, frame: Union[Frame, Any]) -> Tuple[str, float, List[float]]:
+    def predict_raw(self, frame: Frame | Any) -> tuple[str, float, list[float]]:
         """Predicts the probability distribution for a Frame of raw signals.
 
         Returns:
@@ -124,7 +126,7 @@ class Classifier(ABC):
 
     @property
     @abstractmethod
-    def labels(self) -> List[str]:
+    def labels(self) -> list[str]:
         """Returns the list of output labels/classes supported by the classifier."""
         pass
 
