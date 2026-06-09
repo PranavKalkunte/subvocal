@@ -140,6 +140,8 @@ python benchmarks/eval_runner.py   # 50-case heuristic benchmark
 
 Runtime artifacts (traces, trained models) are written to the per-user data directory; override with `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR`.
 
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and quality gates, and [SECURITY.md](SECURITY.md) for vulnerability reporting.
+
 ---
 
 ## 📄 License
