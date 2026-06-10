@@ -17,7 +17,8 @@ The base install is lightweight (pydantic + numpy) and covers the pipeline, hard
 | Extra | Enables | Installs |
 |-------|---------|----------|
 | `subvocal[ml]` | Classifier training, inference, calibration (`subvocal.emg_core`) | scipy, scikit-learn, joblib, torch |
-| `subvocal[hardware]` | Public-dataset drivers (Ninapro, PutEMG, CSL-HDEMG) | scipy, h5py |
+| `subvocal[hardware]` | Public-dataset drivers (Ninapro, PutEMG, CSL-HDEMG) and live serial boards | scipy, h5py, pyserial |
+| `subvocal[metrics]` | Prometheus telemetry exporter and worker CPU-load reporting | prometheus-client, psutil |
 | `subvocal[tts]` | Audio feedback outside macOS | pyttsx3 |
 | `subvocal[export]` | ONNX model export | onnx |
 | `subvocal[all]` | Everything above | — |
@@ -88,6 +89,43 @@ Claude Desktop config:
     "subvocal": { "command": "subvocal-mcp" }
   }
 }
+```
+
+### Configuration
+
+Every subsystem reads from one strict, validated config tree (`subvocal.config.SubvocalConfig`). Load it from a YAML file and/or environment overrides:
+
+```python
+from subvocal.config import load_config
+
+config = load_config("subvocal.yaml")          # optional path; all keys have defaults
+print(config.hardware.sample_rate, config.dsp.bandpass_high)
+```
+
+Unknown keys are rejected (`extra="forbid"`), so typos fail loudly instead of being silently ignored. Override any nested field with a `SUBVOCAL_<SECTION>__<KEY>` environment variable (double underscore separates section from key):
+
+```bash
+export SUBVOCAL_HARDWARE__SAMPLE_RATE=500
+export SUBVOCAL_TELEMETRY__ENABLED=true
+```
+
+The flat `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR` variables are reserved for writable-path resolution (`subvocal.paths`) and are not config keys. See [`subvocal-sample.yaml`](subvocal-sample.yaml) for every option with its default.
+
+### Sessions, monitoring, and telemetry (v2)
+
+For long-running deployments, `subvocal.runtime.Session` wraps the pipeline with a lifecycle state machine (`STARTING → ACTIVE → DEGRADED → CLOSED`), a liveness watchdog, real-time signal-quality scoring (`subvocal.stream`), and an async work queue. `subvocal.runtime.SessionWorker` manages a pool of sessions with load reporting, and `subvocal.telemetry.PrometheusTelemetry` (install `subvocal[metrics]`) exports session, intent, action, and signal-quality metrics — with a ready-to-import Grafana dashboard at [`src/subvocal/telemetry/grafana_dashboard.json`](src/subvocal/telemetry/grafana_dashboard.json).
+
+### BrainFlow-compatible API
+
+`subvocal.hardware.brainflow_compat` and `subvocal.emg_core.dsp.brainflow_filter` provide a pure-Python, zero-native-dependency drop-in for BrainFlow's `BoardShim` and `DataFilter`. Code written against BrainFlow runs unchanged; if the official `brainflow` package is installed it is used transparently as the backend.
+
+```python
+from subvocal.hardware.brainflow_compat import BoardShim, BoardIds, BrainFlowInputParams
+
+board = BoardShim(BoardIds.SYNTHETIC_BOARD, BrainFlowInputParams())
+board.prepare_session(); board.start_stream()
+data = board.get_board_data()   # (channels x samples) ndarray
+board.stop_stream(); board.release_session()
 ```
 
 ---

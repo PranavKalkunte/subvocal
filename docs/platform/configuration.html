@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration & Runtime | Subvocal SDK</title>
+  <link rel="stylesheet" href="../index.css">
+  <style>
+    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
+    .docs-body img { max-width: 100%; }
+    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
+    .mermaid { background: transparent; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <main data-page="subvocal">
+    <div data-component="container">
+      <section data-component="top">
+        <div>
+          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+        </div>
+        <nav data-component="nav-desktop">
+          <ul>
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
+            <li><a href="../docs.html">Docs</a></li>
+            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
+            <li><a href="../api.html">API</a></li>
+          </ul>
+        </nav>
+      </section>
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Platform Corpus</h4>
+          <ul>
+            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
+            <li><a href="../platform/configuration.html" aria-current="page"><span>[*]</span> Configuration & Runtime</a></li>
+            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
+            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
+            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
+            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
+            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
+            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
+            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
+            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
+            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
+            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
+            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
+            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
+          </ul>
+          <h4>Tutorials</h4>
+          <ul>
+            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
+          </ul>
+        </aside>
+        <article class="docs-body">
+<h1>Configuration &amp; Runtime (v2)</h1>
+<p>The v2 architecture introduces a single source of configuration truth and a
+production runtime layer (sessions, signal monitoring, telemetry, and auth
+grants) layered on top of the v1 pipeline. This page is the developer guide to
+both.</p>
+<h2>The configuration tree</h2>
+<p>Every subsystem is constructed from one validated Pydantic model,
+<code>subvocal.config.SubvocalConfig</code>. It is composed of typed sections — <code>hardware</code>,
+<code>dsp</code>, <code>classifier</code>, <code>provider</code>, <code>policy</code>, <code>telemetry</code>, <code>runtime</code>, and <code>auth</code> —
+each with sensible defaults.</p>
+<pre><code class="language-python">from subvocal.config import load_config
+
+# All keys are optional; omit the path for an all-defaults config.
+config = load_config(&quot;subvocal.yaml&quot;)
+print(config.hardware.sample_rate)     # 250
+print(config.dsp.bandpass_high)        # 50.0
+</code></pre>
+<p>Configuration is <strong>strict</strong>: <code>extra="forbid"</code> is set on every section, so an
+unknown or misspelled key raises <code>subvocal.exceptions.ConfigurationError</code>
+instead of being silently dropped. A full annotated template lives in
+<code>subvocal-sample.yaml</code>.</p>
+<h3>Environment overrides</h3>
+<p>Any nested field can be overridden from the environment using the
+<code>SUBVOCAL_&lt;SECTION&gt;__&lt;KEY&gt;</code> convention, where a double underscore separates the
+section from the key:</p>
+<pre><code class="language-bash">export SUBVOCAL_HARDWARE__SAMPLE_RATE=500
+export SUBVOCAL_DSP__BANDPASS_LOW=2.5
+export SUBVOCAL_TELEMETRY__ENABLED=true
+</code></pre>
+<p>Values are coerced to booleans, numbers, or <code>None</code> automatically. Overrides are
+merged on top of the YAML file (env wins).</p>
+<blockquote>
+<p><strong>Reserved variables.</strong> The flat <code>SUBVOCAL_DATA_DIR</code> and <code>SUBVOCAL_MODELS_DIR</code>
+variables are consumed by <code>subvocal.paths</code> for writable-directory resolution
+and are <strong>not</strong> configuration keys. Only variables containing the <code>__</code>
+section separator are treated as config overrides.</p>
+</blockquote>
+<h2>Sessions and the runtime layer</h2>
+<p><code>subvocal.runtime.Session</code> wraps the pipeline with the machinery a long-running
+deployment needs:</p>
+<ul>
+<li><strong>Lifecycle state machine</strong> — <code>STARTING → ACTIVE → DEGRADED → CLOSED</code>, with an
+  observable <code>on_state_changed</code> callback.</li>
+<li><strong>Liveness watchdog</strong> — transitions the session to <code>DEGRADED</code> and emits a
+  <code>HardwareError</code> if frames stop arriving within <code>runtime.session_liveness_timeout</code>.</li>
+<li><strong>Asynchronous processing</strong> — frames are processed on a serialized
+  <code>OpsQueue</code> worker thread (<code>subvocal.utils</code>), keeping ingestion non-blocking.</li>
+<li><strong>Signal monitoring</strong> (<code>subvocal.stream</code>):</li>
+<li><code>SignalLevel</code> — EMA-smoothed, percentile-of-window subvocalization activity
+    detection.</li>
+<li><code>StreamTracker</code> — hysteresis-based active/stopped segmentation that drives
+    phrase boundaries (replacing naive wall-clock timeouts).</li>
+<li><code>SignalQualityScorer</code> — a MOS-like quality score (saturation, drift,
+    dropouts, SNR) mapped to <code>EXCELLENT / GOOD / POOR / LOST</code>; a lost signal
+    pauses classification.</li>
+</ul>
+<p><code>subvocal.runtime.SessionWorker</code> manages a pool of sessions with capacity
+limits and load reporting. Because it exposes <code>id</code>, <code>load</code>, <code>cpu_usage</code>, and
+<code>status</code>, a worker satisfies the routing <code>WorkerNode</code> protocol and can be ranked
+by <code>subvocal.routing.CPULoadSelector</code> or <code>SessionCountSelector</code>.</p>
+<h2>Telemetry</h2>
+<p><code>subvocal.telemetry</code> defines a <code>TelemetryService</code> interface with a no-op
+<code>NullTelemetry</code> default. Install the <code>metrics</code> extra to export to Prometheus:</p>
+<pre><code class="language-bash">pip install &quot;subvocal[metrics]&quot;
+</code></pre>
+<pre><code class="language-python">from subvocal.telemetry import PrometheusTelemetry
+from subvocal.config import load_config
+
+telemetry = PrometheusTelemetry(load_config())   # honors telemetry.enabled / .prometheus_port
+</code></pre>
+<p>It reports active/total sessions, phrases, intents, executed and blocked
+actions, provider retries, signal-quality scores, and error counts. A
+ready-to-import dashboard ships at
+<code>src/subvocal/telemetry/grafana_dashboard.json</code>.</p>
+<h2>Capability grants</h2>
+<p><code>subvocal.auth</code> provides HMAC-signed, capability-scoped tokens (<code>ActionGrants</code>)
+that constrain which commands a caller may trigger, a minimum confidence floor,
+and whether execution is forced into dry-run. Grants propagate through a
+<code>contextvars</code> context and are enforced by <code>GrantsPolicy</code>, which plugs into the
+standard <code>PolicyEngine</code>:</p>
+<pre><code class="language-python">from subvocal.auth import ActionGrants, generate_token, verify_token, set_context_grants
+from subvocal.auth.grants import GrantsPolicy
+
+grants = ActionGrants(allowed_commands=[&quot;goto&quot;, &quot;search&quot;], min_confidence=0.7)
+token = generate_token(grants, secret_key=&quot;...&quot;)     # hand to a client
+# ...on the server, per request:
+set_context_grants(verify_token(token, secret_key=&quot;...&quot;))
+</code></pre>
+<h2>BrainFlow-compatible acquisition</h2>
+<p><code>subvocal.hardware.brainflow_compat</code> and <code>subvocal.emg_core.dsp.brainflow_filter</code>
+mirror BrainFlow's <code>BoardShim</code> and <code>DataFilter</code> APIs in pure Python (NumPy +
+SciPy), so existing BrainFlow code runs with no native build. If the official
+<code>brainflow</code> package is installed it is used transparently as the backend;
+otherwise the built-in synthetic generator and direct Cyton serial parser take
+over.</p>
+        </article>
+      </div>
+      <footer data-component="footer">
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
+        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
+        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      </footer>
+    </div>
+    <div data-component="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
+      <span>English</span>
+    </div>
+  </main>
+  
+</body>
+</html>

@@ -36,7 +36,7 @@ policy:
   dry_run: false           # If true, resolves semantic intents but bypasses executor dispatch
   raise_on_policy_violation: false # Raise PolicyViolationError if policy checks fail instead of silent tracing
 
-# Prometeus and Event telemetry setup
+# Prometheus and event telemetry setup
 telemetry:
   enabled: false           # Start prometheus client metrics server
   prometheus_port: 8000    # Default HTTP port to expose metrics

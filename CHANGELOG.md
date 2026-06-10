@@ -26,6 +26,14 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
     *   `subvocal/hardware/brainflow_compat.py`: Implemented a pure-Python fallback for `BoardShim`, `BoardIds`, and `BrainFlowInputParams`. Automatically delegates to the official C++ `brainflow` library if installed; otherwise, runs natively. Supports simulated signal generator threads (`SYNTHETIC_BOARD`) and a direct USB dongle serial packet parser (`CYTON_BOARD`) to enable edge node acquisition.
     *   `subvocal/emg_core/dsp/brainflow_filter.py`: Re-implemented the `DataFilter` signal processing suite in pure Python utilizing NumPy and SciPy. Includes Butterworth, Chebyshev, and Bessel causal/zero-phase filters, environmental notch filtering, moving averages, running medians, downsampling, windowing, Welch PSD estimation, and bandpower integration.
 
+### Fixed
+*   **Critical config/env collision**: `merge_env_overrides()` consumed the reserved flat variables `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR` (used by `subvocal.paths`) as unknown config keys, crashing `load_config()` under `extra="forbid"` for any process — including CI — that set them. Only `SUBVOCAL_<SECTION>__<KEY>` variables are now treated as overrides.
+*   **Routing coherence**: `SessionWorker` now exposes `id` and `cpu_usage`, satisfying the `WorkerNode` protocol so real workers (not just test doubles) can be ranked by `CPULoadSelector` / `SessionCountSelector`.
+*   **Type-checker cleanliness**: resolved all pyright/Pyrefly errors (SVC kernel typing, pyttsx3 rate coercion) and silenced optional native-backend import warnings; the tree is now `0 errors / 0 warnings` under a venv-bound type check.
+
+### Changed
+*   `[hardware]` extra now includes `pyserial`; new `[metrics]` extra bundles `prometheus-client` and `psutil`. Added `types-pyyaml` / `types-psutil` to `[dev]`.
+
 ---
 
 ## [1.0.0rc1] - 2026-06-09

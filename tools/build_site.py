@@ -25,6 +25,8 @@ PLATFORM_DIR = os.path.join(ROOT, "docs", "platform")
 PLATFORM_PAGES = [
     ("positioning.md", "positioning", "Platform Positioning",
      "The middleware thesis: why software rails, not proprietary hardware."),
+    ("configuration.md", "configuration", "Configuration & Runtime",
+     "The v2 config tree, sessions, signal monitoring, telemetry, and auth grants."),
     ("declaration.md", "declaration", "Declaration Post",
      "The framing shift and what is shipping."),
     ("architecture.md", "architecture", "Architecture",
