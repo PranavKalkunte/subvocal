@@ -159,9 +159,10 @@ class TTSEngine:
             logger.info("Attempting pyttsx3 offline TTS library...")
             engine = pyttsx3.init()
             
-            # Configure speed
+            # Configure speed (pyttsx3 returns an untyped object; default to 200 wpm)
             rate = engine.getProperty("rate")
-            engine.setProperty("rate", int(rate * self.config.speed))
+            base_rate = float(rate) if isinstance(rate, (int, float)) else 200.0
+            engine.setProperty("rate", int(base_rate * self.config.speed))
             
             # Save to file
             engine.save_to_file(text, dest_path)

@@ -142,9 +142,9 @@ class BoardShim:
         # Check if the official brainflow package is available
         self._native_shim = None
         try:
-            import brainflow  # noqa: F401
-            from brainflow.board_shim import BoardShim as NativeBoardShim
-            from brainflow.board_shim import BrainFlowInputParams as NativeInputParams
+            import brainflow  # type: ignore  # noqa: F401  # optional native C++ backend
+            from brainflow.board_shim import BoardShim as NativeBoardShim  # type: ignore
+            from brainflow.board_shim import BrainFlowInputParams as NativeInputParams  # type: ignore
 
             native_params = NativeInputParams()
             for key, val in input_params.__dict__.items():

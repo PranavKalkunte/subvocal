@@ -76,7 +76,7 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
     Note: requires coremltools. If missing, handles gracefully.
     """
     try:
-        import coremltools as ct
+        import coremltools as ct  # type: ignore  # optional native backend
         logger.info("coremltools found. Starting Core ML conversion...")
         
         # Load model metadata
@@ -130,8 +130,8 @@ def export_to_tflite(user_id: str, model_type: str, export_path: str) -> bool:
     Returns True on success, raises on failure.
     """
     try:
-        import tensorflow  # noqa: F401 — verify runtime is available
-        import tf2onnx  # noqa: F401 — verify converter is available
+        import tensorflow  # type: ignore  # noqa: F401 — optional native backend
+        import tf2onnx  # type: ignore  # noqa: F401 — optional native backend
     except ImportError as e:
         raise NotImplementedError(
             f"TFLite export requires tensorflow and tf2onnx: pip install tensorflow tf2onnx. Missing: {e}"

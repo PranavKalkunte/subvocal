@@ -9,7 +9,7 @@ Supports:
 """
 
 import os
-from typing import Any
+from typing import Any, Literal, cast
 
 import numpy as np
 import torch
@@ -255,12 +255,10 @@ def train_model(
                 n_jobs=-1
             )))
         else: # svm
-            steps.append(('clf', SVC(
-                C=config_obj.svm_c,
-                kernel=config_obj.svm_kernel,  # type: ignore[arg-type]
-                probability=True,
-                random_state=config_obj.seed
-            )))
+            kernel = cast(Literal["linear", "poly", "rbf", "sigmoid", "precomputed"], config_obj.svm_kernel)
+            # One line + bare ignore: sklearn's SVC stubs mis-resolve the probability overload.
+            svc = SVC(C=config_obj.svm_c, kernel=kernel, probability=True, random_state=config_obj.seed)  # type: ignore
+            steps.append(('clf', svc))
 
         pipeline = Pipeline(steps)
         pipeline.fit(X_train_f, y_train)
