@@ -93,3 +93,17 @@ hardware:
         os.environ["SUBVOCAL_HARDWARE__SAMPLE_RATE"] = "not-an-integer"
         with self.assertRaises(ConfigurationError):
             load_config()
+
+    def test_reserved_path_vars_are_not_config_overrides(self):
+        """Reserved flat vars (SUBVOCAL_DATA_DIR/MODELS_DIR) must be ignored, not rejected.
+
+        These are consumed by subvocal.paths; without the '__' separator rule
+        they would be parsed as unknown top-level keys and crash extra='forbid'.
+        """
+        os.environ["SUBVOCAL_DATA_DIR"] = "/tmp/subvocal-data"
+        os.environ["SUBVOCAL_MODELS_DIR"] = "/tmp/subvocal-models"
+        # A real nested override alongside the reserved flat vars still applies.
+        os.environ["SUBVOCAL_HARDWARE__SAMPLE_RATE"] = "300"
+
+        cfg = load_config()  # must not raise
+        self.assertEqual(cfg.hardware.sample_rate, 300)

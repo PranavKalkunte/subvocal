@@ -1,6 +1,7 @@
 """Public interface for the Subvocal SDK Hardware Abstraction Layer (HAL).
 """
 
+from .brainflow_compat import BoardIds, BoardShim, BrainFlowInputParams
 from .datasets import (
     CSLHDEMGDriver,
     NinaproDriver,
@@ -12,7 +13,6 @@ from .drivers import (
     OpenBCICytonDriver,
     SyntheticSignalGenerator,
 )
-from .brainflow_compat import BoardShim, BoardIds, BrainFlowInputParams
 
 __all__ = [
     "FileReplayDriver",

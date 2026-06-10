@@ -1,5 +1,6 @@
 import logging
 import threading
+import uuid
 from typing import Any
 
 from subvocal.config import SubvocalConfig
@@ -11,12 +12,22 @@ logger = logging.getLogger(__name__)
 class SessionWorker:
     """Manages active sessions and load-tracking across a pool of silent speech sessions.
 
-    Equivalent to LiveKit's SessionWorker/AgentWorker.
+    Exposes ``id``, ``load``, ``cpu_usage``, and ``status`` so an instance
+    satisfies the routing ``WorkerNode`` protocol and can be ranked by the
+    selectors in :mod:`subvocal.routing`. Equivalent to LiveKit's
+    SessionWorker/AgentWorker.
     """
 
-    def __init__(self, config: SubvocalConfig, max_sessions: int = 10, store: Any | None = None):
+    def __init__(
+        self,
+        config: SubvocalConfig,
+        max_sessions: int = 10,
+        store: Any | None = None,
+        worker_id: str | None = None,
+    ):
         self.config = config
         self.max_sessions = max_sessions
+        self.id = worker_id or f"worker-{uuid.uuid4().hex[:8]}"
 
         from subvocal.runtime.store import InMemorySessionStore
         self.store = store or InMemorySessionStore()
@@ -31,6 +42,18 @@ class SessionWorker:
             if self.max_sessions <= 0:
                 return 0.0
             return len(self._sessions) / self.max_sessions
+
+    @property
+    def cpu_usage(self) -> float:
+        """Returns host CPU utilization percentage (0.0 if psutil is unavailable).
+
+        Lets a SessionWorker be ranked by :class:`subvocal.routing.CPULoadSelector`.
+        """
+        try:
+            import psutil
+        except ImportError:
+            return 0.0
+        return float(psutil.cpu_percent(interval=None))
 
     @property
     def status(self) -> str:

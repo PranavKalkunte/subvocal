@@ -19,6 +19,7 @@ from .core.interfaces import ActionExecutor, ContextProvider, HardwareSource, LL
 from .core.llm_providers import HeuristicProvider, resolve_provider
 from .core.models import Action, CommandToken, Frame, Intent, Sample
 from .core.pipeline import PipelineStats, SubvocalPipeline
+from .emg_core.dsp.brainflow_filter import DataFilter
 from .exceptions import (
     CalibrationError,
     ConfigurationError,
@@ -29,9 +30,8 @@ from .exceptions import (
     ProviderError,
     SubvocalError,
 )
+from .hardware.brainflow_compat import BoardIds, BoardShim, BrainFlowInputParams
 from .paths import get_data_dir, get_models_dir
-from .hardware.brainflow_compat import BoardShim, BoardIds, BrainFlowInputParams
-from .emg_core.dsp.brainflow_filter import DataFilter
 
 __version__ = "2.0.0"
 

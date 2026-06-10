@@ -1,10 +1,10 @@
 import enum
 import logging
 import math
+from typing import Any
 
 import numpy as np
 
-from typing import Any
 from subvocal.exceptions import MissingDependencyError
 
 logger = logging.getLogger("subvocal.emg_core.dsp.brainflow_filter")

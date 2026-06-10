@@ -40,6 +40,10 @@
 <ul>
 <li><a href="#subvocal-paths"><span>[*]</span> paths</a></li>
 </ul>
+<h4>subvocal.config</h4>
+<ul>
+<li><a href="#subvocal-config"><span>[*]</span> config</a></li>
+</ul>
 <h4>subvocal.core</h4>
 <ul>
 <li><a href="#subvocal-core-corrections"><span>[*]</span> corrections</a></li>
@@ -113,10 +117,22 @@
 <li><a href="#subvocal-stream-quality"><span>[*]</span> quality</a></li>
 <li><a href="#subvocal-stream-tracker"><span>[*]</span> tracker</a></li>
 </ul>
+<h4>subvocal.auth</h4>
+<ul>
+<li><a href="#subvocal-auth-grants"><span>[*]</span> grants</a></li>
+</ul>
+<h4>subvocal.telemetry</h4>
+<ul>
+<li><a href="#subvocal-telemetry-service"><span>[*]</span> service</a></li>
+</ul>
+<h4>subvocal.utils</h4>
+<ul>
+<li><a href="#subvocal-utils-concurrency"><span>[*]</span> concurrency</a></li>
+</ul>
 </aside>
 <article class="docs-body">
 <h1>API Reference</h1>
-<p>Auto-generated from docstrings across 45 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
+<p>Auto-generated from docstrings across 49 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
 <section class="api-module" id="subvocal-exceptions">
 <h2>subvocal.exceptions</h2>
 <p>Typed exception hierarchy for the Subvocal SDK.</p><p>Every error the SDK raises derives from :class:`SubvocalError`, so integrators
@@ -179,6 +195,60 @@ directory instead. Resolution order:</p><p>1. Environment variables ``SUBVOCAL_D
 <h3><code>get_models_dir</code></h3>
 <pre><code>def get_models_dir() -&gt; str</code></pre>
 <p>Writable directory for trained and downloaded model weights.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-config">
+<h2>subvocal.config</h2>
+
+<div class="api-member">
+<h3><code>class HardwareConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class DSPConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class ClassifierConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class ProviderConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class PolicyConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class TelemetryConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class RuntimeConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class AuthConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>class SubvocalConfig(BaseModel)</code></h3>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>merge_env_overrides</code></h3>
+<pre><code>def merge_env_overrides(config_dict: dict[str, Any]) -&gt; dict[str, Any]</code></pre>
+<p>Inspects environment variables for SUBVOCAL_ keys and merges them into the config dict.</p><p>Only variables that use the ``__`` section separator (e.g.
+``SUBVOCAL_HARDWARE__SAMPLE_RATE``) are treated as config overrides, since
+every configurable field lives inside a named section. Flat variables such
+as ``SUBVOCAL_DATA_DIR`` / ``SUBVOCAL_MODELS_DIR`` are reserved for
+:mod:`subvocal.paths` and are ignored here.</p>
+</div>
+<div class="api-member">
+<h3><code>load_config</code></h3>
+<pre><code>def load_config(path: str | None = None) -&gt; SubvocalConfig</code></pre>
+<p>Loads a SubvocalConfig from a YAML file (if provided) and merges environment overrides.</p>
 </div>
 </section>
 <section class="api-module" id="subvocal-core-corrections">
@@ -2262,16 +2332,24 @@ and intent decoding on a background OpsQueue thread.</p>
 
 <div class="api-member">
 <h3><code>class SessionWorker</code></h3>
-<p>Manages active sessions and load-tracking across a pool of silent speech sessions.</p><p>Equivalent to LiveKit's SessionWorker/AgentWorker.</p>
+<p>Manages active sessions and load-tracking across a pool of silent speech sessions.</p><p>Exposes ``id``, ``load``, ``cpu_usage``, and ``status`` so an instance
+satisfies the routing ``WorkerNode`` protocol and can be ranked by the
+selectors in :mod:`subvocal.routing`. Equivalent to LiveKit's
+SessionWorker/AgentWorker.</p>
 <div class="api-member">
 <h4>__init__</h4>
-<pre><code>def __init__(self, config: SubvocalConfig, max_sessions: int = 10, store: Any | None = None)</code></pre>
+<pre><code>def __init__(self, config: SubvocalConfig, max_sessions: int = 10, store: Any | None = None, worker_id: str | None = None)</code></pre>
 <p>No description.</p>
 </div>
 <div class="api-member">
 <h4>load</h4>
 <pre><code>def load(self) -&gt; float</code></pre>
 <p>Returns the current load fraction of the worker (0.0 to 1.0).</p>
+</div>
+<div class="api-member">
+<h4>cpu_usage</h4>
+<pre><code>def cpu_usage(self) -&gt; float</code></pre>
+<p>Returns host CPU utilization percentage (0.0 if psutil is unavailable).</p><p>Lets a SessionWorker be ranked by :class:`subvocal.routing.CPULoadSelector`.</p>
 </div>
 <div class="api-member">
 <h4>status</h4>
@@ -2517,6 +2595,294 @@ to LiveKit's StreamTracker.</p>
 <h4>stop</h4>
 <pre><code>def stop(self) -&gt; None</code></pre>
 <p>Permanently stops the tracker.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-auth-grants">
+<h2>subvocal.auth.grants</h2>
+
+<div class="api-member">
+<h3><code>class ActionGrants(BaseModel)</code></h3>
+<p>Capability-scoped credentials detailing authorized actions and constraints.</p>
+</div>
+<div class="api-member">
+<h3><code>class GrantsPolicy(AuthorizationPolicy)</code></h3>
+<p>Enforces capability-scoped authorization checks on proposed Actions.</p>
+<div class="api-member">
+<h4>is_authorized</h4>
+<pre><code>def is_authorized(self, action: Action, context: UserContext) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>set_context_grants</code></h3>
+<pre><code>def set_context_grants(grants: ActionGrants) -&gt; contextvars.Token</code></pre>
+<p>Sets the given ActionGrants in the current thread/coroutine execution context.</p>
+</div>
+<div class="api-member">
+<h3><code>get_context_grants</code></h3>
+<pre><code>def get_context_grants() -&gt; ActionGrants | None</code></pre>
+<p>Retrieves active ActionGrants from the current context.</p>
+</div>
+<div class="api-member">
+<h3><code>clear_context_grants</code></h3>
+<pre><code>def clear_context_grants(token: contextvars.Token) -&gt; None</code></pre>
+<p>Resets the context grants to their previous state.</p>
+</div>
+<div class="api-member">
+<h3><code>generate_token</code></h3>
+<pre><code>def generate_token(grants: ActionGrants, secret_key: str, expires_in: int = 3600) -&gt; str</code></pre>
+<p>Generates a secure HMAC-signed base64 token carrying capability claims.</p>
+</div>
+<div class="api-member">
+<h3><code>verify_token</code></h3>
+<pre><code>def verify_token(token: str, secret_key: str) -&gt; ActionGrants | None</code></pre>
+<p>Verifies the HMAC signature and expiration of a base64 token, returning decoded ActionGrants.</p>
+</div>
+<div class="api-member">
+<h3><code>ensure_permission</code></h3>
+<pre><code>def ensure_permission(action_type: str, confidence: float = 1.0) -&gt; None</code></pre>
+<p>Checks the active context grants and raises a PermissionError if the action is unauthorized.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-telemetry-service">
+<h2>subvocal.telemetry.service</h2>
+
+<div class="api-member">
+<h3><code>class TelemetryService</code></h3>
+<p>Interface for telemetry exporting, based on LiveKit telemetry service design.</p>
+<div class="api-member">
+<h4>session_started</h4>
+<pre><code>def session_started(self, session_id: str, config: SubvocalConfig) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>session_ended</h4>
+<pre><code>def session_ended(self, session_id: str, stats: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>phrase_detected</h4>
+<pre><code>def phrase_detected(self, session_id: str, phrase_id: str, duration_seconds: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>intent_resolved</h4>
+<pre><code>def intent_resolved(self, session_id: str, phrase_id: str, intent_name: str, confidence: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>action_executed</h4>
+<pre><code>def action_executed(self, session_id: str, action_type: str, status: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>action_blocked</h4>
+<pre><code>def action_blocked(self, session_id: str, action_type: str, reason: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>provider_retry</h4>
+<pre><code>def provider_retry(self, session_id: str, provider_name: str, attempt: int, error: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>quality_changed</h4>
+<pre><code>def quality_changed(self, session_id: str, quality_score: float, quality_state: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>error_occurred</h4>
+<pre><code>def error_occurred(self, session_id: str, error_type: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class NullTelemetry(TelemetryService)</code></h3>
+<p>Default telemetry implementation that does nothing.</p>
+</div>
+<div class="api-member">
+<h3><code>class PrometheusTelemetry(TelemetryService)</code></h3>
+<p>Telemetry service that exports metrics to Prometheus.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, config: SubvocalConfig)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>session_started</h4>
+<pre><code>def session_started(self, session_id: str, config: SubvocalConfig) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>session_ended</h4>
+<pre><code>def session_ended(self, session_id: str, stats: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>phrase_detected</h4>
+<pre><code>def phrase_detected(self, session_id: str, phrase_id: str, duration_seconds: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>intent_resolved</h4>
+<pre><code>def intent_resolved(self, session_id: str, phrase_id: str, intent_name: str, confidence: float) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>action_executed</h4>
+<pre><code>def action_executed(self, session_id: str, action_type: str, status: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>action_blocked</h4>
+<pre><code>def action_blocked(self, session_id: str, action_type: str, reason: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>provider_retry</h4>
+<pre><code>def provider_retry(self, session_id: str, provider_name: str, attempt: int, error: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>quality_changed</h4>
+<pre><code>def quality_changed(self, session_id: str, quality_score: float, quality_state: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>error_occurred</h4>
+<pre><code>def error_occurred(self, session_id: str, error_type: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-utils-concurrency">
+<h2>subvocal.utils.concurrency</h2>
+
+<div class="api-member">
+<h3><code>class OpsQueue</code></h3>
+<p>A thread-safe serialized work queue running on a single background worker thread.</p><p>Equivalent to LiveKit's OpsQueue.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, name: str, min_size: int = 128, flush_on_stop: bool = False, custom_logger: logging.Logger | None = None)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>Starts the background processing thread if not already started.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>Stops the queue.</p><p>If flush_on_stop is True, all currently queued operations are completed
+before the processing thread exits.</p>
+</div>
+<div class="api-member">
+<h4>enqueue</h4>
+<pre><code>def enqueue(self, fn: Callable, *args, **kwargs) -&gt; None</code></pre>
+<p>Enqueues an operation to be run on the background processing thread.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class IncrementalDispatcher</code></h3>
+<p>Allows multiple consumers to consume items thread-safely as they become available.</p><p>Producers can add items at any time. Equivalent to LiveKit's IncrementalDispatcher.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>add</h4>
+<pre><code>def add(self, item) -&gt; None</code></pre>
+<p>Appends an item and broadcasts to waiting consumers.</p>
+</div>
+<div class="api-member">
+<h4>done</h4>
+<pre><code>def done(self) -&gt; None</code></pre>
+<p>Signals that no more items will be added and wakes up all waiting consumers.</p>
+</div>
+<div class="api-member">
+<h4>for_each</h4>
+<pre><code>def for_each(self, callback: Callable) -&gt; None</code></pre>
+<p>Iterates over all items (including future ones) and invokes the callback on them.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ChangeNotifier</code></h3>
+<p>Registry for keyed observers to receive change notifications asynchronously.</p><p>Equivalent to LiveKit's ChangeNotifier.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>add_observer</h4>
+<pre><code>def add_observer(self, key: str, on_changed: Callable[[], None]) -&gt; None</code></pre>
+<p>Registers a callback with a unique key.</p>
+</div>
+<div class="api-member">
+<h4>remove_observer</h4>
+<pre><code>def remove_observer(self, key: str) -&gt; None</code></pre>
+<p>Unregisters a callback by its key.</p>
+</div>
+<div class="api-member">
+<h4>has_observers</h4>
+<pre><code>def has_observers(self) -&gt; bool</code></pre>
+<p>Returns True if there is at least one observer registered.</p>
+</div>
+<div class="api-member">
+<h4>notify_changed</h4>
+<pre><code>def notify_changed(self) -&gt; None</code></pre>
+<p>Asynchronously dispatches notifications to all registered observers.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class ChangeNotifierManager</code></h3>
+<p>Manages a registry of named ChangeNotifier instances.</p><p>Equivalent to LiveKit's ChangeNotifierManager.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_notifier</h4>
+<pre><code>def get_notifier(self, key: str) -&gt; ChangeNotifier | None</code></pre>
+<p>Retrieves a notifier by key, or returns None if it doesn't exist.</p>
+</div>
+<div class="api-member">
+<h4>get_or_create_notifier</h4>
+<pre><code>def get_or_create_notifier(self, key: str) -&gt; ChangeNotifier</code></pre>
+<p>Retrieves a notifier by key, creating a new one if it doesn't exist.</p>
+</div>
+<div class="api-member">
+<h4>remove_notifier</h4>
+<pre><code>def remove_notifier(self, key: str, force: bool = False) -&gt; None</code></pre>
+<p>Removes a notifier by key.</p><p>If force is False, the notifier will only be removed if it has no observers.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class Debouncer</code></h3>
+<p>Resettable delay timer to debounce fast-firing events.</p><p>Equivalent to LiveKit's Debouncer.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, after_seconds: float)</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>add</h4>
+<pre><code>def add(self, fn: Callable[[], None]) -&gt; None</code></pre>
+<p>Cancels any pending callback timer and schedules a new one to execute fn.</p>
+</div>
+<div class="api-member">
+<h4>set_duration</h4>
+<pre><code>def set_duration(self, after_seconds: float) -&gt; None</code></pre>
+<p>Updates the delay duration for subsequent debounce invocations.</p>
+</div>
+<div class="api-member">
+<h4>cancel</h4>
+<pre><code>def cancel(self) -&gt; None</code></pre>
+<p>Cancels any pending timer execution.</p>
 </div>
 </div>
 </section>

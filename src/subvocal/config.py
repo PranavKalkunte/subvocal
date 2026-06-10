@@ -89,7 +89,14 @@ class SubvocalConfig(BaseModel):
 
 
 def merge_env_overrides(config_dict: dict[str, Any]) -> dict[str, Any]:
-    """Inspects environment variables for SUBVOCAL_ keys and merges them into the config dict."""
+    """Inspects environment variables for SUBVOCAL_ keys and merges them into the config dict.
+
+    Only variables that use the ``__`` section separator (e.g.
+    ``SUBVOCAL_HARDWARE__SAMPLE_RATE``) are treated as config overrides, since
+    every configurable field lives inside a named section. Flat variables such
+    as ``SUBVOCAL_DATA_DIR`` / ``SUBVOCAL_MODELS_DIR`` are reserved for
+    :mod:`subvocal.paths` and are ignored here.
+    """
     merged = copy.deepcopy(config_dict)
     prefix = "SUBVOCAL_"
 
@@ -97,8 +104,11 @@ def merge_env_overrides(config_dict: dict[str, Any]) -> dict[str, Any]:
         if not env_key.startswith(prefix):
             continue
 
-        # Convert e.g. SUBVOCAL_HARDWARE__SAMPLE_RATE to ['hardware', 'sample_rate']
+        # Convert e.g. SUBVOCAL_HARDWARE__SAMPLE_RATE to ['hardware', 'sample_rate'].
+        # Require the '__' section separator; flat vars are reserved (see docstring).
         key_path = env_key[len(prefix):].lower()
+        if "__" not in key_path:
+            continue
         parts = key_path.split("__")
 
         curr = merged

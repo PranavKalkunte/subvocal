@@ -12,7 +12,7 @@ import numpy as np
 
 from subvocal.core.interfaces import HardwareSource
 from subvocal.core.models import Frame, Sample
-from subvocal.exceptions import HardwareError, MissingDependencyError
+from subvocal.exceptions import HardwareError
 
 
 class FileReplayDriver(HardwareSource):

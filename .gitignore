@@ -57,6 +57,7 @@ treehacks-2026-main/silentpilot/models/*.joblib
 scratch/
 reference/
 thesis/
+/brainflow
 
 # Local logs and model checkpoints
 data/*.jsonl
@@ -69,3 +70,8 @@ audio_output/
 
 
 
+
+# Coverage artifacts
+.coverage
+coverage.xml
+htmlcov/

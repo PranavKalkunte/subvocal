@@ -1,9 +1,10 @@
 import time
 import unittest
+
 import numpy as np
 
-from subvocal.hardware.brainflow_compat import BoardShim, BoardIds, BrainFlowInputParams, BrainFlowError
-from subvocal.emg_core.dsp.brainflow_filter import DataFilter, FilterTypes, AggOperations, WindowOperations, NoiseTypes
+from subvocal.emg_core.dsp.brainflow_filter import AggOperations, DataFilter, FilterTypes, NoiseTypes, WindowOperations
+from subvocal.hardware.brainflow_compat import BoardIds, BoardShim, BrainFlowInputParams
 
 
 class TestBrainFlowCompat(unittest.TestCase):
