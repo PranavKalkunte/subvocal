@@ -42,7 +42,12 @@ jobs:
         env:
           SUBVOCAL_DATA_DIR: ${{ runner.temp }}/subvocal-data
           SUBVOCAL_MODELS_DIR: ${{ runner.temp }}/subvocal-models
-        run: pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=65
+        run: pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=75
+
+      - name: Security audit (pip-audit)
+        run: |
+          pip install --quiet pip-audit || echo "pip-audit install failed (network?)"
+          pip-audit --desc || echo "::warning::pip-audit found vulnerabilities or failed – review required"
 
       - name: License compliance audit
         run: python tools/check_licenses.py
