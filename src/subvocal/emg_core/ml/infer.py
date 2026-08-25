@@ -119,12 +119,14 @@ class InferenceEngine(Classifier):
         else:
             segment = frame
 
-        # 2. Preprocess
+        # 2. Preprocess (plumb notch_freq/q from central config - H2)
         seg_pre = preprocess_multichannel(
             segment,
             fs=config.SAMPLE_RATE,
             low=config.BANDPASS_LOW,
-            high=config.BANDPASS_HIGH
+            high=config.BANDPASS_HIGH,
+            notch_freq=config.NOTCH_FREQ,
+            notch_q=config.NOTCH_Q,
         )
 
         if self._model_type in ["rf", "svm"]:

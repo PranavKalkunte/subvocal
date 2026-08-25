@@ -12,13 +12,17 @@ class OpsQueue:
     Equivalent to LiveKit's OpsQueue.
     """
 
-    def __init__(self, name: str, min_size: int = 128, flush_on_stop: bool = False, custom_logger: logging.Logger | None = None):
+    def __init__(self, name: str, min_size: int = 128, maxsize: int | None = None, flush_on_stop: bool = False, custom_logger: logging.Logger | None = None):
         self.name = name
         self.min_size = min_size
+        # maxsize handling: OpsQueue was previously unbounded (queue.Queue() with
+        # maxsize=0), which risks OOM if producers outpace consumer. Bound queue
+        # to maxsize (default min_size) and handle Full gracefully.
+        self.maxsize = maxsize if maxsize is not None else min_size
         self.flush_on_stop = flush_on_stop
         self.logger = custom_logger or logging.getLogger(f"subvocal.utils.opsqueue.{name}")
 
-        self._queue = queue.Queue()
+        self._queue: queue.Queue = queue.Queue(maxsize=self.maxsize)
         self._thread = None
         self._started = False
         self._stopped = False
@@ -43,18 +47,53 @@ class OpsQueue:
             if self._stopped or not self._started:
                 return
             self._stopped = True
-            # Enqueue sentinel to request thread termination
-            self._queue.put(None)
+            # Enqueue sentinel to request thread termination; handle bounded queue full
+            try:
+                self._queue.put(None, block=False)
+            except queue.Full:
+                # Queue full – drop oldest item to make room for sentinel
+                try:
+                    self._queue.get_nowait()
+                    self._queue.task_done()
+                except queue.Empty:
+                    pass
+                try:
+                    self._queue.put(None, block=False)
+                except queue.Full:
+                    self.logger.warning("OpsQueue '%s' full on stop, sentinel dropped", self.name)
 
         if self._thread:
             self._thread.join()
 
-    def enqueue(self, fn: Callable, *args, **kwargs) -> None:
-        """Enqueues an operation to be run on the background processing thread."""
+    def enqueue(self, fn: Callable, *args, **kwargs) -> bool:
+        """Enqueues an operation to be run on the background processing thread.
+
+        Returns False if the queue is stopped and the operation was not enqueued,
+        or if the bounded queue is full and the item was dropped.
+        """
         with self._lock:
             if self._stopped:
-                return
-            self._queue.put((fn, args, kwargs))
+                return False
+            try:
+                self._queue.put((fn, args, kwargs), block=False)
+                return True
+            except queue.Full:
+                self.logger.warning(
+                    "OpsQueue '%s' is full (maxsize=%d), dropping task %s",
+                    self.name,
+                    self.maxsize,
+                    getattr(fn, "__name__", str(fn)),
+                )
+                # Optionally evict oldest to make room – here we drop new task to apply backpressure
+                return False
+
+    def qsize(self) -> int:
+        """Return approximate queue size (for monitoring/backpressure)."""
+        return self._queue.qsize()
+
+    def is_full(self) -> bool:
+        """Return True if bounded queue is at capacity."""
+        return self._queue.full()
 
     def _process(self) -> None:
         while True:

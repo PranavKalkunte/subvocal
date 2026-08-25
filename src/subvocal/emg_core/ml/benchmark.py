@@ -1,13 +1,20 @@
 """Inference benchmarking harness for sEMG classifiers."""
 
 import os
+import re
 import time
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from subvocal.emg_core.ml.infer import InferenceEngine
 from subvocal.emg_core.ml.model_io import get_model_path
+
+
+def _sanitize(value: str) -> str:
+    """Sanitize user-controlled component to prevent path traversal (C2)."""
+    return re.sub(r"[^A-Za-z0-9_-]", "_", value)
 
 
 def estimate_flops(model_type: str, num_channels: int = 4, segment_length: int = 150, num_classes: int = 4, hidden_size: int = 64, num_layers: int = 2) -> int:
@@ -75,6 +82,9 @@ def run_benchmark(user_id: str, model_type: str, num_runs: int = 200) -> dict[st
 
     Estimates computational FLOPs and electrical energy footprint.
     """
+    # Sanitize user inputs to prevent path traversal (C2) - also validated in model_io
+    user_id = _sanitize(user_id)
+    model_type = _sanitize(model_type)
     engine = InferenceEngine(user_id=user_id, model_type=model_type)
     num_classes = len(engine.labels)
 

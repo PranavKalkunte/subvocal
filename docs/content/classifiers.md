@@ -120,6 +120,14 @@ $$\mathbf{W}_{\text{int8}} = \text{round}\left(\frac{\mathbf{W}_{\text{float32}}
 To safeguard against precision loss, the quantization pipeline runs a verification check on user validation data. If the drop in accuracy exceeds the configured threshold, the quantized model is rejected:
 $$\text{Accuracy}_{\text{float32}} - \text{Accuracy}_{\text{int8}} \le 0.05 \quad (5\%)$$
 
+### Secure Model I/O (`subvocal.emg_core.ml.model_io`)
+
+All per-user weights are jailed to `MODELS_DIR`:
+
+- **Path sanitization**: `user_id` and `model_type` are sanitized via `re.sub(r"[^A-Za-z0-9_-]", "_", value)` and the resolved path is verified with `Path.resolve().is_relative_to(MODELS_DIR.resolve())` (fallback to `relative_to` on Python <3.9); traversal attempts raise `ValueError`.
+- **Safe deserialization**: PyTorch checkpoints load with `torch.load(..., weights_only=True)` so only tensors and explicitly allow-listed NumPy types (`np.ndarray`, `np.dtype`, scalars via `torch.serialization.add_safe_globals`) are unpickled. Legacy checkpoints fall back to `weights_only=False` only after the path jail confirms a trusted location. `joblib.load` is used only for `rf`/`svm` types on the same jailed path.
+- **Export guards**: `emg_core.ml.export` and training utilities apply the same `is_relative_to` jail when resolving export paths.
+
 ---
 
 ## 6. Offline Benchmarking Profile

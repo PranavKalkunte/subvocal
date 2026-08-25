@@ -23,11 +23,14 @@ extra with a lazy, guarded import that raises
 Every pull request must pass the same gates CI runs:
 
 ```bash
-ruff check src tests benchmarks tools   # lint (E, F, I, UP, B; E501/E741 ignored by policy)
-pyright                                  # type check (0 errors required)
-pytest --cov=subvocal                    # test suite (coverage floor enforced in CI)
+ruff check src tests benchmarks tools   # lint (E, F, I, UP, B, S; E501/E741 ignored by policy) — S = bandit
+pyright                                  # type check (standard mode, 0 errors required)
+pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=75  # test suite (75% floor enforced in CI)
+pip-audit                                # dependency CVE audit
 python tools/check_licenses.py           # dependency license audit
 ```
+
+New file I/O code must include model validation (Pydantic field validators, e.g. `Frame` ordering / `confidence` 0–1) and path sanitization (reject `..` / absolute escapes, constrain to `get_data_dir()` / `get_models_dir()`); deserialization of checkpoints must use `torch.load(..., weights_only=True)`.
 
 Generated artifacts must be in sync with their sources — CI fails if these
 produce a diff:

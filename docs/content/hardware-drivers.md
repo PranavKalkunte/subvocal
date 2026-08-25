@@ -38,6 +38,7 @@ The SDK implements four baseline drivers under `sdk/hardware/drivers.py`:
 * **Purpose:** Reads multi-channel sEMG data from a local CSV file, simulating a real-time hardware stream.
 * **Mechanism:** Slices continuous numeric columns. Uses the current system clock to generate system timestamps, simulating live inputs.
 * **Options:** Supports configuring the sample rate `fs` and toggling `loop` at End-Of-File (EOF).
+* **Resource note:** The driver loads the entire CSV into RAM (`self._data`) on init. If the file exceeds **100 MB**, it logs a warning (`FileReplayDriver: CSV ... is ... MB; entire file will be loaded into RAM`) and advises chunked/streaming ingestion to avoid OOM on long recordings. Header rows and non-numeric lines are skipped defensively.
 
 ### 2. `SyntheticSignalGenerator`
 * **Purpose:** Simulates clean and noisy muscle signals for offline software development without physical hardware.
@@ -54,6 +55,7 @@ The SDK implements four baseline drivers under `sdk/hardware/drivers.py`:
 ### 4. `DelsysTrignoDriver`
 * **Purpose:** Zero-dependency TCP socket client connecting to the Delsys Trigno wireless base station.
 * **Mechanism:** Connects directly to the Delsys Trigno Control Utility over standard TCP sockets, avoiding large vendor DLLs or custom wrappers.
+* **Reliability note:** `read_frame` enforces a **100 ms socket timeout** with non-blocking `recv` and raises `HardwareError` if no data arrives (`DelsysTrignoDriver: no data received ... within 100 ms`), preventing infinite blocking on base-station dropout. `stop()` reliably sends `STOP` and closes both command and data sockets.
 
 ---
 
@@ -88,8 +90,8 @@ Streams raw binary single-precision floats (32-bit little-endian, `<f` in struct
 The SDK implements custom subject-file readers under `sdk/hardware/datasets.py` to stream standard public electromyographical datasets:
 
 1. **Ninapro (`NinaproDriver`):** Reads Ninapro subject `.mat` files (MATLAB format) using `scipy.io.loadmat` and extracts the `'emg'` matrix.
-2. **PutEMG (`PutEMGDriver`):** Reads PutEMG subject `.h5` files (HDF5 format) by dynamically importing `h5py` and searching for active muscle channel datasets.
-3. **CSL-HDEMG (`CSLHDEMGDriver`):** Reads high-density silent speech sEMG recordings stored as NumPy arrays (`.npy`) or raw binary floats.
+2. **PutEMG (`PutEMGDriver`):** Reads PutEMG subject `.h5` files (HDF5 format) by dynamically importing `h5py` and searching for active muscle channel datasets. **Resource fix:** `h5py.File` is always closed on failure — `visititems` exceptions, missing datasets, or shape errors close the file descriptor before re-raising, and `stop()` reliably closes the handle to prevent descriptor leaks in long-lived sessions.
+3. **CSL-HDEMG (`CSLHDEMGDriver`):** Reads high-density silent speech sEMG recordings stored as NumPy arrays (`.npy`) or raw binary floats. Uses `np.load(..., allow_pickle=False)` to block pickle-based code execution; only raw numeric arrays are accepted.
 
 ---
 

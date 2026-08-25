@@ -227,7 +227,7 @@ To transition from a simple local pipeline runner to an enterprise-grade biometr
   └──────────────────────────┘ └──────────────┘ └───────────────────────────┘
 ```
 
-* **Serialized Work Execution (OpsQueue)**: All frame classification and intent resolutions are enqueued on a background worker thread (`OpsQueue`) to ensure deterministic processing times and eliminate concurrency race conditions.
+* **Serialized Work Execution (OpsQueue)**: All frame classification and intent resolutions are enqueued on a bounded background worker thread (`OpsQueue`, `maxsize=min_size` default 128). The queue applies backpressure (drops new tasks when full, returns `False`, exposes `qsize()`/`is_full()` for monitoring) to prevent OOM when producers outpace the consumer, ensures deterministic processing times, and eliminates concurrency race conditions. On `stop()`, it evicts the oldest entry if needed to insert the sentinel and guarantees drain when `flush_on_stop=True`.
 * **Persistent Session Storage**: The worker pool integrates a `SessionStore` (with in-memory and SQLite-backed implementations) that serializes session config settings, liveness statistics, and current state profiles to disk, allowing state recovery across host restarts.
 * **Live Biometric Data Channels**: A high-performance TCP socket server streams real-time biometric metrics (e.g. signal levels, quality states, classifier outputs) to multiple connected dashboard clients simultaneously.
 * **Dynamic Ingress/Egress Managers**: 
@@ -237,6 +237,9 @@ To transition from a simple local pipeline runner to an enterprise-grade biometr
   - *Dynamic Proxying*: Checks for the official C++ BrainFlow module; if missing, falls back to the native Python compatibility layer transparently.
   - *Cyton Serial Parser*: Integrates a direct parser that reads raw 33-byte binary packets from OpenBCI Cyton USB serial ports.
   - *SciPy DSP Library*: Re-implements causal and zero-phase filtering, Welch PSD estimation, and bandpower integration using standard SciPy and NumPy functions.
+  - *Bounded Ring Buffer*: `BoardShim` uses a `collections.deque(maxlen=_MAX_BUFFER_SAMPLES)` (75 000 samples, ~5 min at 250 Hz) guarded by `threading.Lock`, so `get_current_board_data` never grows unbounded for non-draining consumers.
+* **Validated Data Models**: `Frame` (`end_time > start_time`, `fs > 0`), `Sample` (non-empty `channels` ≤128), and `CommandToken`/`Intent` (`0.0 ≤ confidence ≤ 1.0`) are enforced by Pydantic validators (`subvocal.core.models:42`, `subvocal.core.models:71`), failing fast on corrupt ingestion.
+* **Thread-Safe Stats**: `SubvocalPipeline.stats` counters (`frames_processed`, `tokens_classified`, `phrases_processed`, etc.) are guarded by `threading.Lock` / `_stats_lock` (`subvocal.core.pipeline:99`, `subvocal.runtime.session:89`), and `Session` state/watchdog use separate locks to avoid deadlock between the `OpsQueue` thread and callers of `step()`/`process_phrase()`.
 
 ---
 

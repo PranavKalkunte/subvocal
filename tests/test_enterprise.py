@@ -250,7 +250,7 @@ class TestFramePathways(unittest.TestCase):
         now = time.time()
         frame = Frame(
             samples=[Sample(timestamp=now, channels=[0.1] * 4, sample_index=1)],
-            start_time=now, end_time=now, fs=250.0,
+            start_time=now, end_time=now + 0.01, fs=250.0,
         )
         self.assertEqual(frame.to_numpy().shape, (1, 4))
 

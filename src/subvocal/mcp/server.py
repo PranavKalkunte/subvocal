@@ -240,8 +240,16 @@ class SubvocalMCPServer:
                     confidence=confidence,
                     timestamp=time.time()
                 )
-                self.pipeline.token_buffer.append(token_obj)
-                self.pipeline._last_token_time = time.time()
+                # Use thread-safe injection to avoid race with OpsQueue thread
+                # (token_buffer mutated without lock previously)
+                try:
+                    self.pipeline.inject_token(token_obj)
+                except AttributeError:
+                    # Fallback for older pipeline without inject_token
+                    with self.pipeline._lock:
+                        with self.pipeline._session._lock:
+                            self.pipeline.token_buffer.append(token_obj)
+                            self.pipeline._last_token_time = time.time()
                 return self._success_response(msg_id, f"Successfully injected token '{token_text}' with confidence {confidence:.2f}")
 
             elif name == "process_phrase":

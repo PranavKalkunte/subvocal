@@ -132,6 +132,9 @@ class PutEMGDriver(HardwareSource):
             raise FileNotFoundError(f"PutEMG dataset file not found: {self.file_path}")
 
         # Read HDF5 file
+        # H5: Ensure file is closed if visititems or parsing raises (resource leak fix)
+        self._h5_file = None  # type: ignore
+        self._emg_dataset = None  # type: ignore
         try:
             self._h5_file = self._h5py.File(self.file_path, "r")
             # PutEMG datasets store signals inside a root-level dataset, e.g. 'emg' or inside groups
@@ -143,9 +146,25 @@ class PutEMGDriver(HardwareSource):
                 if self._emg_dataset is None and isinstance(obj, self._h5py.Dataset) and len(obj.shape) == 2 and obj.shape[1] > 1:
                     self._emg_dataset = obj
 
-            self._h5_file.visititems(find_emg)
+            try:
+                self._h5_file.visititems(find_emg)
+            except Exception:
+                # visititems raised - close file to avoid descriptor leak
+                try:
+                    self._h5_file.close()
+                except Exception:
+                    pass
+                self._h5_file = None
+                self._emg_dataset = None
+                raise
 
             if self._emg_dataset is None:
+                # No dataset found - close file before raising to avoid leak
+                try:
+                    self._h5_file.close()
+                except Exception:
+                    pass
+                self._h5_file = None
                 raise KeyError("Could not locate any valid multi-channel sEMG datasets inside the PutEMG HDF5 file.")
                 
             # Read first chunk to get channel configuration
@@ -153,6 +172,17 @@ class PutEMGDriver(HardwareSource):
             self._total_samples = self._emg_dataset.shape[0]
 
         except Exception as e:
+            # Ensure file closed on any parsing failure
+            if getattr(self, "_h5_file", None) is not None:
+                try:
+                    self._h5_file.close()  # type: ignore
+                except Exception:
+                    pass
+                self._h5_file = None  # type: ignore
+                self._emg_dataset = None  # type: ignore
+            # Preserve already-wrapped ValueError
+            if isinstance(e, ValueError) and "Failed to open/parse PutEMG file" in str(e):
+                raise
             raise ValueError(f"Failed to open/parse PutEMG file: {e}") from e
 
     def start(self) -> None:
@@ -249,7 +279,9 @@ class CSLHDEMGDriver(HardwareSource):
         # Load file content
         try:
             if self.file_path.endswith(".npy"):
-                self._data = np.load(self.file_path)
+                # Use allow_pickle=False to prevent arbitrary code execution via pickle (C1)
+                # Only raw numeric arrays are expected for CSL-HDEMG; object arrays are rejected
+                self._data = np.load(self.file_path, allow_pickle=False)
             else:
                 # Read raw binary floats (float32, num_channels channels)
                 raw_floats = np.fromfile(self.file_path, dtype=np.float32)

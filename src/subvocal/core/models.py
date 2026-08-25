@@ -11,7 +11,7 @@ Defines:
 from typing import Any
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class Sample(BaseModel):
@@ -20,6 +20,16 @@ class Sample(BaseModel):
     channels: list[float] = Field(description="Electrophysiological readings from each electrode channel")
     sample_index: int | None = Field(default=None, description="Optional continuous sample index")
 
+    @field_validator("channels")
+    @classmethod
+    def validate_channels(cls, v: list[float]) -> list[float]:
+        if not v:
+            raise ValueError("channels must be non-empty (at least one electrode channel)")
+        # Optional: enforce reasonable channel count to catch misconfiguration early
+        if len(v) > 128:
+            raise ValueError("channels length exceeds plausible electrode count (>128)")
+        return v
+
 
 class Frame(BaseModel):
     """A window/segment of Samples buffered for signal processing or ML inference."""
@@ -27,6 +37,14 @@ class Frame(BaseModel):
     start_time: float = Field(description="Epoch timestamp representing the frame start")
     end_time: float = Field(description="Epoch timestamp representing the frame end")
     fs: float = Field(description="Sampling frequency of the hardware in Hz")
+
+    @model_validator(mode="after")
+    def validate_frame_ordering(self) -> "Frame":
+        if self.end_time <= self.start_time:
+            raise ValueError(f"end_time ({self.end_time}) must be greater than start_time ({self.start_time})")
+        if self.fs <= 0:
+            raise ValueError(f"fs must be positive, got {self.fs}")
+        return self
 
     def to_numpy(self) -> np.ndarray:
         """Converts the frame samples into a 2D NumPy array.
@@ -48,6 +66,13 @@ class CommandToken(BaseModel):
     timestamp: float = Field(description="Epoch timestamp when the token was classified")
     metadata: dict[str, Any] | None = Field(default=None, description="Optional classifier specific metadata")
 
+    @field_validator("confidence")
+    @classmethod
+    def validate_confidence(cls, v: float) -> float:
+        if not 0.0 <= v <= 1.0:
+            raise ValueError(f"confidence must be between 0.0 and 1.0, got {v}")
+        return v
+
 
 class Intent(BaseModel):
     """Semantic intent reconstructed from a token stream and active context."""
@@ -58,6 +83,13 @@ class Intent(BaseModel):
     raw_shorthand: str = Field(description="Raw input shorthand string that was decoded")
     timestamp: float = Field(description="Epoch timestamp when the intent was resolved")
     context_snapshot_id: str | None = Field(default=None, description="Identifier linking to the UserContext snapshot used")
+
+    @field_validator("confidence")
+    @classmethod
+    def validate_confidence(cls, v: float) -> float:
+        if not 0.0 <= v <= 1.0:
+            raise ValueError(f"confidence must be between 0.0 and 1.0, got {v}")
+        return v
 
 
 class Action(BaseModel):

@@ -121,18 +121,36 @@ class Session:
             self._last_token_time = 0.0
             self._last_frame_count = 0
 
-            # Start hardware and background queue
-            self.hardware.start()
-            self._ops_queue.start()
-
-            # Trigger liveness watchdog
-            self._schedule_watchdog()
-
-            # Record telemetry
-            self.telemetry.session_started(self.id, self.config)
-
-            if self._on_state_changed:
-                self._on_state_changed(self._state)
+            # Wrap hardware.start() so state rolls back and queue/timer cleaned up on failure
+            try:
+                self.hardware.start()
+                self._ops_queue.start()
+                # Trigger liveness watchdog
+                self._schedule_watchdog()
+                # Record telemetry
+                self.telemetry.session_started(self.id, self.config)
+                if self._on_state_changed:
+                    self._on_state_changed(self._state)
+            except Exception:
+                # Roll back state and ensure ops_queue stopped and timer cancelled
+                self._state = self.STATE_CLOSED
+                if self._watchdog_timer is not None:
+                    try:
+                        self._watchdog_timer.cancel()
+                    except Exception:
+                        pass
+                    self._watchdog_timer = None
+                # Stop queue and hardware outside try's lock is already held here,
+                # but these use different locks so safe; use try to ignore secondary errors
+                try:
+                    self._ops_queue.stop()
+                except Exception:
+                    pass
+                try:
+                    self.hardware.stop()
+                except Exception:
+                    pass
+                raise
 
     def stop(self) -> None:
         """Gracefully stops and closes the session."""
@@ -205,11 +223,17 @@ class Session:
                 self._notify(self._on_token, token)
 
             # 5. Check phrase timeout based on silence duration
+            # Deduplication note: _process_frame and _handle_tracker_status_change can both
+            # trigger process_phrase concurrently. Both paths serialize on the single OpsQueue
+            # worker and process_phrase is idempotent (empty buffer => no-op), so duplicate
+            # dispatches are prevented even if both fire.
             with self._lock:
                 buffer_len = len(self._token_buffer)
                 last_time = self._last_token_time
-            
+
             if buffer_len > 0 and (now - last_time) >= self.config.runtime.phrase_timeout_seconds:
+                # Guard: process_phrase already checks empty under lock; this ordering
+                # ensures that if tracker STOPPED also enqueued, the second invocation will be a no-op
                 self.process_phrase()
         except Exception as e:
             self._notify(self._on_error, e)
@@ -305,6 +329,23 @@ class Session:
 
         from subvocal.paths import get_data_dir
 
+        # C10 Biometric PII: respect opt-out flag to disable tracing entirely
+        # Check multiple config locations for flexibility (runtime/telemetry/top-level)
+        trace_enabled = True
+        try:
+            # Prefer telemetry.trace_enabled, then runtime.trace_enabled
+            if hasattr(self.config, "telemetry") and hasattr(self.config.telemetry, "trace_enabled"):
+                trace_enabled = bool(self.config.telemetry.trace_enabled)
+            if trace_enabled and hasattr(self.config, "runtime") and hasattr(self.config.runtime, "trace_enabled"):
+                trace_enabled = bool(self.config.runtime.trace_enabled)
+            if trace_enabled and hasattr(self.config, "trace_enabled"):
+                trace_enabled = bool(getattr(self.config, "trace_enabled"))  # type: ignore
+        except Exception:
+            trace_enabled = True
+        if not trace_enabled:
+            logger.debug("Pipeline tracing disabled via config trace_enabled=False; skipping trace write")
+            return
+
         trace_entry = {
             "trace_id": str(uuid.uuid4()),
             "timestamp": time.time(),
@@ -319,6 +360,16 @@ class Session:
         }
 
         path = self.trace_path or os.path.join(get_data_dir(), "pipeline_traces.jsonl")
+        # File rotation / size cap: skip if file exceeds 10MB to prevent unbounded PII accumulation
+        try:
+            if os.path.exists(path) and os.path.getsize(path) > 10 * 1024 * 1024:
+                logger.warning(
+                    "Pipeline trace file %s exceeds 10MB cap; skipping write (rotation/opt-out required).",
+                    path,
+                )
+                return
+        except OSError:
+            pass  # best-effort size check; proceed to write
         try:
             with open(path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(trace_entry) + "\n")
@@ -337,6 +388,10 @@ class Session:
             logger.exception("Session callback execution error")
 
     def _handle_tracker_status_change(self, status: str) -> None:
+        # Guard against double process_phrase when _process_frame timeout and
+        # tracker STOPPED fire concurrently: both serialize on OpsQueue and
+        # process_phrase is idempotent (empty buffer => no-op). We also check
+        # buffer non-empty before enqueuing to avoid unnecessary work.
         with self._lock:
             if self._state == self.STATE_CLOSED:
                 return
@@ -344,19 +399,23 @@ class Session:
                 self._state = self.STATE_ACTIVE
             elif status == StreamTracker.STATUS_STOPPED:
                 # If stream stops, force process any remaining tokens in buffer
-                self._ops_queue.enqueue(self.process_phrase)
+                if len(self._token_buffer) > 0:
+                    self._ops_queue.enqueue(self.process_phrase)
                 
             if self._on_state_changed:
                 self._on_state_changed(self._state)
 
     def _handle_quality_status_change(self, quality: str) -> None:
+        # Same deduplication guarantee as tracker: serialized on OpsQueue,
+        # process_phrase idempotent, guard empty buffer before enqueue.
         with self._lock:
             if self._state == self.STATE_CLOSED:
                 return
             if quality == SignalQualityScorer.QUALITY_LOST:
                 self._state = self.STATE_DEGRADED
                 # Force process on degradation
-                self._ops_queue.enqueue(self.process_phrase)
+                if len(self._token_buffer) > 0:
+                    self._ops_queue.enqueue(self.process_phrase)
             elif quality == SignalQualityScorer.QUALITY_POOR:
                 self._state = self.STATE_DEGRADED
             elif quality in (SignalQualityScorer.QUALITY_GOOD, SignalQualityScorer.QUALITY_EXCELLENT):

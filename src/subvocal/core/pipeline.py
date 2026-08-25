@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from subvocal.config import load_config
+from subvocal.exceptions import HardwareError
 from subvocal.runtime.session import Session
 
 from .interfaces import ActionExecutor, ContextProvider, HardwareSource, LLMProvider
@@ -66,6 +67,8 @@ class SubvocalPipeline:
         telemetry_service: Any | None = None,
     ):
         self.stats = PipelineStats()
+        self._lock = threading.Lock()
+        self._stats_lock = threading.Lock()
         self._trace_path = trace_path
 
         # Save callbacks
@@ -92,27 +95,33 @@ class SubvocalPipeline:
         self.telemetry = telemetry_service
 
         # Define internal callbacks to update stats & forward to user callbacks
+        # PipelineStats increments are protected by _stats_lock to avoid races
+        # between the OpsQueue thread and callers of step()/process_phrase().
         def internal_on_token(token):
-            self.stats.tokens_classified += 1
+            with self._stats_lock:
+                self.stats.tokens_classified += 1
             if self.on_token:
                 self.on_token(token)
 
         def internal_on_intent(intent):
-            self.stats.intents_resolved += 1
+            with self._stats_lock:
+                self.stats.intents_resolved += 1
             if self.on_intent:
                 self.on_intent(intent)
 
         def internal_on_action(action, status):
-            self.stats.phrases_processed += 1
-            if status == "SUCCESS":
-                self.stats.actions_executed += 1
-            elif status == "REJECTED_UNAUTHORIZED":
-                self.stats.actions_blocked += 1
+            with self._stats_lock:
+                self.stats.phrases_processed += 1
+                if status == "SUCCESS":
+                    self.stats.actions_executed += 1
+                elif status == "REJECTED_UNAUTHORIZED":
+                    self.stats.actions_blocked += 1
             if self.on_action:
                 self.on_action(action, status)
 
         def internal_on_error(err):
-            self.stats.errors += 1
+            with self._stats_lock:
+                self.stats.errors += 1
             if self.on_error:
                 self.on_error(err)
 
@@ -237,17 +246,34 @@ class SubvocalPipeline:
     def _last_token_time(self, val: float) -> None:
         self._session._last_token_time = val
 
+    def inject_token(self, token: CommandToken) -> None:
+        """Thread-safe injection of a token into the buffer.
+
+        Acquires self._lock and the underlying session lock to avoid races
+        with Session._process_frame which mutates the same buffer on the
+        OpsQueue thread.
+        """
+        with self._lock:
+            with self._session._lock:
+                self._session._token_buffer.append(token)
+                self._session._last_token_time = time.time()
+
     def clear_buffer(self) -> None:
         """Clears the accumulated command token buffer."""
         event = threading.Event()
         def clear_op():
             try:
-                self._session._token_buffer.clear()
-                self._session._last_token_time = 0.0
+                with self._session._lock:
+                    self._session._token_buffer.clear()
+                    self._session._last_token_time = 0.0
             finally:
                 event.set()
-        self._session._ops_queue.enqueue(clear_op)
-        event.wait()
+        enqueued = self._session._ops_queue.enqueue(clear_op)
+        if not enqueued:
+            raise HardwareError("Failed to enqueue clear_buffer: pipeline queue stopped")
+        if not event.wait(timeout=5.0):
+            raise HardwareError("clear_buffer timed out waiting for OpsQueue (deadlock)")
+        # ensure _run_op sets event even on stop is handled via enqueue check and timeout
 
     def step(self, window_ms: int = 100) -> Action | None:
         """Performs a single step of the pipeline.
@@ -263,7 +289,8 @@ class SubvocalPipeline:
 
         # 1. Read raw frame
         frame = self.hardware.read_frame(window_ms)
-        self.stats.frames_processed += 1
+        with self._stats_lock:
+            self.stats.frames_processed += 1
 
         # Synchronously block until OpsQueue processes the frame to maintain step API contract
         res: dict[str, Any] = {"action": None, "exception": None}
@@ -286,8 +313,11 @@ class SubvocalPipeline:
             finally:
                 event.set()
 
-        self._session._ops_queue.enqueue(process_and_signal)
-        event.wait()
+        enqueued = self._session._ops_queue.enqueue(process_and_signal)
+        if not enqueued:
+            raise HardwareError("Failed to enqueue step: pipeline queue stopped")
+        if not event.wait(timeout=5.0):
+            raise HardwareError("step timed out waiting for OpsQueue (deadlock)")
 
         if res["exception"]:
             raise res["exception"]
@@ -319,8 +349,11 @@ class SubvocalPipeline:
             finally:
                 event.set()
 
-        self._session._ops_queue.enqueue(process_and_signal)
-        event.wait()
+        enqueued = self._session._ops_queue.enqueue(process_and_signal)
+        if not enqueued:
+            raise HardwareError("Failed to enqueue process_phrase: pipeline queue stopped")
+        if not event.wait(timeout=5.0):
+            raise HardwareError("process_phrase timed out waiting for OpsQueue (deadlock)")
 
         if res["exception"]:
             raise res["exception"]

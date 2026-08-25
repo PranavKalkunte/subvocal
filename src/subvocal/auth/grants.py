@@ -67,8 +67,8 @@ def verify_token(token: str, secret_key: str) -> ActionGrants | None:
             return None
         payload_b64, sig_b64 = parts
         
-        # Restore padding
-        payload_b64 += "=" * (4 - len(payload_b64) % 4)
+        # Restore padding - use modulo negation to avoid adding 4 pads when len%4==0 (C3)
+        payload_b64 += "=" * (-len(payload_b64) % 4)
         payload_json = base64.urlsafe_b64decode(payload_b64)
         
         # Verify signature

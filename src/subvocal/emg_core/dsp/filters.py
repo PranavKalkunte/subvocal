@@ -27,6 +27,14 @@ Therefore, we implement and default to the AlterEgo-inspired 1.3–50.0 Hz bandp
 import numpy as np
 from scipy.signal import butter, filtfilt, iirnotch
 
+# Plumbing from central EMG config (H2): keep defaults in sync with config.NOTCH_FREQ / NOTCH_Q
+try:
+    from subvocal.emg_core.config import NOTCH_FREQ as _DEFAULT_NOTCH_FREQ
+    from subvocal.emg_core.config import NOTCH_Q as _DEFAULT_NOTCH_Q
+except ImportError:
+    _DEFAULT_NOTCH_FREQ = 60.0
+    _DEFAULT_NOTCH_Q = 30.0
+
 
 def remove_dc(signal: np.ndarray, window_samples: int = 250) -> np.ndarray:
     """Remove DC offset by subtracting a rolling mean.
@@ -42,13 +50,27 @@ def remove_dc(signal: np.ndarray, window_samples: int = 250) -> np.ndarray:
         return signal - np.mean(signal)
 
     # Use cumsum trick for fast rolling mean
+    # TODO: vectorize rolling mean loop for performance – current Python for-loop
+    # is O(n) with per-element Python overhead. Prefer fully vectorized
+    # implementation (np.convolve with mode='same' or cumsum slicing:
+    #   rolling_mean[window_samples-1:] = (cumsum[window_samples:] - cumsum[:-window_samples]) / window_samples
+    # and handle rising window for i < window_samples separately via vectorized slice).
+    # numba @jit would also eliminate loop overhead for long signals.
     cumsum = np.cumsum(signal)
     cumsum = np.insert(cumsum, 0, 0)
     rolling_mean = np.empty_like(signal)
 
-    for i in range(len(signal)):
-        start = max(0, i - window_samples + 1)
-        rolling_mean[i] = (cumsum[i + 1] - cumsum[start]) / (i - start + 1)
+    # Vectorized steady-state part (i >= window_samples-1) – O(n) numpy
+    if len(signal) >= window_samples:
+        # For i >= window_samples-1, window is full size
+        rolling_mean[window_samples - 1 :] = (cumsum[window_samples:] - cumsum[:-window_samples]) / window_samples
+        # Rising window for first window_samples-1 samples – still loop but small (<250)
+        for i in range(window_samples - 1):
+            rolling_mean[i] = cumsum[i + 1] / (i + 1)
+    else:
+        for i in range(len(signal)):
+            start = max(0, i - window_samples + 1)
+            rolling_mean[i] = (cumsum[i + 1] - cumsum[start]) / (i - start + 1)
 
     return signal - rolling_mean
 
@@ -130,6 +152,8 @@ def preprocess_channel(
     fs: float = 250.0,
     low: float = 1.3,
     high: float = 50.0,
+    notch_freq: float = _DEFAULT_NOTCH_FREQ,
+    notch_q: float = _DEFAULT_NOTCH_Q,
     apply_bandpass: bool = True,
     apply_notch: bool = True,
 ) -> np.ndarray:
@@ -140,6 +164,8 @@ def preprocess_channel(
         fs: Sample rate.
         low: Low cutoff frequency for bandpass.
         high: High cutoff frequency for bandpass.
+        notch_freq: Notch filter frequency (e.g., 60.0 for US, 50.0 for EU).
+        notch_q: Notch filter Q factor.
         apply_bandpass: Whether to apply bandpass.
         apply_notch: Whether to apply notch filter.
 
@@ -153,8 +179,8 @@ def preprocess_channel(
         sig = bandpass(sig, fs=fs, low=low, high=high)
 
     if apply_notch:
-        # Check notch frequency based on config, filter it if it's below Nyquist
-        sig = notch_60hz(sig, fs=fs, freq=60.0)
+        # Use caller-provided notch_freq (plumbed from config.NOTCH_FREQ)
+        sig = notch_60hz(sig, fs=fs, freq=notch_freq, Q=notch_q)
 
     sig = smooth(sig, window=3)
     return sig
@@ -165,6 +191,8 @@ def preprocess_multichannel(
     fs: float = 250.0,
     low: float = 1.3,
     high: float = 50.0,
+    notch_freq: float = _DEFAULT_NOTCH_FREQ,
+    notch_q: float = _DEFAULT_NOTCH_Q,
     apply_bandpass: bool = True,
     apply_notch: bool = True,
 ) -> np.ndarray:
@@ -175,17 +203,24 @@ def preprocess_multichannel(
         fs: Sample rate.
         low: Low cutoff frequency for bandpass.
         high: High cutoff frequency for bandpass.
+        notch_freq: Notch filter frequency (e.g., 60.0 for US, 50.0 for EU).
+        notch_q: Notch filter Q factor.
 
     Returns:
         Preprocessed data of same shape.
     """
     result = np.empty_like(data, dtype=np.float64)
+    # TODO: vectorize per-channel loop – preprocess_channel is per-channel Python loop;
+    # for many channels (e.g., 64) consider joblib parallel or Numba/SciPy vectorization
+    # to leverage SIMD. Current loop is bounded (num_channels typically 4-8) so overhead is modest.
     for ch in range(data.shape[1]):
         result[:, ch] = preprocess_channel(
             data[:, ch],
             fs=fs,
             low=low,
             high=high,
+            notch_freq=notch_freq,
+            notch_q=notch_q,
             apply_bandpass=apply_bandpass,
             apply_notch=apply_notch,
         )

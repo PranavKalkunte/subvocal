@@ -42,9 +42,14 @@ class SessionCountSelector(NodeSelector):
     def select_node(self, nodes: list[WorkerNode]) -> WorkerNode:
         if not nodes:
             raise ValueError("No worker nodes available for selection.")
-        
-        # Returns the node with the lowest active session load
-        return min(nodes, key=lambda n: n.load)
+
+        # H10 fix: filter out unavailable nodes (full/closed) before ranking
+        available = [n for n in nodes if getattr(n, "status", "active") not in ("full", "closed")]
+        if not available:
+            raise ValueError("No available worker nodes (all full or closed).")
+
+        # Returns the node with the lowest active session load among available
+        return min(available, key=lambda n: n.load)
 
 
 class CPULoadSelector(NodeSelector):
@@ -54,5 +59,10 @@ class CPULoadSelector(NodeSelector):
         if not nodes:
             raise ValueError("No worker nodes available for selection.")
 
-        # Returns the node with the lowest reported cpu usage
-        return min(nodes, key=lambda n: n.cpu_usage)
+        # H10 fix: filter out unavailable nodes (full/closed) before ranking
+        available = [n for n in nodes if getattr(n, "status", "active") not in ("full", "closed")]
+        if not available:
+            raise ValueError("No available worker nodes (all full or closed).")
+
+        # Returns the node with the lowest reported cpu usage among available
+        return min(available, key=lambda n: n.cpu_usage)

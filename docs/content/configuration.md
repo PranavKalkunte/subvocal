@@ -46,6 +46,39 @@ merged on top of the YAML file (env wins).
 > and are **not** configuration keys. Only variables containing the `__`
 > section separator are treated as config overrides.
 
+### Coercion order and `trace_enabled`
+
+Env values are coerced in strict order: `int` → `float` → `bool` (only
+`true`/`false`/`yes`/`no`) → `None` (`none`/`null`) → `str`. Parsing `int`
+before `bool` preserves numeric types — `SUBVOCAL_HARDWARE__SAMPLE_RATE=1`
+remains `int 1`, not `True` — and `float` parsing handles scientific notation
+(`1e3` → `1000.0`).
+
+Tracing is gated by two flags, either of which can disable it (biometric-PII
+opt-out):
+
+```bash
+export SUBVOCAL_TELEMETRY__TRACE_ENABLED=false
+export SUBVOCAL_RUNTIME__TRACE_ENABLED=false   # alternative / legacy
+```
+
+When enabled, `Session._write_trace` appends to `pipeline_traces.jsonl` (under
+`get_data_dir()`) but enforces a **10 MB rotation cap**: if the file already
+exceeds `10 * 1024 * 1024` bytes the write is skipped with a warning until the
+file is rotated or tracing is disabled.
+
+### Validated models
+
+Pydantic validators enforce invariants at ingestion:
+
+- `Frame`: `end_time > start_time` and `fs > 0`, else `ValueError`.
+- `Sample`: `channels` non-empty and `len(channels) <= 128`.
+- `CommandToken` / `Intent`: `0.0 <= confidence <= 1.0`.
+
+Violations surface as `ValidationError` → `ConfigurationError` on
+`load_config` / model construction, failing fast rather than propagating
+corrupt frames.
+
 ## Sessions and the runtime layer
 
 `subvocal.runtime.Session` wraps the pipeline with the machinery a long-running
@@ -56,7 +89,11 @@ deployment needs:
 - **Liveness watchdog** — transitions the session to `DEGRADED` and emits a
   `HardwareError` if frames stop arriving within `runtime.session_liveness_timeout`.
 - **Asynchronous processing** — frames are processed on a serialized
-  `OpsQueue` worker thread (`subvocal.utils`), keeping ingestion non-blocking.
+  **bounded** `OpsQueue` worker thread (`subvocal.utils`, `maxsize=min_size`
+  default `128`). The queue applies backpressure — `enqueue()` returns `False`
+  and logs when full (new task dropped) — and exposes `qsize()` / `is_full()`
+  for monitoring, keeping ingestion non-blocking. On `stop()`, sentinel
+  insertion evicts the oldest entry if full to guarantee drain.
 - **Signal monitoring** (`subvocal.stream`):
   - `SignalLevel` — EMA-smoothed, percentile-of-window subvocalization activity
     detection.
@@ -65,6 +102,11 @@ deployment needs:
   - `SignalQualityScorer` — a MOS-like quality score (saturation, drift,
     dropouts, SNR) mapped to `EXCELLENT / GOOD / POOR / LOST`; a lost signal
     pauses classification.
+- **Trace control** — JSONL tracing in `Session._write_trace` honors
+  `telemetry.trace_enabled` and `runtime.trace_enabled` (env
+  `SUBVOCAL_TELEMETRY__TRACE_ENABLED` / `SUBVOCAL_RUNTIME__TRACE_ENABLED`);
+  either `False` disables tracing. When enabled, the file is capped at
+  **10 MB** — further writes are skipped until rotation.
 
 `subvocal.runtime.SessionWorker` manages a pool of sessions with capacity
 limits and load reporting. Because it exposes `id`, `load`, `cpu_usage`, and

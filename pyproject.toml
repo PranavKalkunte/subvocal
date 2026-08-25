@@ -78,6 +78,9 @@ path = "src/subvocal/__init__.py"
 [tool.hatch.build.targets.wheel]
 packages = ["src/subvocal"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/subvocal/py.typed" = "subvocal/py.typed"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--import-mode=importlib"
@@ -87,13 +90,26 @@ line-length = 120
 src = ["src", "tests", "benchmarks", "tools"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+select = ["E", "F", "I", "UP", "B", "S"]
 # E501: long lines are tolerated in docstrings/log messages; E741: single-letter
 # math variable names are conventional in the DSP/ML code.
+# S (bandit) enabled per H9; ANN (flake8-annotations) considered but not enabled
+# due to noise in DSP/ML code where implicit returns are idiomatic. To enable
+# ANN later, add "ANN" to select and address missing annotations incrementally.
 ignore = ["E501", "E741"]
 
 [tool.pyright]
 include = ["src"]
 pythonVersion = "3.10"
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 reportMissingImports = "warning"
+# standard mode enabled per CI gap fix; if too strict, downgrade to basic
+# and address strict errors incrementally. Verified with pyright on src/.
+
+[tool.coverage.run]
+source = ["subvocal"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 75
+show_missing = true

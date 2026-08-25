@@ -55,6 +55,10 @@ def _compute_td0_channel(
     num_frames = max(1, 1 + (len(signal) - frame_size) // frame_shift)
     td0 = np.zeros((num_frames, 5))
 
+    # TODO: vectorize per-frame loop for performance – current Python for i in range(num_frames)
+    # with per-frame np.mean etc is O(num_frames) Python overhead. Prefer stride tricks
+    # (np.lib.stride_tricks.sliding_window_view) or Numba to compute means/powers
+    # in vectorized form. Could also use bottleneck or cumsum for windowed means.
     for i in range(num_frames):
         start = i * frame_shift
         end = start + frame_size
@@ -91,6 +95,9 @@ def _stack_context(td0_frames: np.ndarray, context: int = 10) -> np.ndarray:
     padded = np.pad(td0_frames, ((context, context), (0, 0)), mode='edge')
     td10 = np.zeros((num_frames, num_feats * total_width))
 
+    # TODO: vectorize context stacking – loop ravels each frame; could be replaced
+    # by stride tricks: np.lib.stride_tricks.sliding_window_view(padded, total_width, axis=0)
+    # reshaped, or via np.stack, to eliminate Python loop for large num_frames.
     for i in range(num_frames):
         td10[i] = padded[i:i + total_width].ravel()
 
@@ -113,6 +120,9 @@ def extract_features_td10(
     num_channels = segment.shape[1]
 
     channel_td0s = []
+    # TODO: vectorize per-channel loop – each channel runs _compute_td0_channel serially;
+    # for high channel counts (e.g., 64), consider parallel via joblib or vectorized
+    # batch processing to amortize overhead. Current loop is fine for 4-8 channels.
     for ch in range(num_channels):
         td0 = _compute_td0_channel(
             segment[:, ch],

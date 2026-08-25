@@ -60,6 +60,7 @@ class TelemetryConfig(BaseModel):
     enabled: bool = Field(default=False, description="Enable prometheus exporter and event logs")
     prometheus_port: int = Field(default=8000, description="Port for prometheus exporter")
     flush_interval_seconds: float = Field(default=30.0, description="Stats flush interval in seconds")
+    trace_enabled: bool = Field(default=True, description="Enable pipeline JSONL tracing (biometric PII opt-out when False)")
 
 
 class RuntimeConfig(BaseModel):
@@ -67,6 +68,7 @@ class RuntimeConfig(BaseModel):
 
     phrase_timeout_seconds: float = Field(default=1.5, description="Silence duration in seconds before triggering intent")
     session_liveness_timeout: float = Field(default=30.0, description="Timeout in seconds for watchdog expectation of frames")
+    trace_enabled: bool = Field(default=True, description="Enable pipeline JSONL tracing (biometric PII opt-out when False)")
 
 
 class AuthConfig(BaseModel):
@@ -120,22 +122,29 @@ def merge_env_overrides(config_dict: dict[str, Any]) -> dict[str, Any]:
         last_part = parts[-1]
 
         # Parse string values to Python types
+        # Order: int -> float -> bool (explicit true/false/yes/no only) -> None -> str
+        # Ensures "1" stays int 1 (not True) and "1e3" is parsed as float 1000.0
         val: Any = env_val
-        val_lower = env_val.lower()
-        if val_lower in ("true", "yes", "1"):
-            val = True
-        elif val_lower in ("false", "no", "0"):
-            val = False
-        elif val_lower in ("none", "null"):
+        val_stripped = env_val.strip()
+        val_lower = val_stripped.lower()
+        if val_lower in ("none", "null"):
             val = None
         else:
+            # Try int first
             try:
-                if "." in env_val:
-                    val = float(env_val)
-                else:
-                    val = int(env_val)
+                val = int(val_stripped)
             except ValueError:
-                pass
+                # Try float (handles "1e3", "3.14", "1.0", etc.)
+                try:
+                    val = float(val_stripped)
+                except ValueError:
+                    if val_lower in ("true", "yes"):
+                        val = True
+                    elif val_lower in ("false", "no"):
+                        val = False
+                    else:
+                        # Keep original string
+                        pass
 
         curr[last_part] = val
 

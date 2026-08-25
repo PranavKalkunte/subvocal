@@ -2,11 +2,18 @@
 
 import logging
 import os
+import re
+from pathlib import Path
 
 import numpy as np
 
 from subvocal.emg_core import config
 from subvocal.emg_core.ml.train import TrainingConfig, train_model
+
+
+def _sanitize_user_id(user_id: str) -> str:
+    """Sanitize user_id to prevent path traversal (C2)."""
+    return re.sub(r"[^A-Za-z0-9_-]", "_", user_id)
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +46,20 @@ def generate_synthetic_dataset(user_id: str = "pretrained", num_classes: int = 5
             segments.append(seg)
             labels.append(cmd)
 
-    data_path = os.path.join(config.DATA_DIR, f"{user_id}_calib.npz")
+    # Sanitize user_id and validate resolved path stays within DATA_DIR (C2)
+    safe_user_id = _sanitize_user_id(user_id)
+    data_path = os.path.join(config.DATA_DIR, f"{safe_user_id}_calib.npz")
+    resolved = Path(data_path).resolve()
+    base = Path(config.DATA_DIR).resolve()
+    try:
+        if not resolved.is_relative_to(base):
+            raise ValueError(f"Invalid dataset path traversal detected: {data_path}")
+    except AttributeError:
+        try:
+            resolved.relative_to(base)
+        except ValueError:
+            raise ValueError(f"Invalid dataset path traversal detected: {data_path}")
+    data_path = str(resolved)
     np.savez(data_path, segments=segments, labels=labels)
     logger.info("Synthetic pre-training dataset saved to %s (%d segments, %d classes)", data_path, len(segments), num_classes)
 

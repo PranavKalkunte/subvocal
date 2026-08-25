@@ -533,10 +533,20 @@ present in the environment, then the offline :class:`HeuristicProvider`.</p><p>A
 <div class="api-member">
 <h3><code>class Sample(BaseModel)</code></h3>
 <p>A single multichannel biometric time-series sample.</p>
+<div class="api-member">
+<h4>validate_channels</h4>
+<pre><code>def validate_channels(cls, v: list[float]) -&gt; list[float]</code></pre>
+<p>No description.</p>
+</div>
 </div>
 <div class="api-member">
 <h3><code>class Frame(BaseModel)</code></h3>
 <p>A window/segment of Samples buffered for signal processing or ML inference.</p>
+<div class="api-member">
+<h4>validate_frame_ordering</h4>
+<pre><code>def validate_frame_ordering(self) -&gt; 'Frame'</code></pre>
+<p>No description.</p>
+</div>
 <div class="api-member">
 <h4>to_numpy</h4>
 <pre><code>def to_numpy(self) -&gt; np.ndarray</code></pre>
@@ -547,10 +557,20 @@ present in the environment, then the offline :class:`HeuristicProvider`.</p><p>A
 <div class="api-member">
 <h3><code>class CommandToken(BaseModel)</code></h3>
 <p>A token predicted by the raw classifier with associated confidence.</p>
+<div class="api-member">
+<h4>validate_confidence</h4>
+<pre><code>def validate_confidence(cls, v: float) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
 </div>
 <div class="api-member">
 <h3><code>class Intent(BaseModel)</code></h3>
 <p>Semantic intent reconstructed from a token stream and active context.</p>
+<div class="api-member">
+<h4>validate_confidence</h4>
+<pre><code>def validate_confidence(cls, v: float) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
 </div>
 <div class="api-member">
 <h3><code>class Action(BaseModel)</code></h3>
@@ -681,6 +701,13 @@ present in the environment, then the offline :class:`HeuristicProvider`.</p><p>A
 <h4>token_buffer</h4>
 <pre><code>def token_buffer(self) -&gt; list[CommandToken]</code></pre>
 <p>Returns the current accumulated tokens in the buffer.</p>
+</div>
+<div class="api-member">
+<h4>inject_token</h4>
+<pre><code>def inject_token(self, token: CommandToken) -&gt; None</code></pre>
+<p>Thread-safe injection of a token into the buffer.</p><p>Acquires self._lock and the underlying session lock to avoid races
+with Session._process_frame which mutates the same buffer on the
+OpsQueue thread.</p>
 </div>
 <div class="api-member">
 <h4>clear_buffer</h4>
@@ -1648,24 +1675,28 @@ artifacts (which lie below 10–20 Hz).</p><p>However, for silent speech interfa
 </div>
 <div class="api-member">
 <h3><code>preprocess_channel</code></h3>
-<pre><code>def preprocess_channel(signal: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, apply_bandpass: bool = True, apply_notch: bool = True) -&gt; np.ndarray</code></pre>
+<pre><code>def preprocess_channel(signal: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, notch_freq: float = _DEFAULT_NOTCH_FREQ, notch_q: float = _DEFAULT_NOTCH_Q, apply_bandpass: bool = True, apply_notch: bool = True) -&gt; np.ndarray</code></pre>
 <p>Full preprocessing pipeline for a single channel.</p><p>Args:
     signal: 1D float array of raw ADC values.
     fs: Sample rate.
     low: Low cutoff frequency for bandpass.
     high: High cutoff frequency for bandpass.
+    notch_freq: Notch filter frequency (e.g., 60.0 for US, 50.0 for EU).
+    notch_q: Notch filter Q factor.
     apply_bandpass: Whether to apply bandpass.
     apply_notch: Whether to apply notch filter.</p><p>Returns:
     Preprocessed signal.</p>
 </div>
 <div class="api-member">
 <h3><code>preprocess_multichannel</code></h3>
-<pre><code>def preprocess_multichannel(data: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, apply_bandpass: bool = True, apply_notch: bool = True) -&gt; np.ndarray</code></pre>
+<pre><code>def preprocess_multichannel(data: np.ndarray, fs: float = 250.0, low: float = 1.3, high: float = 50.0, notch_freq: float = _DEFAULT_NOTCH_FREQ, notch_q: float = _DEFAULT_NOTCH_Q, apply_bandpass: bool = True, apply_notch: bool = True) -&gt; np.ndarray</code></pre>
 <p>Preprocess all channels.</p><p>Args:
     data: 2D array of shape (num_samples, num_channels).
     fs: Sample rate.
     low: Low cutoff frequency for bandpass.
-    high: High cutoff frequency for bandpass.</p><p>Returns:
+    high: High cutoff frequency for bandpass.
+    notch_freq: Notch filter frequency (e.g., 60.0 for US, 50.0 for EU).
+    notch_q: Notch filter Q factor.</p><p>Returns:
     Preprocessed data of same shape.</p>
 </div>
 </section>
@@ -1851,7 +1882,7 @@ Returns True on success, raises on failure.</p>
 </div>
 <div class="api-member">
 <h3><code>preprocess_segments</code></h3>
-<pre><code>def preprocess_segments(segments: list[np.ndarray], fs: float, low: float, high: float) -&gt; np.ndarray</code></pre>
+<pre><code>def preprocess_segments(segments: list[np.ndarray], fs: float, low: float, high: float, notch_freq: float = config.NOTCH_FREQ, notch_q: float = config.NOTCH_Q) -&gt; np.ndarray</code></pre>
 <p>Preprocess raw segments and stack into a 3D numpy array of shape (N, C, T).</p>
 </div>
 <div class="api-member">
@@ -2066,6 +2097,16 @@ Returns:
 <div class="api-member">
 <h3><code>class TTSConfig(BaseModel)</code></h3>
 <p>Configuration settings for text-to-speech audio feedback.</p>
+<div class="api-member">
+<h4>validate_audio_format</h4>
+<pre><code>def validate_audio_format(cls, v: str) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>validate_output_dir</h4>
+<pre><code>def validate_output_dir(cls, v: str) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
 </div>
 </section>
 <section class="api-module" id="subvocal-routing-selector">
@@ -2349,7 +2390,10 @@ SessionWorker/AgentWorker.</p>
 <div class="api-member">
 <h4>cpu_usage</h4>
 <pre><code>def cpu_usage(self) -&gt; float</code></pre>
-<p>Returns host CPU utilization percentage (0.0 if psutil is unavailable).</p><p>Lets a SessionWorker be ranked by :class:`subvocal.routing.CPULoadSelector`.</p>
+<p>Returns host CPU utilization percentage (0.0 if psutil is unavailable).</p><p>Lets a SessionWorker be ranked by :class:`subvocal.routing.CPULoadSelector`.
+Handles psutil.cpu_percent(interval=None) first-call 0.0 by priming in __init__
+and, if still 0.0 on first real call, retrying with a tiny interval fallback
+would block – so we prime instead and document the limitation.</p>
 </div>
 <div class="api-member">
 <h4>status</h4>
@@ -2703,7 +2747,15 @@ to LiveKit's StreamTracker.</p>
 </div>
 <div class="api-member">
 <h3><code>class PrometheusTelemetry(TelemetryService)</code></h3>
-<p>Telemetry service that exports metrics to Prometheus.</p>
+<p>Telemetry service that exports metrics to Prometheus.</p><p>Prometheus cardinality: session_id is high cardinality (unbounded, one
+series per session). To keep series count bounded (Prometheus recommends
+&lt;10k series per metric, ideally &lt;100k total), session_id is NOT used as
+a Prometheus label. Metrics are aggregated globally or by low-cardinality
+labels (intent, action_type, etc.). If per-session debugging is required,
+use logs or hash session_id via _hash_session_id() into a small bucket,
+but do not expose raw session_id. Documented limit: if you must add
+session_id, hash and cap distinct values &lt;1000 and ensure series are
+removed on session_ended to avoid leak.</p>
 <div class="api-member">
 <h4>__init__</h4>
 <pre><code>def __init__(self, config: SubvocalConfig)</code></pre>
@@ -2754,6 +2806,11 @@ to LiveKit's StreamTracker.</p>
 <pre><code>def error_occurred(self, session_id: str, error_type: str) -&gt; None</code></pre>
 <p>No description.</p>
 </div>
+<div class="api-member">
+<h4>shutdown</h4>
+<pre><code>def shutdown(self) -&gt; None</code></pre>
+<p>Release Prometheus port from registry (fixes _started_ports leak).</p>
+</div>
 </div>
 </section>
 <section class="api-module" id="subvocal-utils-concurrency">
@@ -2764,7 +2821,7 @@ to LiveKit's StreamTracker.</p>
 <p>A thread-safe serialized work queue running on a single background worker thread.</p><p>Equivalent to LiveKit's OpsQueue.</p>
 <div class="api-member">
 <h4>__init__</h4>
-<pre><code>def __init__(self, name: str, min_size: int = 128, flush_on_stop: bool = False, custom_logger: logging.Logger | None = None)</code></pre>
+<pre><code>def __init__(self, name: str, min_size: int = 128, maxsize: int | None = None, flush_on_stop: bool = False, custom_logger: logging.Logger | None = None)</code></pre>
 <p>No description.</p>
 </div>
 <div class="api-member">
@@ -2780,8 +2837,19 @@ before the processing thread exits.</p>
 </div>
 <div class="api-member">
 <h4>enqueue</h4>
-<pre><code>def enqueue(self, fn: Callable, *args, **kwargs) -&gt; None</code></pre>
-<p>Enqueues an operation to be run on the background processing thread.</p>
+<pre><code>def enqueue(self, fn: Callable, *args, **kwargs) -&gt; bool</code></pre>
+<p>Enqueues an operation to be run on the background processing thread.</p><p>Returns False if the queue is stopped and the operation was not enqueued,
+or if the bounded queue is full and the item was dropped.</p>
+</div>
+<div class="api-member">
+<h4>qsize</h4>
+<pre><code>def qsize(self) -&gt; int</code></pre>
+<p>Return approximate queue size (for monitoring/backpressure).</p>
+</div>
+<div class="api-member">
+<h4>is_full</h4>
+<pre><code>def is_full(self) -&gt; bool</code></pre>
+<p>Return True if bounded queue is at capacity.</p>
 </div>
 </div>
 <div class="api-member">

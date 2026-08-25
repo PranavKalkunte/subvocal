@@ -6,10 +6,12 @@ Supports native macOS 'say' / 'afplay' utilities, OpenAI Audio API, and pyttsx3.
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 from subvocal.tts.schema import TTSConfig
 
@@ -19,11 +21,49 @@ logger = logging.getLogger(__name__)
 class TTSEngine:
     """Multi-backend Text-to-Speech generator and player."""
 
+    def _sanitize_filename(self, filename: str) -> str:
+        """Sanitize filename to prevent path traversal (C2)."""
+        # Strip directory components and replace unsafe chars
+        base = os.path.basename(filename)
+        # Allow alnum, dot, underscore, hyphen; replace others with _
+        sanitized = re.sub(r"[^A-Za-z0-9_.-]", "_", base)
+        # Prevent empty or dot-only names
+        if not sanitized or sanitized in (".", ".."):
+            sanitized = "tts_output"
+        # Ensure extension matches allowed audio_format if present
+        return sanitized
+
+    def _validate_path_under_output_dir(self, file_path: str) -> str:
+        """Validate that file_path is within output_dir (C2)."""
+        output_dir_resolved = Path(self.config.output_dir).resolve()
+        file_resolved = Path(file_path).resolve()
+        try:
+            if not file_resolved.is_relative_to(output_dir_resolved):
+                raise ValueError(f"Invalid file path traversal detected: {file_path}")
+        except AttributeError:
+            try:
+                file_resolved.relative_to(output_dir_resolved)
+            except ValueError:
+                raise ValueError(f"Invalid file path traversal detected: {file_path}")
+        return str(file_resolved)
+
     def __init__(self, config: TTSConfig | None = None):
         self.config = config or TTSConfig()
-        
-        # Ensure output directory exists
+        # Validate output_dir and audio_format (C2)
+        allowed_formats = {"mp3", "wav"}
+        if self.config.audio_format not in allowed_formats:
+            raise ValueError(f"audio_format must be one of {allowed_formats}")
+        # Validate output_dir for traversal (C2)
+        if ".." in Path(self.config.output_dir).parts:
+            raise ValueError(f"Invalid output_dir contains traversal: {self.config.output_dir}")
+        # Ensure output directory exists (validated above)
         os.makedirs(self.config.output_dir, exist_ok=True)
+        # Additional resolve check to ensure output_dir doesn't escape via symlink
+        try:
+            # Ensure output_dir resolves safely (no traversal)
+            Path(self.config.output_dir).resolve()
+        except Exception:
+            raise ValueError(f"Invalid output_dir: {self.config.output_dir}")
         
         # Detect platform and credentials
         self.is_mac = sys.platform == "darwin"
@@ -46,14 +86,27 @@ class TTSEngine:
         clean_text = text.strip()
         logger.info("Synthesizing: %r", clean_text)
         
-        # Generate safe file name
+        # Generate safe file name (C2) - sanitize to prevent traversal
         if not filename:
             safe_text = "".join(c for c in clean_text[:20] if c.isalnum() or c in (" ", "_")).strip()
             safe_text = safe_text.replace(" ", "_").lower() or "tts_output"
             filename = f"{safe_text}.{self.config.audio_format}"
+        else:
+            # Sanitize user-provided filename to prevent ../../ traversal (C2)
+            filename = self._sanitize_filename(filename)
+            # Ensure filename has correct extension matching audio_format
+            # If no extension or mismatch, append correct format
+            if "." not in filename:
+                filename = f"{filename}.{self.config.audio_format}"
             
         output_path = os.path.join(self.config.output_dir, filename)
         abs_output_path = os.path.abspath(output_path)
+        # Validate that final path stays within output_dir (C2)
+        try:
+            abs_output_path = self._validate_path_under_output_dir(abs_output_path)
+        except ValueError as e:
+            logger.error("Path validation failed: %s", e)
+            raise
         
         # 1. Try OpenAI TTS first if key is available
         if self.has_openai:
@@ -80,6 +133,12 @@ class TTSEngine:
 
     def _synthesize_openai(self, text: str, dest_path: str) -> bool:
         """Call OpenAI Audio synthesis API via urllib."""
+        # Validate dest_path under output_dir (C2)
+        try:
+            dest_path = self._validate_path_under_output_dir(dest_path)
+        except ValueError as e:
+            logger.error("Invalid dest_path: %s", e)
+            return False
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             return False
@@ -119,6 +178,12 @@ class TTSEngine:
         """Synthesize audio using macOS native `say` terminal command."""
         logger.info("Attempting macOS native 'say' utility...")
         try:
+            # Validate dest_path is under output_dir (C2) and not traversal
+            try:
+                dest_path = self._validate_path_under_output_dir(dest_path)
+            except ValueError as e:
+                logger.error("Invalid dest_path: %s", e)
+                return False
             # macOS native say defaults to AIFF. If wav is requested, we can use say's wave export
             # syntax: say -o output.wav --data-format=LEI16@22050
             # Let's adjust command arguments based on format config
@@ -139,11 +204,18 @@ class TTSEngine:
                 # macOS 'say' doesn't support mp3 direct output. It will save as AAC or AIFF.
                 # Let's override output format extension to wav/aiff for local say command
                 dest_path_corrected = dest_path.rsplit(".", 1)[0] + ".wav"
+                # Re-validate corrected path stays under output_dir (C2)
+                try:
+                    dest_path_corrected = self._validate_path_under_output_dir(dest_path_corrected)
+                except ValueError as e:
+                    logger.error("Invalid corrected dest_path: %s", e)
+                    return False
                 cmd[-1] = dest_path_corrected
                 cmd.extend(["--data-format=LEI16@22050"])
                 dest_path = dest_path_corrected
                 
-            cmd.append(text)
+            # Add "--" to prevent option injection via text (C7)
+            cmd.extend(["--", text])
             
             subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             logger.info("macOS native TTS synthesis success: %s", dest_path)
@@ -154,6 +226,12 @@ class TTSEngine:
 
     def _synthesize_pyttsx3(self, text: str, dest_path: str) -> bool:
         """Fallback to offline pyttsx3 library."""
+        # Validate dest_path under output_dir (C2)
+        try:
+            dest_path = self._validate_path_under_output_dir(dest_path)
+        except ValueError as e:
+            logger.error("Invalid dest_path: %s", e)
+            return False
         try:
             import pyttsx3
             logger.info("Attempting pyttsx3 offline TTS library...")
@@ -185,11 +263,17 @@ class TTSEngine:
         """Play generated audio file locally using native system commands."""
         if not os.path.exists(file_path):
             return
+        # Validate file_path under output_dir to prevent traversal (C2 & C7)
+        try:
+            file_path = self._validate_path_under_output_dir(file_path)
+        except ValueError as e:
+            logger.error("Invalid file_path for playback: %s", e)
+            return
             
         if self.is_mac:
             try:
-                # Play using macOS native afplay tool
-                subprocess.Popen(["afplay", file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                # Play using macOS native afplay tool with "--" to prevent option injection (C7)
+                subprocess.Popen(["afplay", "--", file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception as e:
                 logger.error("Local audio playback failed: %s", e)
         else:

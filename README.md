@@ -23,6 +23,8 @@ The base install is lightweight (pydantic + numpy) and covers the pipeline, hard
 | `subvocal[export]` | ONNX model export | onnx |
 | `subvocal[all]` | Everything above | — |
 
+Security hardening is enforced in CI and requires no extra install: `pip-audit` for dependency CVEs, `ruff` bandit rules (`S`), validated core models, sanitized model paths (path-traversal protection), and `torch.load(weights_only=True)` for safe deserialization.
+
 ## 🚀 Quickstart
 
 A complete pipeline—synthetic sEMG source through intent reconstruction to action execution—runs offline in a few lines:
@@ -52,6 +54,8 @@ pipeline = SubvocalPipeline(
     phrase_timeout_seconds=0.5,
     on_action=lambda action, status: print("observed:", action.action_type, status),
 )
+# To inject tokens externally, prefer pipeline.inject_token(token) over direct
+# token_buffer append — it is thread-safe (deque + lock) and respects backpressure.
 
 hardware.start()
 hardware.trigger_command("gt", duration_ms=120)
@@ -70,8 +74,18 @@ Swap in a real LLM provider (`subvocal.core.llm_providers.ClaudeProvider`, `Open
 
 - **Typed errors**: everything the SDK raises derives from `subvocal.SubvocalError` (`HardwareError`, `ProviderError`, `ConfigurationError`, `PolicyViolationError`, ...), each compatible with the builtin exception type it replaces.
 - **Resilient providers**: configurable per-request timeouts and exponential-backoff retries for transient failures (connection errors, HTTP 408/429/5xx); non-retryable statuses fail fast.
-- **Observability**: `pipeline.stats` exposes running counters (frames, tokens, intents, executed/blocked actions, errors, uptime), and `on_token` / `on_intent` / `on_action` / `on_error` observer callbacks stream pipeline lifecycle events without ever breaking the pipeline. Every phrase is JSONL-traced for audit.
+- **Observability**: `pipeline.stats` exposes running counters (frames, tokens, intents, executed/blocked actions, errors, uptime), and `on_token` / `on_intent` / `on_action` / `on_error` observer callbacks stream pipeline lifecycle events without ever breaking the pipeline. Every phrase is JSONL-traced for audit with 10 MB rotation; opt-out via `telemetry.trace_enabled` / `runtime.trace_enabled` (`SUBVOCAL_TELEMETRY__TRACE_ENABLED=false`).
 - **Safety**: pluggable policy engine with dry-run mode; set `raise_on_policy_violation=True` to turn rejections into `PolicyViolationError`.
+- **Hardening (2.0.1)**:
+  - **Bounded `OpsQueue`** (`maxsize=min_size`, `qsize()`/`is_full()`) with backpressure — no unbounded OOM growth.
+  - **Thread-safe `pipeline.inject_token()`** — preferred over direct `token_buffer` mutation; `token_buffer` is now a `collections.deque`.
+  - **Deadlock-free `pipeline.step()`** — 5 s timeout raises `HardwareError` instead of hanging.
+  - **Validated core models** — `Frame` ordering enforced, `CommandToken.confidence` clamped 0–1.
+  - **Sanitized model paths** — `model_path` traversal protection; rejects `..` / absolute escapes.
+  - **Secure deserialization** — `torch.load(weights_only=True)` prevents RCE.
+  - **HMAC padding fix** — correct `=` padding restores ~25% previously-failing grant verifications.
+  - **DSP notch fix** — `notch_freq` (50/60 Hz) now correctly plumbed to filters.
+  - **Prometheus low-cardinality** — `session_id` label removed, port range validated and registry bounded to avoid cardinality explosion.
 
 ### MCP server
 
@@ -113,7 +127,7 @@ The flat `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR` variables are reserved for 
 
 ### Sessions, monitoring, and telemetry (v2)
 
-For long-running deployments, `subvocal.runtime.Session` wraps the pipeline with a lifecycle state machine (`STARTING → ACTIVE → DEGRADED → CLOSED`), a liveness watchdog, real-time signal-quality scoring (`subvocal.stream`), and an async work queue. `subvocal.runtime.SessionWorker` manages a pool of sessions with load reporting, and `subvocal.telemetry.PrometheusTelemetry` (install `subvocal[metrics]`) exports session, intent, action, and signal-quality metrics — with a ready-to-import Grafana dashboard at [`src/subvocal/telemetry/grafana_dashboard.json`](src/subvocal/telemetry/grafana_dashboard.json).
+For long-running deployments, `subvocal.runtime.Session` wraps the pipeline with a lifecycle state machine (`STARTING → ACTIVE → DEGRADED → CLOSED`), a liveness watchdog with fixed lifecycle (no rollback from `CLOSED`), real-time signal-quality scoring (`subvocal.stream`), and an async work queue. `token_buffer` is now a `collections.deque` drained via thread-safe `pipeline.inject_token()`. `subvocal.runtime.SessionWorker` manages a pool of sessions with load reporting, and `subvocal.telemetry.PrometheusTelemetry` (install `subvocal[metrics]`) exports session, intent, action, and signal-quality metrics with low-cardinality labels (no `session_id`) and bounded port registry — with a ready-to-import Grafana dashboard at [`src/subvocal/telemetry/grafana_dashboard.json`](src/subvocal/telemetry/grafana_dashboard.json). `BoardShim` streaming buffers are bounded to prevent leaks, and JSONL traces rotate at 10 MB and can be disabled via `trace_enabled`.
 
 ### BrainFlow-compatible API
 
@@ -158,16 +172,16 @@ subvocal/
 3. **Command-Aware Context Prioritization**: Dynamic target matching against active user contacts (`TYPE`), calendar events (`SEARCH`), browser URLs (`GOTO`), and active application screen elements (`CLICK`).
 4. **Physiological Signal Conditioning**: Preprocessing filter configurations defaulting to AlterEgo's `1.3–50.0 Hz` bandpass filter (designed for low-velocity articulatory gestures) with configuration support for standard `20.0–450.0 hz` EMG.
 5. **Classifiers (RF + Deep Learning)**: Custom pipelines to train scikit-learn **Random Forest**, PyTorch **1D CNN**, **GRU**, and **Transformer** architectures on raw multi-channel sEMG traces.
-6. **Asynchronous Execution (V2 Architecture)**: Low-latency, thread-safe asynchronous pipeline orchestration built on LiveKit's `OpsQueue` and `IncrementalDispatcher` design.
-7. **Physiological Signal Monitoring**: Real-time EMA-smoothed signal level activity detection and MOS-like connection quality scoring (evaluating saturation, drift, and dropouts).
-8. **Prometheus Telemetry**: Integrated Prometheus metric exporter and pre-built Grafana monitoring dashboards for tracking SDK errors, session lifecycles, and action execution statistics.
-9. **HMAC-Signed Capability Grants**: Secure token-based credentials (`ActionGrants`) specifying allowed command scopes, confidence thresholds, and dry-run policies, verified dynamically via the `GrantsPolicy` middleware.
-10. **MCP Integration**: A zero-dependency stdio JSON-RPC server exposing pipeline status, token injection, phrase processing, and calibration as MCP tools.
+6. **Asynchronous Execution (V2 Architecture)**: Low-latency, thread-safe orchestration on LiveKit's `OpsQueue`/`IncrementalDispatcher`; `OpsQueue` is now bounded (`maxsize=min_size`) with backpressure and `qsize()`/`is_full()`, `pipeline.step()` has deadlock protection (5 s timeout → `HardwareError`), and `pipeline.inject_token()` provides thread-safe deque-based injection.
+7. **Physiological Signal Monitoring**: Real-time EMA-smoothed signal level activity detection and MOS-like connection quality scoring (saturation, drift, dropouts); validated `Frame` ordering and `CommandToken` confidence 0–1.
+8. **Prometheus Telemetry**: Integrated exporter and Grafana dashboard with low-cardinality metrics (no `session_id` label), bounded port registry, and `trace_enabled` opt-out plus 10 MB JSONL rotation.
+9. **HMAC-Signed Capability Grants**: Capability-scoped `ActionGrants` (HMAC-SHA256) with corrected `=` padding (fixes ~25% verification failures), verified via `GrantsPolicy`.
+10. **MCP Integration**: Zero-dependency stdio JSON-RPC server exposing pipeline status, thread-safe token injection, phrase processing, and calibration as MCP tools.
 11. **Persistent Session Storage**: SQLite and in-memory backends to serialize and reload session configurations, states, and active metrics.
-12. **Real-Time TCP Biometric Streaming**: Dedicated TCP socket server broadcasting live signal attributes (quality, levels, tokens) to visualization dashboards.
-13. **Ingress/Egress Orchestration**: Ingress failover management for primary sensors and simulation streams; egress dispatcher for audio TTS and dataset logs.
-14. **Intelligent Node Routing**: Load-balanced session assignment based on CPU metrics or active session counts using selectors.
-15. **Zero-Dependency BrainFlow & DSP**: A pure-Python fallback for the BrainFlow SDK. Seamlessly emulates `SYNTHETIC_BOARD` and OpenBCI `CYTON_BOARD` (via direct serial packet parsing) and recreates the `DataFilter` signal processing API (filtering, windowing, Welch PSD estimation, bandpower) without requiring native C++ binary dependencies.
+12. **Real-Time TCP Biometric Streaming**: Dedicated TCP socket server broadcasting live signal attributes (quality, levels, tokens) to visualization dashboards; `BoardShim` buffers are now bounded to prevent leaks.
+13. **Ingress/Egress Orchestration**: Ingress failover for primary sensors/simulation streams; egress dispatcher for audio TTS and trace logs with sanitized model paths and `torch.load(weights_only=True)` deserialization.
+14. **Intelligent Node Routing**: Load-balanced session assignment via CPU or session-count selectors; routing status filter now correctly excludes non-ACTIVE sessions.
+15. **Zero-Dependency BrainFlow & DSP**: Pure-Python fallback emulating `SYNTHETIC_BOARD`/`CYTON_BOARD` and `DataFilter` (filtering, windowing, Welch PSD, bandpower) with correctly-plumbed notch `50/60 Hz` and sanitized file I/O.
 
 ---
 
@@ -178,10 +192,11 @@ git clone https://github.com/PranavKalkunte/subvocal.git
 cd subvocal
 pip install -e ".[all,dev]"
 
-pytest                      # test suite
-ruff check src tests       # lint
-pyright                     # type check
-python benchmarks/eval_runner.py   # 50-case heuristic benchmark
+pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=75  # test suite (75% floor)
+ruff check src tests benchmarks tools   # lint (E,F,I,UP,B,S; E501/E741 ignored) — S = bandit
+pyright                                # type check (standard mode, 0 errors required)
+pip-audit                              # dependency CVE audit
+python benchmarks/eval_runner.py       # 50-case heuristic benchmark
 ```
 
 Runtime artifacts (traces, trained models) are written to the per-user data directory; override with `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR`.

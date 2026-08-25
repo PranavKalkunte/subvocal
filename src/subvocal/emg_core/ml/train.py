@@ -9,6 +9,8 @@ Supports:
 """
 
 import os
+import re
+from pathlib import Path
 from typing import Any, Literal, cast
 
 import numpy as np
@@ -138,6 +140,11 @@ class EMGTransformer(nn.Module):
 # Helper Functions
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _sanitize_user_id(user_id: str) -> str:
+    """Sanitize user_id to prevent path traversal (C2)."""
+    return re.sub(r"[^A-Za-z0-9_-]", "_", user_id)
+
+
 def load_dataset(user_id: str) -> tuple[list[np.ndarray], list[str]]:
     """Load the calibration dataset for a user.
 
@@ -145,10 +152,27 @@ def load_dataset(user_id: str) -> tuple[list[np.ndarray], list[str]]:
         segments: list of raw 2D arrays, each (segment_length, num_channels)
         labels: list of label strings corresponding to each segment
     """
-    data_path = os.path.join(config.DATA_DIR, f"{user_id}_calib.npz")
+    # Sanitize user_id and validate resolved path stays within DATA_DIR (C2)
+    safe_user_id = _sanitize_user_id(user_id)
+    data_path = os.path.join(config.DATA_DIR, f"{safe_user_id}_calib.npz")
+    # Path traversal validation (C2)
+    resolved = Path(data_path).resolve()
+    base = Path(config.DATA_DIR).resolve()
+    try:
+        if not resolved.is_relative_to(base):
+            raise ValueError(f"Invalid dataset path traversal detected: {data_path}")
+    except AttributeError:
+        try:
+            resolved.relative_to(base)
+        except ValueError:
+            raise ValueError(f"Invalid dataset path traversal detected: {data_path}")
+    data_path = str(resolved)
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"No calibration data for user '{user_id}' at {data_path}")
 
+    # allow_pickle=True is required here because segments are stored as object arrays
+    # (list of ndarrays). Path is validated above to be within DATA_DIR, mitigating
+    # deserialization risk from untrusted paths (C1). Only load from trusted sanitized path.
     data = np.load(data_path, allow_pickle=True)
     segments = [np.array(s, dtype=np.float64) for s in data["segments"]]
     labels = list(data["labels"])
@@ -159,13 +183,15 @@ def preprocess_segments(
     segments: list[np.ndarray],
     fs: float,
     low: float,
-    high: float
+    high: float,
+    notch_freq: float = config.NOTCH_FREQ,
+    notch_q: float = config.NOTCH_Q,
 ) -> np.ndarray:
     """Preprocess raw segments and stack into a 3D numpy array of shape (N, C, T)."""
     processed_list = []
     for seg in segments:
         # Preprocess: shape remains (segment_length, num_channels)
-        p_seg = preprocess_multichannel(seg, fs=fs, low=low, high=high)
+        p_seg = preprocess_multichannel(seg, fs=fs, low=low, high=high, notch_freq=notch_freq, notch_q=notch_q)
         # Transpose to (num_channels, segment_length)
         processed_list.append(p_seg.T)
     return np.array(processed_list)

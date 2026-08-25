@@ -34,6 +34,18 @@ class SessionWorker:
 
         self._lock = threading.Lock()
         self._sessions: dict[str, Session] = {}
+        # H10 fix: prime psutil cpu_percent to avoid first-call 0.0 (interval=None
+        # returns 0.0 on first invocation because no previous measurement).
+        self._cpu_primed = False
+        try:
+            import psutil
+
+            psutil.cpu_percent(interval=None)
+            self._cpu_primed = True
+        except ImportError:
+            pass
+        except Exception:
+            pass
 
     @property
     def load(self) -> float:
@@ -48,12 +60,34 @@ class SessionWorker:
         """Returns host CPU utilization percentage (0.0 if psutil is unavailable).
 
         Lets a SessionWorker be ranked by :class:`subvocal.routing.CPULoadSelector`.
+        Handles psutil.cpu_percent(interval=None) first-call 0.0 by priming in __init__
+        and, if still 0.0 on first real call, retrying with a tiny interval fallback
+        would block – so we prime instead and document the limitation.
         """
         try:
             import psutil
         except ImportError:
             return 0.0
-        return float(psutil.cpu_percent(interval=None))
+        # psutil.cpu_percent(interval=None) is non-blocking but first call after
+        # boot/prime returns 0.0. We prime in __init__, so subsequent calls are
+        # meaningful. If not primed, prime now and return 0.0 as safe fallback.
+        if not getattr(self, "_cpu_primed", False):
+            try:
+                psutil.cpu_percent(interval=None)
+                self._cpu_primed = True  # type: ignore[attr-defined]
+            except Exception:
+                pass
+            return 0.0
+        try:
+            val = float(psutil.cpu_percent(interval=None))
+        except Exception:
+            return 0.0
+        # Clamp to 0-100 range, handle rare psutil quirks
+        if val < 0.0:
+            return 0.0
+        if val > 100.0:
+            return 100.0
+        return val
 
     @property
     def status(self) -> str:

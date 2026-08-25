@@ -213,6 +213,12 @@
                 <strong>Offline TTS:</strong> Zero-dependency local audio feedback engine prioritizing native macOS audio tools.
               </div>
             </li>
+            <li>
+              <span>[*]</span>
+              <div>
+                <strong>Hardened Runtime:</strong> Bounded queues, deadlock-free pipeline, validated models.
+              </div>
+            </li>
           </ul>
           <a href="./docs.html">
             <span>Read Docs </span>
@@ -228,9 +234,9 @@
             <h3>Pipeline Performance & Baselines</h3>
             <div>
                <span>[*]</span>
-               <p>
-                 Evaluated across 50 realistic shorthand command scenarios, the Subvocal SDK delivers <strong>74.0% baseline heuristic reconstruction accuracy</strong> (approaching <strong>100%</strong> on specific control groups) at <strong>&lt;0.72 ms execution latency</strong>.
-               </p>
+                <p>
+                  Evaluated across 50 realistic shorthand command scenarios, the Subvocal SDK delivers <strong>74.0% baseline heuristic reconstruction accuracy</strong> (approaching <strong>100%</strong> on specific control groups) at <strong>&lt;0.72 ms execution latency</strong>. <em>v2.0.1 hardens correctness without changing heuristic latency.</em>
+                </p>
             </div>
           </div>
         </section>
@@ -242,7 +248,7 @@
             <div>
               <span>[*]</span>
               <p>
-                The Subvocal SDK operates securely and fully offline. Your biopotential raw metrics, feature vectors, and spelling shorthand logs are processed on local CPU threads, ensuring physiological metrics never leak to external cloud servers.
+                The Subvocal SDK operates securely and fully offline. Your biopotential raw metrics, feature vectors, and spelling shorthand logs are processed on local CPU threads, ensuring physiological metrics never leak to external cloud servers. Pipeline JSONL tracing is opt-out via <code>telemetry.trace_enabled</code> / <code>runtime.trace_enabled</code> and capped at 10MB.
               </p>
             </div>
           </div>
@@ -343,10 +349,26 @@
                   <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
                   </svg>
+                  <div data-slot="faq-question-text">What changed in 2.0.1?</div>
+                </button>
+                <div data-slot="faq-answer" style="display: none;">
+                  v2.0.1 is a security &amp; reliability hardening release: hardened deserialization (restricted unpickling), path-traversal guards, HMAC request signing, TTS injection sanitization, plus bounded queues, deadlock-free pipeline, and validated models — with no change to heuristic latency.
+                </div>
+              </div>
+            </li>
+            <li>
+              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
+                <button data-slot="faq-question">
+                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
+                  </svg>
+                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
+                  </svg>
                   <div data-slot="faq-question-text">Is the project open source?</div>
                 </button>
                 <div data-slot="faq-answer" style="display: none;">
-                  Yes, the Subvocal SDK is fully open-sourced under the MIT License. You can use, modify, or extend it for academic research or commercial integrations.
+                  Yes, the Subvocal SDK is fully open-sourced under the MIT License, including the v2.0.1 security hardening release. You can use, modify, or extend it for academic research or commercial integrations.
                 </div>
               </div>
             </li>

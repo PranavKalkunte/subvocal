@@ -6,6 +6,37 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
+## [2.0.1] - 2026-08-25 (Security & Reliability Hardening)
+### Added
+*   **Trace opt-out**: `telemetry.trace_enabled` and `runtime.trace_enabled` (env `SUBVOCAL_TELEMETRY__TRACE_ENABLED` / `SUBVOCAL_RUNTIME__TRACE_ENABLED`) to disable JSONL PII tracing; `false` skips file creation entirely.
+*   **Validated core models**: `Frame` ordering invariant and `CommandToken.confidence` clamped to 0–1 via Pydantic validators.
+*   **Bounded `OpsQueue` introspection**: `qsize()` and `is_full()` helpers; queue constructed with `maxsize=min_size` to enforce backpressure.
+*   **Trace rotation cap**: JSONL trace files rotate at 10 MB to bound disk use.
+
+### Fixed
+*   **C1 — Secure deserialization (RCE)**: `torch.load(..., weights_only=True)` in `subvocal/emg_core/ml/` prevents arbitrary code execution on untrusted checkpoints.
+*   **C2 — Path traversal sanitization**: `model_path` / file I/O helpers reject `..` and absolute-path escapes outside `get_models_dir()` / `get_data_dir()`.
+*   **C3 — HMAC padding**: correct `=` padding in `subvocal/auth/` grant verification fixes ~25% spurious failures.
+*   **C4 — Deadlock-free `pipeline.step()`**: 5 s queue-get timeout raises `HardwareError` instead of hanging forever.
+*   **C5 — Race on `token_buffer`/`stats`**: `token_buffer` migrated to `collections.deque` with `pipeline.inject_token()` under lock; `stats` increments protected.
+*   **C6 — `BoardShim` unbounded buffer leak**: streaming buffer now bounded (`maxsize`-capped deque) to prevent OOM on long sessions.
+*   **C7 — TTS `--` injection**: `tts` shell invocation sanitizes arguments to block flag injection.
+*   **C8 — Watchdog rollback**: session watchdog no longer rolls back `CLOSED` → `DEGRADED`; lifecycle is monotonic.
+*   **H1 — Env coercion (`int` vs `bool`)**: `SUBVOCAL_*` env overrides now coerce correctly (bool fields no longer accept `0`/`1` as int).
+*   **H2 — Notch frequency ignored**: `dsp.notch_freq` (50/60 Hz) correctly plumbed through `BrainFlow`/`DSP` filter chain.
+*   **H5 — `h5` file leak**: `h5py.File` handles in dataset loaders now use context managers to guarantee close.
+*   **H9 — Prometheus cardinality**: removed high-cardinality `session_id` label and bounded collector registry / `prometheus_port` range.
+*   **H10 — Routing status filter**: selectors now correctly filter to `ACTIVE` sessions only.
+
+### Changed
+*   **Ruff**: enabled `S` (bandit) rules; `E501`/`E741` remain ignored by policy.
+*   **Pyright**: `basic` → `standard` mode; CI requires 0 errors.
+*   **Coverage floor**: `65` → `75` (`--cov-fail-under=75`).
+*   **CI hardening**: `pip-audit` added to GitHub Actions quality gates.
+*   **Buffer type**: `SubvocalPipeline.token_buffer` is now `collections.deque`; external mutation should use `pipeline.inject_token()`.
+
+---
+
 ## [2.0.0] - 2026-06-09
 ### Added
 *   **LiveKit-Inspired Concurrency**: Introduced `subvocal/utils/concurrency.py` implementing `OpsQueue` (serialized thread worker execution), `IncrementalDispatcher` (thread-safe condition-based fan-out), `ChangeNotifier` (async keyed callback registry), and resettable `Debouncer` timers.

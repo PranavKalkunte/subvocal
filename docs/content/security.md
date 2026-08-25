@@ -45,6 +45,17 @@ graph TD
     *   **Token Debouncing and Cooldowns**: Implementing physical refractory bounds (e.g., minimum 150 ms between tokens) and gesture duration limits.
     *   **Rate-Limiting the LLM Pipeline**: Reconstructing intents is limited to at most one request per 1.5 seconds (the default phrase timeout).
 
+### 1.5 Model Deserialization and Path Traversal
+*   **Threat Description**: Classifier weights are persisted per-user (`MODELS_DIR/<user>_model_<type>.{joblib,pth}`). A malicious `user_id` containing `../` could escape the model directory, and `torch.load` / `joblib.load` / `numpy.load` on untrusted files could execute arbitrary code via pickle.
+*   **Mitigation**:
+    *   **Safe deserialization**: PyTorch models load with `torch.load(..., weights_only=True)` so only tensors and allow-listed types are unpickled; `numpy` safe globals (`np.ndarray`, `np.dtype`, `np.generic`, scalars) are registered via `torch.serialization.add_safe_globals`. NumPy arrays in CSL-HDEMG use `np.load(..., allow_pickle=False)`. Legacy checkpoints fall back to `weights_only=False` only after path validation limits the file to the trusted `MODELS_DIR`.
+    *   **Path sanitization and jailing**: `user_id` and `model_type` are sanitized with `re.sub(r"[^A-Za-z0-9_-]", "_", value)` and the resolved path is verified with `Path.resolve().is_relative_to(MODELS_DIR.resolve())` (with `relative_to` fallback for Python <3.9). Traversal attempts raise `ValueError`. The same jail is applied in `tts.engine`, `emg_core.ml.train` / `export` / `pretrain`, and dataset loaders.
+
+### 1.6 Text-to-Speech Command Injection
+*   **Threat Description**: `TTSEngine` shells out to macOS `say` and `afplay`. If synthesized text (e.g., attacker-controlled context) contains leading `-` flags, it could be interpreted as command-line options.
+*   **Mitigation**:
+    *   **Option separator**: Both `_synthesize_macos` and `_play_audio_file` insert `--` before user text / file paths (`["say", "-r", rate, ..., "--", text]` and `["afplay", "--", file_path]`), so payloads beginning with `-` are treated as positional arguments, not flags. Output paths are additionally sanitized and jailed to `output_dir` via `is_relative_to`.
+
 ---
 
 ## 2. Key Management & Credential Storage
@@ -89,6 +100,7 @@ def get_api_key(provider_name: str) -> str:
 
 For deployments exposing the subvocal pipeline to external clients via the MCP/HTTP network interfaces, session authorization is guarded by capability-scoped tokens. 
 * **HMAC Signature Checks**: Tokens carry serialized `ActionGrants` claims (e.g. allowed command whitelist, minimum confidence floor, and dry-run policies). The payload is signed using HMAC-SHA256 against a server-side API secret key to prevent credential tampering.
+* **Base64 Padding Fix**: Verification restores padding with `payload_b64 += "=" * (-len(payload_b64) % 4)` before `urlsafe_b64decode`, avoiding the classic bug of appending four `=` when `len % 4 == 0`, which would otherwise break token verification.
 * **Context Isolation**: Validated token claims are bound to the execution thread/coroutine context using `contextvars` context propagation, preventing credential leakage across simultaneous sessions.
 
 ### 2.4 SQLite Persistent Store Access Controls
@@ -108,11 +120,18 @@ The platform operates on a strict **local-first** processing hierarchy:
 *   **Biometric Ingestion**: Raw high-frequency sEMG time-series are stored solely in volatile RAM buffers and processed locally. Waveform matrices are never saved to persistent storage or written to debug logs unless explicit "diagnostic recording mode" is active.
 *   **ML Inference**: The core gesture classifier (e.g., GRU or CNN) runs entirely on the local host's CPU/NPU.
 *   **Local Telemetry**: Observability traces and correction datasets are stored locally in the `sdk/data` workspace directory, which is ignored in Git.
+*   **Trace Opt-Out and Rotation Cap**: Pipeline JSONL tracing can be disabled entirely via `telemetry.trace_enabled=false` or `runtime.trace_enabled=false` (env `SUBVOCAL_TELEMETRY__TRACE_ENABLED` / `SUBVOCAL_RUNTIME__TRACE_ENABLED`) for biometric-PII minimization. When enabled, `Session._write_trace` enforces a **10 MB file cap** — writes beyond the cap are skipped with a warning until log rotation.
 
 ### 3.2 Cloud LLM Processing Safeguards
 When cloud-hosted LLMs are utilized for intent reconstruction, the following policies apply:
 *   **Zero-Data-Retention Profiles**: Organizations must deploy the middleware using enterprise API endpoints that guarantee zero-data retention (data is not logged or cached by the provider) and opt-out of model training inputs.
 *   **Data Minimization**: The platform only sends discrete tokens (e.g. `clk`, `gt`) and essential active application metadata. Full historical conversation text is truncated to a sliding window of the last 3-5 turns.
+
+### 3.3 Telemetry Cardinality and Port Registry Bounds
+*   **Threat / Cost**: High-cardinality Prometheus labels (e.g., raw `session_id` per session) would create an unbounded time-series explosion, exceeding the recommended <10k series per metric and exhausting Prometheus storage.
+*   **Mitigation**:
+    *   **Label removal**: `PrometheusTelemetry` no longer exposes `session_id` as a label. Counters/gauges (`subvocal_phrases_total`, `subvocal_intents_total`, `subvocal_actions_*`, `subvocal_signal_quality_score`, `subvocal_errors_total`) aggregate globally or by low-cardinality labels (`intent`, `action_type`, `quality_state`, `error_type`). A compat shim (`_make_compat`) drops legacy `session_id` label calls. If per-session insight is needed, hash `session_id` to an 8-char bucket and cap distinct values <1k with explicit removal on `session_ended`.
+    *   **Bounded port registry**: The global `_started_ports` set tracking `start_http_server` ports is capped at 64 entries (`_MAX_STARTED_PORTS`); oldest entry evicted on overflow, and `shutdown()` / `_release_port()` evicts on server stop to prevent unbounded growth in long-lived processes or tests that rotate ports.
 
 ---
 

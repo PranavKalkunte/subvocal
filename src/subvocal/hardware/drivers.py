@@ -2,6 +2,7 @@
 """
 
 import csv
+import logging
 import os
 import socket
 import struct
@@ -9,6 +10,8 @@ import time
 from typing import Any
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 from subvocal.core.interfaces import HardwareSource
 from subvocal.core.models import Frame, Sample
@@ -36,8 +39,24 @@ class FileReplayDriver(HardwareSource):
         self._sample_counter = 0
 
         # Load file contents into memory
+        # H4: FileReplayDriver loads entire CSV into RAM; for very large files
+        # consider chunked/streaming reads (e.g., iterate via csv reader on demand
+        # or memory-map). At minimum we warn when file is unusually large.
         if not os.path.exists(self.file_path):
             raise FileNotFoundError(f"Recorded sEMG file not found: {self.file_path}")
+
+        try:
+            file_size = os.path.getsize(self.file_path)
+            # Warn if file > 100 MB (roughly ~ millions of samples) to avoid OOM
+            if file_size > 100 * 1024 * 1024:
+                logger.warning(
+                    "FileReplayDriver: CSV %s is %.1f MB; entire file will be loaded into RAM. "
+                    "For large recordings consider chunked/streaming ingestion.",
+                    self.file_path,
+                    file_size / (1024 * 1024),
+                )
+        except OSError:
+            pass  # best-effort size check
 
         with open(self.file_path, encoding="utf-8") as f:
             reader = csv.reader(f)

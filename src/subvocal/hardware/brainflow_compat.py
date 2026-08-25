@@ -1,3 +1,4 @@
+import collections
 import enum
 import json
 import logging
@@ -7,6 +8,10 @@ import threading
 import time
 
 import numpy as np
+
+# Max buffer length for 5 minutes of data at 250 Hz (250*60*5 = 75000 samples).
+# Prevents unbounded growth when consumers use get_current_board_data (non-draining).
+_MAX_BUFFER_SAMPLES = 250 * 60 * 5
 
 logger = logging.getLogger("subvocal.hardware.brainflow_compat")
 
@@ -133,7 +138,7 @@ class BoardShim:
         self.input_params = input_params
         self._connected = False
         self._streaming = False
-        self._buffer: list[np.ndarray] = []
+        self._buffer: collections.deque[np.ndarray] = collections.deque(maxlen=_MAX_BUFFER_SAMPLES)
         self._buffer_lock = threading.Lock()
         self._thread: threading.Thread | None = None
         self._keep_alive = False
@@ -168,7 +173,7 @@ class BoardShim:
         if self.board_id not in BOARD_DESCRIPTIONS:
             raise BrainFlowError(f"Unsupported board ID: {self.board_id}", 3)
 
-        self._buffer = []
+        self._buffer = collections.deque(maxlen=_MAX_BUFFER_SAMPLES)
         self._connected = True
 
     def start_stream(self, buffer_size: int = 200000, streamer_params: str = "") -> None:
@@ -235,7 +240,7 @@ class BoardShim:
             if not self._buffer:
                 num_rows = self.get_num_rows(self.board_id)
                 return np.empty((num_rows, 0))
-            data = np.column_stack(self._buffer)
+            data = np.column_stack(list(self._buffer))
             self._buffer.clear()
             return data
 
@@ -249,7 +254,20 @@ class BoardShim:
             num_rows = self.get_num_rows(self.board_id)
             if not self._buffer:
                 return np.empty((num_rows, 0))
-            samples = self._buffer[-num_samples:]
+            # Enforce 5-minute cap (75000 samples) to prevent unbounded growth
+            # for non-draining reads. deque with maxlen already caps on append,
+            # but trim here as well for safety if buffer was mutated elsewhere.
+            if len(self._buffer) > _MAX_BUFFER_SAMPLES:
+                # Trim oldest samples
+                if isinstance(self._buffer, collections.deque):
+                    # deque maxlen should have prevented overflow; trim manually if needed
+                    while len(self._buffer) > _MAX_BUFFER_SAMPLES:
+                        self._buffer.popleft()
+                else:
+                    del self._buffer[0 : len(self._buffer) - _MAX_BUFFER_SAMPLES]  # type: ignore
+            # deque does not support slicing; convert to list for tail slice
+            buf_list = list(self._buffer)
+            samples = buf_list[-num_samples:]
             return np.column_stack(samples)
 
     def is_prepared(self) -> bool:

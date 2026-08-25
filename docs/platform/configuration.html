@@ -91,6 +91,31 @@ variables are consumed by <code>subvocal.paths</code> for writable-directory res
 and are <strong>not</strong> configuration keys. Only variables containing the <code>__</code>
 section separator are treated as config overrides.</p>
 </blockquote>
+<h3>Coercion order and <code>trace_enabled</code></h3>
+<p>Env values are coerced in strict order: <code>int</code> → <code>float</code> → <code>bool</code> (only
+<code>true</code>/<code>false</code>/<code>yes</code>/<code>no</code>) → <code>None</code> (<code>none</code>/<code>null</code>) → <code>str</code>. Parsing <code>int</code>
+before <code>bool</code> preserves numeric types — <code>SUBVOCAL_HARDWARE__SAMPLE_RATE=1</code>
+remains <code>int 1</code>, not <code>True</code> — and <code>float</code> parsing handles scientific notation
+(<code>1e3</code> → <code>1000.0</code>).</p>
+<p>Tracing is gated by two flags, either of which can disable it (biometric-PII
+opt-out):</p>
+<pre><code class="language-bash">export SUBVOCAL_TELEMETRY__TRACE_ENABLED=false
+export SUBVOCAL_RUNTIME__TRACE_ENABLED=false   # alternative / legacy
+</code></pre>
+<p>When enabled, <code>Session._write_trace</code> appends to <code>pipeline_traces.jsonl</code> (under
+<code>get_data_dir()</code>) but enforces a <strong>10 MB rotation cap</strong>: if the file already
+exceeds <code>10 * 1024 * 1024</code> bytes the write is skipped with a warning until the
+file is rotated or tracing is disabled.</p>
+<h3>Validated models</h3>
+<p>Pydantic validators enforce invariants at ingestion:</p>
+<ul>
+<li><code>Frame</code>: <code>end_time &gt; start_time</code> and <code>fs &gt; 0</code>, else <code>ValueError</code>.</li>
+<li><code>Sample</code>: <code>channels</code> non-empty and <code>len(channels) &lt;= 128</code>.</li>
+<li><code>CommandToken</code> / <code>Intent</code>: <code>0.0 &lt;= confidence &lt;= 1.0</code>.</li>
+</ul>
+<p>Violations surface as <code>ValidationError</code> → <code>ConfigurationError</code> on
+<code>load_config</code> / model construction, failing fast rather than propagating
+corrupt frames.</p>
 <h2>Sessions and the runtime layer</h2>
 <p><code>subvocal.runtime.Session</code> wraps the pipeline with the machinery a long-running
 deployment needs:</p>
@@ -100,7 +125,11 @@ deployment needs:</p>
 <li><strong>Liveness watchdog</strong> — transitions the session to <code>DEGRADED</code> and emits a
   <code>HardwareError</code> if frames stop arriving within <code>runtime.session_liveness_timeout</code>.</li>
 <li><strong>Asynchronous processing</strong> — frames are processed on a serialized
-  <code>OpsQueue</code> worker thread (<code>subvocal.utils</code>), keeping ingestion non-blocking.</li>
+  <strong>bounded</strong> <code>OpsQueue</code> worker thread (<code>subvocal.utils</code>, <code>maxsize=min_size</code>
+  default <code>128</code>). The queue applies backpressure — <code>enqueue()</code> returns <code>False</code>
+  and logs when full (new task dropped) — and exposes <code>qsize()</code> / <code>is_full()</code>
+  for monitoring, keeping ingestion non-blocking. On <code>stop()</code>, sentinel
+  insertion evicts the oldest entry if full to guarantee drain.</li>
 <li><strong>Signal monitoring</strong> (<code>subvocal.stream</code>):</li>
 <li><code>SignalLevel</code> — EMA-smoothed, percentile-of-window subvocalization activity
     detection.</li>
@@ -109,6 +138,11 @@ deployment needs:</p>
 <li><code>SignalQualityScorer</code> — a MOS-like quality score (saturation, drift,
     dropouts, SNR) mapped to <code>EXCELLENT / GOOD / POOR / LOST</code>; a lost signal
     pauses classification.</li>
+<li><strong>Trace control</strong> — JSONL tracing in <code>Session._write_trace</code> honors
+  <code>telemetry.trace_enabled</code> and <code>runtime.trace_enabled</code> (env
+  <code>SUBVOCAL_TELEMETRY__TRACE_ENABLED</code> / <code>SUBVOCAL_RUNTIME__TRACE_ENABLED</code>);
+  either <code>False</code> disables tracing. When enabled, the file is capped at
+  <strong>10 MB</strong> — further writes are skipped until rotation.</li>
 </ul>
 <p><code>subvocal.runtime.SessionWorker</code> manages a pool of sessions with capacity
 limits and load reporting. Because it exposes <code>id</code>, <code>load</code>, <code>cpu_usage</code>, and

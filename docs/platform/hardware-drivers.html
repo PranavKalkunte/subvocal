@@ -85,6 +85,7 @@
 <li><strong>Purpose:</strong> Reads multi-channel sEMG data from a local CSV file, simulating a real-time hardware stream.</li>
 <li><strong>Mechanism:</strong> Slices continuous numeric columns. Uses the current system clock to generate system timestamps, simulating live inputs.</li>
 <li><strong>Options:</strong> Supports configuring the sample rate <code>fs</code> and toggling <code>loop</code> at End-Of-File (EOF).</li>
+<li><strong>Resource note:</strong> The driver loads the entire CSV into RAM (<code>self._data</code>) on init. If the file exceeds <strong>100 MB</strong>, it logs a warning (<code>FileReplayDriver: CSV ... is ... MB; entire file will be loaded into RAM</code>) and advises chunked/streaming ingestion to avoid OOM on long recordings. Header rows and non-numeric lines are skipped defensively.</li>
 </ul>
 <h3>2. <code>SyntheticSignalGenerator</code></h3>
 <ul>
@@ -104,6 +105,7 @@
 <ul>
 <li><strong>Purpose:</strong> Zero-dependency TCP socket client connecting to the Delsys Trigno wireless base station.</li>
 <li><strong>Mechanism:</strong> Connects directly to the Delsys Trigno Control Utility over standard TCP sockets, avoiding large vendor DLLs or custom wrappers.</li>
+<li><strong>Reliability note:</strong> <code>read_frame</code> enforces a <strong>100 ms socket timeout</strong> with non-blocking <code>recv</code> and raises <code>HardwareError</code> if no data arrives (<code>DelsysTrignoDriver: no data received ... within 100 ms</code>), preventing infinite blocking on base-station dropout. <code>stop()</code> reliably sends <code>STOP</code> and closes both command and data sockets.</li>
 </ul>
 <hr />
 <h2>3. Delsys Trigno TCP Protocol Reference</h2>
@@ -130,8 +132,8 @@
 <p>The SDK implements custom subject-file readers under <code>sdk/hardware/datasets.py</code> to stream standard public electromyographical datasets:</p>
 <ol>
 <li><strong>Ninapro (<code>NinaproDriver</code>):</strong> Reads Ninapro subject <code>.mat</code> files (MATLAB format) using <code>scipy.io.loadmat</code> and extracts the <code>'emg'</code> matrix.</li>
-<li><strong>PutEMG (<code>PutEMGDriver</code>):</strong> Reads PutEMG subject <code>.h5</code> files (HDF5 format) by dynamically importing <code>h5py</code> and searching for active muscle channel datasets.</li>
-<li><strong>CSL-HDEMG (<code>CSLHDEMGDriver</code>):</strong> Reads high-density silent speech sEMG recordings stored as NumPy arrays (<code>.npy</code>) or raw binary floats.</li>
+<li><strong>PutEMG (<code>PutEMGDriver</code>):</strong> Reads PutEMG subject <code>.h5</code> files (HDF5 format) by dynamically importing <code>h5py</code> and searching for active muscle channel datasets. <strong>Resource fix:</strong> <code>h5py.File</code> is always closed on failure — <code>visititems</code> exceptions, missing datasets, or shape errors close the file descriptor before re-raising, and <code>stop()</code> reliably closes the handle to prevent descriptor leaks in long-lived sessions.</li>
+<li><strong>CSL-HDEMG (<code>CSLHDEMGDriver</code>):</strong> Reads high-density silent speech sEMG recordings stored as NumPy arrays (<code>.npy</code>) or raw binary floats. Uses <code>np.load(..., allow_pickle=False)</code> to block pickle-based code execution; only raw numeric arrays are accepted.</li>
 </ol>
 <hr />
 <h2>5. Integration Code Example</h2>

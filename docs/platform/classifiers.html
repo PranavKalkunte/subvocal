@@ -147,6 +147,13 @@ $$\mathbf{W}<em>{\text{int8}} = \text{round}\left(\frac{\mathbf{W}</em>{\text{fl
 <h3>Accuracy Regression Check</h3>
 <p>To safeguard against precision loss, the quantization pipeline runs a verification check on user validation data. If the drop in accuracy exceeds the configured threshold, the quantized model is rejected:
 $$\text{Accuracy}<em>{\text{float32}} - \text{Accuracy}</em>{\text{int8}} \le 0.05 \quad (5\%)$$</p>
+<h3>Secure Model I/O (<code>subvocal.emg_core.ml.model_io</code>)</h3>
+<p>All per-user weights are jailed to <code>MODELS_DIR</code>:</p>
+<ul>
+<li><strong>Path sanitization</strong>: <code>user_id</code> and <code>model_type</code> are sanitized via <code>re.sub(r"[^A-Za-z0-9_-]", "_", value)</code> and the resolved path is verified with <code>Path.resolve().is_relative_to(MODELS_DIR.resolve())</code> (fallback to <code>relative_to</code> on Python &lt;3.9); traversal attempts raise <code>ValueError</code>.</li>
+<li><strong>Safe deserialization</strong>: PyTorch checkpoints load with <code>torch.load(..., weights_only=True)</code> so only tensors and explicitly allow-listed NumPy types (<code>np.ndarray</code>, <code>np.dtype</code>, scalars via <code>torch.serialization.add_safe_globals</code>) are unpickled. Legacy checkpoints fall back to <code>weights_only=False</code> only after the path jail confirms a trusted location. <code>joblib.load</code> is used only for <code>rf</code>/<code>svm</code> types on the same jailed path.</li>
+<li><strong>Export guards</strong>: <code>emg_core.ml.export</code> and training utilities apply the same <code>is_relative_to</code> jail when resolving export paths.</li>
+</ul>
 <hr />
 <h2>6. Offline Benchmarking Profile</h2>
 <p>An offline benchmark harness (<code>sdk/emg_core/ml/benchmark.py</code>) measures system footprint and profiles execution cost:</p>

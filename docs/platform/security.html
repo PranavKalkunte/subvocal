@@ -106,6 +106,23 @@
 </ul>
 </li>
 </ul>
+<h3>1.5 Model Deserialization and Path Traversal</h3>
+<ul>
+<li><strong>Threat Description</strong>: Classifier weights are persisted per-user (<code>MODELS_DIR/&lt;user&gt;_model_&lt;type&gt;.{joblib,pth}</code>). A malicious <code>user_id</code> containing <code>../</code> could escape the model directory, and <code>torch.load</code> / <code>joblib.load</code> / <code>numpy.load</code> on untrusted files could execute arbitrary code via pickle.</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Safe deserialization</strong>: PyTorch models load with <code>torch.load(..., weights_only=True)</code> so only tensors and allow-listed types are unpickled; <code>numpy</code> safe globals (<code>np.ndarray</code>, <code>np.dtype</code>, <code>np.generic</code>, scalars) are registered via <code>torch.serialization.add_safe_globals</code>. NumPy arrays in CSL-HDEMG use <code>np.load(..., allow_pickle=False)</code>. Legacy checkpoints fall back to <code>weights_only=False</code> only after path validation limits the file to the trusted <code>MODELS_DIR</code>.</li>
+<li><strong>Path sanitization and jailing</strong>: <code>user_id</code> and <code>model_type</code> are sanitized with <code>re.sub(r"[^A-Za-z0-9_-]", "_", value)</code> and the resolved path is verified with <code>Path.resolve().is_relative_to(MODELS_DIR.resolve())</code> (with <code>relative_to</code> fallback for Python &lt;3.9). Traversal attempts raise <code>ValueError</code>. The same jail is applied in <code>tts.engine</code>, <code>emg_core.ml.train</code> / <code>export</code> / <code>pretrain</code>, and dataset loaders.</li>
+</ul>
+</li>
+</ul>
+<h3>1.6 Text-to-Speech Command Injection</h3>
+<ul>
+<li><strong>Threat Description</strong>: <code>TTSEngine</code> shells out to macOS <code>say</code> and <code>afplay</code>. If synthesized text (e.g., attacker-controlled context) contains leading <code>-</code> flags, it could be interpreted as command-line options.</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Option separator</strong>: Both <code>_synthesize_macos</code> and <code>_play_audio_file</code> insert <code>--</code> before user text / file paths (<code>["say", "-r", rate, ..., "--", text]</code> and <code>["afplay", "--", file_path]</code>), so payloads beginning with <code>-</code> are treated as positional arguments, not flags. Output paths are additionally sanitized and jailed to <code>output_dir</code> via <code>is_relative_to</code>.</li>
+</ul>
+</li>
+</ul>
 <hr />
 <h2>2. Key Management &amp; Credential Storage</h2>
 <p>The platform integrates with cloud-hosted LLM endpoints which require API keys. Standardizing how credentials are secured prevents leakage on developer workstations and user devices.</p>
@@ -143,6 +160,7 @@ def get_api_key(provider_name: str) -&gt; str:
 <h3>2.3 HMAC-SHA256 Signed Capability Tokens</h3>
 <p>For deployments exposing the subvocal pipeline to external clients via the MCP/HTTP network interfaces, session authorization is guarded by capability-scoped tokens. 
 * <strong>HMAC Signature Checks</strong>: Tokens carry serialized <code>ActionGrants</code> claims (e.g. allowed command whitelist, minimum confidence floor, and dry-run policies). The payload is signed using HMAC-SHA256 against a server-side API secret key to prevent credential tampering.
+* <strong>Base64 Padding Fix</strong>: Verification restores padding with <code>payload_b64 += "=" * (-len(payload_b64) % 4)</code> before <code>urlsafe_b64decode</code>, avoiding the classic bug of appending four <code>=</code> when <code>len % 4 == 0</code>, which would otherwise break token verification.
 * <strong>Context Isolation</strong>: Validated token claims are bound to the execution thread/coroutine context using <code>contextvars</code> context propagation, preventing credential leakage across simultaneous sessions.</p>
 <h3>2.4 SQLite Persistent Store Access Controls</h3>
 <p>The persistent session store maintains session configurations and active states on disk.
@@ -155,11 +173,21 @@ def get_api_key(provider_name: str) -&gt; str:
 <p>The platform operates on a strict <strong>local-first</strong> processing hierarchy:
 *   <strong>Biometric Ingestion</strong>: Raw high-frequency sEMG time-series are stored solely in volatile RAM buffers and processed locally. Waveform matrices are never saved to persistent storage or written to debug logs unless explicit "diagnostic recording mode" is active.
 *   <strong>ML Inference</strong>: The core gesture classifier (e.g., GRU or CNN) runs entirely on the local host's CPU/NPU.
-*   <strong>Local Telemetry</strong>: Observability traces and correction datasets are stored locally in the <code>sdk/data</code> workspace directory, which is ignored in Git.</p>
+*   <strong>Local Telemetry</strong>: Observability traces and correction datasets are stored locally in the <code>sdk/data</code> workspace directory, which is ignored in Git.
+*   <strong>Trace Opt-Out and Rotation Cap</strong>: Pipeline JSONL tracing can be disabled entirely via <code>telemetry.trace_enabled=false</code> or <code>runtime.trace_enabled=false</code> (env <code>SUBVOCAL_TELEMETRY__TRACE_ENABLED</code> / <code>SUBVOCAL_RUNTIME__TRACE_ENABLED</code>) for biometric-PII minimization. When enabled, <code>Session._write_trace</code> enforces a <strong>10 MB file cap</strong> — writes beyond the cap are skipped with a warning until log rotation.</p>
 <h3>3.2 Cloud LLM Processing Safeguards</h3>
 <p>When cloud-hosted LLMs are utilized for intent reconstruction, the following policies apply:
 *   <strong>Zero-Data-Retention Profiles</strong>: Organizations must deploy the middleware using enterprise API endpoints that guarantee zero-data retention (data is not logged or cached by the provider) and opt-out of model training inputs.
 *   <strong>Data Minimization</strong>: The platform only sends discrete tokens (e.g. <code>clk</code>, <code>gt</code>) and essential active application metadata. Full historical conversation text is truncated to a sliding window of the last 3-5 turns.</p>
+<h3>3.3 Telemetry Cardinality and Port Registry Bounds</h3>
+<ul>
+<li><strong>Threat / Cost</strong>: High-cardinality Prometheus labels (e.g., raw <code>session_id</code> per session) would create an unbounded time-series explosion, exceeding the recommended &lt;10k series per metric and exhausting Prometheus storage.</li>
+<li><strong>Mitigation</strong>:<ul>
+<li><strong>Label removal</strong>: <code>PrometheusTelemetry</code> no longer exposes <code>session_id</code> as a label. Counters/gauges (<code>subvocal_phrases_total</code>, <code>subvocal_intents_total</code>, <code>subvocal_actions_*</code>, <code>subvocal_signal_quality_score</code>, <code>subvocal_errors_total</code>) aggregate globally or by low-cardinality labels (<code>intent</code>, <code>action_type</code>, <code>quality_state</code>, <code>error_type</code>). A compat shim (<code>_make_compat</code>) drops legacy <code>session_id</code> label calls. If per-session insight is needed, hash <code>session_id</code> to an 8-char bucket and cap distinct values &lt;1k with explicit removal on <code>session_ended</code>.</li>
+<li><strong>Bounded port registry</strong>: The global <code>_started_ports</code> set tracking <code>start_http_server</code> ports is capped at 64 entries (<code>_MAX_STARTED_PORTS</code>); oldest entry evicted on overflow, and <code>shutdown()</code> / <code>_release_port()</code> evicts on server stop to prevent unbounded growth in long-lived processes or tests that rotate ports.</li>
+</ul>
+</li>
+</ul>
 <hr />
 <h2>4. Biometric Privacy Regulations Compliance</h2>
 <p>Because electromyography measures electrical muscle potentials unique to an individual's physiology, raw sEMG data constitutes biometric information under modern privacy frameworks.</p>

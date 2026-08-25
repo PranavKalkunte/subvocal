@@ -303,7 +303,7 @@
   └──────────────────────────┘ └──────────────┘ └───────────────────────────┘
 </code></pre>
 <ul>
-<li><strong>Serialized Work Execution (OpsQueue)</strong>: All frame classification and intent resolutions are enqueued on a background worker thread (<code>OpsQueue</code>) to ensure deterministic processing times and eliminate concurrency race conditions.</li>
+<li><strong>Serialized Work Execution (OpsQueue)</strong>: All frame classification and intent resolutions are enqueued on a bounded background worker thread (<code>OpsQueue</code>, <code>maxsize=min_size</code> default 128). The queue applies backpressure (drops new tasks when full, returns <code>False</code>, exposes <code>qsize()</code>/<code>is_full()</code> for monitoring) to prevent OOM when producers outpace the consumer, ensures deterministic processing times, and eliminates concurrency race conditions. On <code>stop()</code>, it evicts the oldest entry if needed to insert the sentinel and guarantees drain when <code>flush_on_stop=True</code>.</li>
 <li><strong>Persistent Session Storage</strong>: The worker pool integrates a <code>SessionStore</code> (with in-memory and SQLite-backed implementations) that serializes session config settings, liveness statistics, and current state profiles to disk, allowing state recovery across host restarts.</li>
 <li><strong>Live Biometric Data Channels</strong>: A high-performance TCP socket server streams real-time biometric metrics (e.g. signal levels, quality states, classifier outputs) to multiple connected dashboard clients simultaneously.</li>
 <li><strong>Dynamic Ingress/Egress Managers</strong>: </li>
@@ -313,6 +313,9 @@
 <li><em>Dynamic Proxying</em>: Checks for the official C++ BrainFlow module; if missing, falls back to the native Python compatibility layer transparently.</li>
 <li><em>Cyton Serial Parser</em>: Integrates a direct parser that reads raw 33-byte binary packets from OpenBCI Cyton USB serial ports.</li>
 <li><em>SciPy DSP Library</em>: Re-implements causal and zero-phase filtering, Welch PSD estimation, and bandpower integration using standard SciPy and NumPy functions.</li>
+<li><em>Bounded Ring Buffer</em>: <code>BoardShim</code> uses a <code>collections.deque(maxlen=_MAX_BUFFER_SAMPLES)</code> (75 000 samples, ~5 min at 250 Hz) guarded by <code>threading.Lock</code>, so <code>get_current_board_data</code> never grows unbounded for non-draining consumers.</li>
+<li><strong>Validated Data Models</strong>: <code>Frame</code> (<code>end_time &gt; start_time</code>, <code>fs &gt; 0</code>), <code>Sample</code> (non-empty <code>channels</code> ≤128), and <code>CommandToken</code>/<code>Intent</code> (<code>0.0 ≤ confidence ≤ 1.0</code>) are enforced by Pydantic validators (<code>subvocal.core.models:42</code>, <code>subvocal.core.models:71</code>), failing fast on corrupt ingestion.</li>
+<li><strong>Thread-Safe Stats</strong>: <code>SubvocalPipeline.stats</code> counters (<code>frames_processed</code>, <code>tokens_classified</code>, <code>phrases_processed</code>, etc.) are guarded by <code>threading.Lock</code> / <code>_stats_lock</code> (<code>subvocal.core.pipeline:99</code>, <code>subvocal.runtime.session:89</code>), and <code>Session</code> state/watchdog use separate locks to avoid deadlock between the <code>OpsQueue</code> thread and callers of <code>step()</code>/<code>process_phrase()</code>.</li>
 </ul>
 <hr />
 <h2>8. The One Ask: Beta Program Call to Action</h2>

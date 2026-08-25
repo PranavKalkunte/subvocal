@@ -2,6 +2,8 @@
 
 import logging
 import os
+import re
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -22,6 +24,32 @@ from subvocal.emg_core.ml.train import (
 logger = logging.getLogger(__name__)
 
 
+def _sanitize(value: str) -> str:
+    """Sanitize user-controlled component to prevent path traversal (C2)."""
+    return re.sub(r"[^A-Za-z0-9_-]", "_", value)
+
+
+def _validate_export_path(export_path: str) -> str:
+    """Validate export_path and ensure parent directory is safe (C2)."""
+    # Resolve to absolute and ensure no traversal via ".." escapes parent
+    resolved = Path(export_path).resolve()
+    parent = resolved.parent
+    # Ensure filename itself does not contain path traversal
+    filename = resolved.name
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise ValueError(f"Invalid export filename: {filename}")
+    # Validate that resolved file is within its parent (prevents symlink tricks)
+    try:
+        if not resolved.is_relative_to(parent):
+            raise ValueError(f"Invalid export path traversal detected: {export_path}")
+    except AttributeError:
+        try:
+            resolved.relative_to(parent)
+        except ValueError:
+            raise ValueError(f"Invalid export path traversal detected: {export_path}")
+    return str(resolved)
+
+
 def export_to_onnx(user_id: str, model_type: str, export_path: str) -> str:
     """Export a trained PyTorch model to ONNX format.
 
@@ -30,6 +58,10 @@ def export_to_onnx(user_id: str, model_type: str, export_path: str) -> str:
         model_type: "cnn", "gru", or "transformer".
         export_path: Destination path for the exported ONNX model.
     """
+    # Sanitize user-controlled components (C2) - load_model also sanitizes
+    user_id = _sanitize(user_id)
+    model_type = _sanitize(model_type)
+    export_path = _validate_export_path(export_path)
     model_data = load_model(user_id, model_type)
     num_channels = model_data["num_channels"]
     num_classes = len(model_data["labels"])
@@ -75,6 +107,10 @@ def export_to_coreml(user_id: str, model_type: str, export_path: str) -> bool:
 
     Note: requires coremltools. If missing, handles gracefully.
     """
+    # Sanitize and validate paths (C2)
+    user_id = _sanitize(user_id)
+    model_type = _sanitize(model_type)
+    export_path = _validate_export_path(export_path)
     try:
         import coremltools as ct  # type: ignore  # optional native backend
         logger.info("coremltools found. Starting Core ML conversion...")
@@ -129,6 +165,9 @@ def export_to_tflite(user_id: str, model_type: str, export_path: str) -> bool:
     Requires: tensorflow, tf2onnx. If missing, raises NotImplementedError.
     Returns True on success, raises on failure.
     """
+    user_id = _sanitize(user_id)
+    model_type = _sanitize(model_type)
+    export_path = _validate_export_path(export_path)
     try:
         import tensorflow  # type: ignore  # noqa: F401 — optional native backend
         import tf2onnx  # type: ignore  # noqa: F401 — optional native backend
@@ -168,6 +207,9 @@ def quantize_model_int8(user_id: str, model_type: str, threshold: float = 0.05) 
     Returns:
         Dict detailing quantization metrics.
     """
+    # Sanitize inputs (C2)
+    user_id = _sanitize(user_id)
+    model_type = _sanitize(model_type)
     if model_type in ["rf", "svm"]:
         raise ValueError("Quantization not supported for scikit-learn models.")
 

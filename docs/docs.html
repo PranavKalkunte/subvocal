@@ -103,6 +103,11 @@
               Traditional silent speech interfaces lock developers into proprietary neckbands or restricted, pre-trained whole-word vocabularies. Subvocal SDK overcomes these limits by providing the software infrastructure (digital signal preprocessing, deep learning training skeletons, articulatory phonetic shorthand simulators, and context-aware decoders) to enable open-vocabulary control with high accuracy and low execution latency.
             </p>
 
+            <div class="docs-callout note">
+              <div class="docs-callout-title">New in v2.0.1</div>
+              Security &amp; reliability hardening – see <a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">CHANGELOG</a> (deserialization, traversal, HMAC, TTS injection, bounded queues, deadlock-free pipeline).
+            </div>
+
             <h3>Setting up</h3>
             <p>
               Get your development pipeline or documentation environment up and running in minutes.
@@ -129,7 +134,7 @@
                   <span class="docs-card-icon">⚡</span>
                   <span class="docs-card-title">Configure DSP Filters</span>
                 </div>
-                <p>Edit notch and bandpass frequencies in filters.py to match your sEMG electrode placement constraints.</p>
+                <p>Edit notch and bandpass frequencies in filters.py — <code>notch_freq</code> correctly plumbs 50/60 Hz selection — to match your sEMG electrode placement constraints.</p>
               </a>
               <a href="#development" class="docs-card">
                 <div class="docs-card-header">
@@ -222,6 +227,7 @@ pipeline = SubvocalPipeline(
     executor=MockActionExecutor(),
     phrase_timeout_seconds=0.5,
 )
+# Thread-safe injection: pipeline.inject_token(token) preferred for live injection
 
 hardware.start()
 hardware.trigger_command("gt", duration_ms=120)
@@ -287,7 +293,7 @@ print(metrics["accuracy"])</code></pre>
 
             <h3>3. Live Inference & Cooldown Gating</h3>
             <p>
-              Inference is managed by a unified <code>InferenceEngine</code> in <code>subvocal.emg_core.ml.infer</code>. It applies confidence thresholds and adaptive cooldown gating (e.g., ignoring predictions within 500ms of a successful trigger) to prevent duplicate gesture triggers in real time.
+              Inference is managed by a unified <code>InferenceEngine</code> in <code>subvocal.emg_core.ml.infer</code>. It applies confidence thresholds and adaptive cooldown gating (e.g., ignoring predictions within 500ms of a successful trigger) to prevent duplicate gesture triggers in real time. Internally, the pipeline uses a bounded <code>OpsQueue</code> with <code>maxsize</code> and exposes <code>is_full</code>/<code>qsize</code> for backpressure.
             </p>
 
             <h3>4. Articulatory Shorthand Decoder Customization</h3>
@@ -333,7 +339,7 @@ print(metrics["accuracy"])</code></pre>
             <ul>
               <li><strong>get_pipeline_status</strong>: Reports hardware connection, classifier model, and buffer state.</li>
               <li><strong>get_token_buffer</strong>: Returns the accumulated command tokens awaiting phrase reconstruction.</li>
-              <li><strong>inject_token</strong>: Injects a shorthand token into the pipeline buffer (useful for testing without hardware).</li>
+              <li><strong>inject_token</strong>: Injects a shorthand token via thread-safe <code>pipeline.inject_token()</code> (session lock) rather than direct buffer append — useful for testing without hardware.</li>
               <li><strong>process_phrase</strong>: Forces immediate intent reconstruction and action dispatch on the buffered tokens.</li>
               <li><strong>trigger_calibration</strong>: Starts a per-user classifier calibration run in the background (requires the <code>[ml]</code> extra).</li>
             </ul>
