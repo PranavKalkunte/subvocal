@@ -72,8 +72,8 @@ def get_model_path(user_id: str, model_type: str = "rf") -> str:
         # Python <3.9 fallback: use relative_to with try/except
         try:
             resolved.relative_to(base)
-        except ValueError:
-            raise ValueError(f"Invalid model path traversal detected: {raw_path}")
+        except ValueError as e:
+            raise ValueError(f"Invalid model path traversal detected: {raw_path}") from e
     return str(resolved)
 
 

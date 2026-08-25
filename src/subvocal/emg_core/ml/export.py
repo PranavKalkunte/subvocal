@@ -45,8 +45,8 @@ def _validate_export_path(export_path: str) -> str:
     except AttributeError:
         try:
             resolved.relative_to(parent)
-        except ValueError:
-            raise ValueError(f"Invalid export path traversal detected: {export_path}")
+        except ValueError as e:
+            raise ValueError(f"Invalid export path traversal detected: {export_path}") from e
     return str(resolved)
 
 

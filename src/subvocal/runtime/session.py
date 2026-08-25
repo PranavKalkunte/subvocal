@@ -339,7 +339,7 @@ class Session:
             if trace_enabled and hasattr(self.config, "runtime") and hasattr(self.config.runtime, "trace_enabled"):
                 trace_enabled = bool(self.config.runtime.trace_enabled)
             if trace_enabled and hasattr(self.config, "trace_enabled"):
-                trace_enabled = bool(getattr(self.config, "trace_enabled"))  # type: ignore
+                trace_enabled = bool(self.config.trace_enabled)  # type: ignore[attr-defined]
         except Exception:
             trace_enabled = True
         if not trace_enabled:

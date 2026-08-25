@@ -164,8 +164,8 @@ def load_dataset(user_id: str) -> tuple[list[np.ndarray], list[str]]:
     except AttributeError:
         try:
             resolved.relative_to(base)
-        except ValueError:
-            raise ValueError(f"Invalid dataset path traversal detected: {data_path}")
+        except ValueError as e:
+            raise ValueError(f"Invalid dataset path traversal detected: {data_path}") from e
     data_path = str(resolved)
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"No calibration data for user '{user_id}' at {data_path}")

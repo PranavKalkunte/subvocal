@@ -43,8 +43,8 @@ class TTSEngine:
         except AttributeError:
             try:
                 file_resolved.relative_to(output_dir_resolved)
-            except ValueError:
-                raise ValueError(f"Invalid file path traversal detected: {file_path}")
+            except ValueError as e:
+                raise ValueError(f"Invalid file path traversal detected: {file_path}") from e
         return str(file_resolved)
 
     def __init__(self, config: TTSConfig | None = None):
@@ -62,8 +62,8 @@ class TTSEngine:
         try:
             # Ensure output_dir resolves safely (no traversal)
             Path(self.config.output_dir).resolve()
-        except Exception:
-            raise ValueError(f"Invalid output_dir: {self.config.output_dir}")
+        except Exception as e:
+            raise ValueError(f"Invalid output_dir: {self.config.output_dir}") from e
         
         # Detect platform and credentials
         self.is_mac = sys.platform == "darwin"

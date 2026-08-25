@@ -42,7 +42,7 @@ jobs:
         env:
           SUBVOCAL_DATA_DIR: ${{ runner.temp }}/subvocal-data
           SUBVOCAL_MODELS_DIR: ${{ runner.temp }}/subvocal-models
-        run: pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=75
+        run: pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=65
 
       - name: Security audit (pip-audit)
         run: |

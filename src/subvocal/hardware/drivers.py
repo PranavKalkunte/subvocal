@@ -11,11 +11,11 @@ from typing import Any
 
 import numpy as np
 
-logger = logging.getLogger(__name__)
-
 from subvocal.core.interfaces import HardwareSource
 from subvocal.core.models import Frame, Sample
 from subvocal.exceptions import HardwareError
+
+logger = logging.getLogger(__name__)
 
 
 class FileReplayDriver(HardwareSource):

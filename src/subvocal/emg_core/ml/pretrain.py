@@ -57,8 +57,8 @@ def generate_synthetic_dataset(user_id: str = "pretrained", num_classes: int = 5
     except AttributeError:
         try:
             resolved.relative_to(base)
-        except ValueError:
-            raise ValueError(f"Invalid dataset path traversal detected: {data_path}")
+        except ValueError as e:
+            raise ValueError(f"Invalid dataset path traversal detected: {data_path}") from e
     data_path = str(resolved)
     np.savez(data_path, segments=segments, labels=labels)
     logger.info("Synthetic pre-training dataset saved to %s (%d segments, %d classes)", data_path, len(segments), num_classes)
