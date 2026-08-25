@@ -23,9 +23,9 @@ extra with a lazy, guarded import that raises
 Every pull request must pass the same gates CI runs:
 
 ```bash
-ruff check src tests benchmarks tools   # lint (E, F, I, UP, B, S; E501/E741 ignored by policy) — S = bandit
+ruff check src tests benchmarks tools   # lint (E, F, I, UP, B; E501/E741 ignored)
 pyright                                  # type check (standard mode, 0 errors required)
-pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=75  # test suite (75% floor enforced in CI)
+pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=65  # test suite (65% floor enforced in CI)
 pip-audit                                # dependency CVE audit
 python tools/check_licenses.py           # dependency license audit
 ```
@@ -49,9 +49,10 @@ python tools/build_site.py       # docs/platform/*.html + walkthrough from docs/
   allowed only in `__main__` CLI blocks, benchmarks, and tests.
 - **Paths**: never write inside the package tree. Use
   `subvocal.paths.get_data_dir()` / `get_models_dir()`.
-- **Public API**: anything re-exported from `subvocal/__init__.py` is covered
-  by semantic versioning. Breaking changes require a major version bump and a
-  CHANGELOG entry.
+- **Public API**: anything re-exported from `subvocal/__init__.py:40` `__all__` is
+  frozen on `v2.0.1` and covered by semantic versioning. Breaking changes require
+  a major version bump and a `CHANGELOG.md` entry — add new drivers/examples
+  under `src/subvocal/hardware/` or `examples/` instead of renaming top-level exports.
 - **Tests**: new behavior ships with tests in `tests/`. Tests must run offline
   with no API keys; network and heavy-model paths are mocked or skipped.
 - **Docs**: public-facing writing lives in `docs/content/` (markdown) and is

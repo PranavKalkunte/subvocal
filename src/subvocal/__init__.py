@@ -33,7 +33,7 @@ from .exceptions import (
 from .hardware.brainflow_compat import BoardIds, BoardShim, BrainFlowInputParams
 from .paths import get_data_dir, get_models_dir
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 

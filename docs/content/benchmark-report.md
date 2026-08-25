@@ -1,7 +1,7 @@
 # Automated Performance Benchmark Report
 
-**Generated on:** Mon Jun  8 10:51:05 CDT 2026  
-**Version:** v0.3.0-alpha (Automated release run)
+**Generated on:** Mon Aug 25 07:02 UTC 2026
+**Version:** v2.0.1 (Heuristic 74% @ 0.36ms, + hardened 2.0.1 wall-clock)
 
 ---
 
@@ -19,25 +19,26 @@ These metrics profile real-time execution speeds, computational footprint, and e
 ## 2. Shorthand Intent Reconstruction Benchmark
 These metrics profile shorthand-to-intent phonetic alignment and LLM resolution loops evaluated over 50 gold-standard phrases.
 
-*   **Intent Resolution Accuracy**: N/A
-*   **Intent Resolution Latency**: N/A
+*   **Heuristic Accuracy**: 74.0% (37/50) @ 0.36 ms avg (GOTO/CLICK/SCROLL 100%, SEARCH 30%, TYPE 40%)
+*   **SIMULATED-LLM**: not run here (needs API keys; heuristic is offline baseline)
 
-### Full Intent Runner Output
+### Full Intent Runner Output (v2.0.1, 50 cases)
 ```text
 ================================================================================
-SUBVOCAL SDK INTENT-RECONSTRUCTION BENCHMARK RUNNER
+SUBVOCAL SHORTHAND INTENT-RECONSTRUCTION EVALUATION RUNNER
 ================================================================================
-Live LLM Providers Detected: NONE (Running in Simulated mode)
+LLM Decoder: INACTIVE (No API keys found in env)
 Total Test Cases: 50
 --------------------------------------------------------------------------------
 
 ================================================================================
-BENCHMARK RESULTS SUMMARY
+EVALUATION METRICS SUMMARY
 ================================================================================
-Decoder / Provider        | Accuracy   | Avg Latency    
+Heuristic Decoder Accuracy: 74.0% (37/50)
+Heuristic Avg Latency     : 0.36 ms
 --------------------------------------------------------------------------------
-HEURISTIC                 |     74.0% |       0.70 ms
-SIMULATED-LLM             |     96.0% |       0.70 ms
+CATEGORY BREAKDOWN:
+GOTO 10 | 100% | CLICK 9 | 100% | SCROLL 4 | 100% | SEARCH 10 | 30% | TYPE 10 | 40% | CLOSE 2 | 100% | CONFIRM/CANCEL/UNDO/COPY/PASTE 1 each | 100%
 
 ================================================================================
 FAILURE PROFILE DETAILS
