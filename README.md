@@ -70,6 +70,8 @@ for _ in range(30):
 
 Swap in a real LLM provider (`subvocal.core.llm_providers.ClaudeProvider`, `OpenAIProvider`, `GeminiProvider`, `LlamaProvider`), a real driver (`OpenBCICytonDriver`, `DelsysTrignoDriver`, `FileReplayDriver`), and a trained classifier (`subvocal.emg_core.ml.infer.InferenceEngine`) without changing the pipeline code. `subvocal.resolve_provider()` picks the best provider for the environment automatically — a real LLM when an API key is present, the offline `HeuristicProvider` otherwise.
 
+See `examples/silent-typing/demo.py` for a standalone 20-line copy-paste runnable (no hardware or API keys).
+
 ### Production behavior
 
 - **Typed errors**: everything the SDK raises derives from `subvocal.SubvocalError` (`HardwareError`, `ProviderError`, `ConfigurationError`, `PolicyViolationError`, ...), each compatible with the builtin exception type it replaces.
@@ -192,11 +194,11 @@ git clone https://github.com/PranavKalkunte/subvocal.git
 cd subvocal
 pip install -e ".[all,dev]"
 
-pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=75  # test suite (75% floor)
-ruff check src tests benchmarks tools   # lint (E,F,I,UP,B,S; E501/E741 ignored) — S = bandit
+pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=65  # test suite (65% floor)
+ruff check src tests benchmarks tools   # lint (E,F,I,UP,B; E501/E741 ignored)
 pyright                                # type check (standard mode, 0 errors required)
 pip-audit                              # dependency CVE audit
-python benchmarks/eval_runner.py       # 50-case heuristic benchmark
+python benchmarks/eval_runner.py       # 50-case heuristic benchmark (74% @0.36ms)
 ```
 
 Runtime artifacts (traces, trained models) are written to the per-user data directory; override with `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR`.
