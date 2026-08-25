@@ -4,6 +4,7 @@
 from .brainflow_compat import BoardIds, BoardShim, BrainFlowInputParams
 from .datasets import (
     CSLHDEMGDriver,
+    GaddyDriver,
     NinaproDriver,
     PutEMGDriver,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "NinaproDriver",
     "PutEMGDriver",
     "CSLHDEMGDriver",
+    "GaddyDriver",
     "BoardShim",
     "BoardIds",
     "BrainFlowInputParams",

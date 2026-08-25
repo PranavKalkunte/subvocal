@@ -41,14 +41,21 @@ PAGE_TOP = """<!DOCTYPE html>
     <div data-component="container">
       <section data-component="top">
         <div>
-          <a href="./index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+          <a href="./index.html" style="text-decoration:none; font-size:1.15rem; font-weight:700; color:#0a0a0a; letter-spacing:-0.02em; font-family: Inter, sans-serif;">subvocal</a>
+          <span style="margin-left:8px; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#9ca3af; vertical-align:middle;">Silent Productivity</span>
         </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="./docs.html">Docs</a></li>
+        <nav data-component="nav-desktop" style="flex:1; justify-content:center; margin:0 1rem;">
+          <ul style="gap:20px;">
+            <li><a href="./apex.html">SPX Benchmarks</a></li>
             <li><a href="./platform/index.html">Platform</a></li>
+            <li><a href="./docs.html">Docs</a></li>
             <li><a href="./api.html" aria-current="page">API</a></li>
+          </ul>
+        </nav>
+        <nav data-component="nav-desktop" style="flex-shrink:0;">
+          <ul style="gap:8px;">
+            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="border:1px solid #e5e7eb; padding:6px 12px; border-radius:9999px; font-size:13px; white-space:nowrap;">GitHub</a></li>
+            <li><a href="./api.html" style="background:#0a0a0a; color:#fff; padding:7px 14px; border-radius:9999px; font-size:13px; font-weight:600; white-space:nowrap;">Start building →</a></li>
           </ul>
         </nav>
       </section>
@@ -56,16 +63,28 @@ PAGE_TOP = """<!DOCTYPE html>
 """
 
 PAGE_BOTTOM = """      </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="./docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
+      <footer data-component="footer" style="background:#fff; border-top:1px solid #e5e7eb; display:grid; grid-template-columns:1.2fr 0.8fr 0.8fr 0.8fr; gap:0; padding:0;">
+        <div style="padding:24px; border-right:1px solid #f3f4f6;">
+          <div style="font-weight:700; color:#0a0a0a; margin-bottom:8px; font-size:14px;">subvocal</div>
+          <div style="font-size:13px; color:#6b7280; line-height:1.5;">Hardware-agnostic middleware for silent speech. MIT licensed.</div>
+        </div>
+        <div style="padding:24px; border-right:1px solid #f3f4f6;">
+          <div style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#9ca3af; margin-bottom:10px;">Research</div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;"><a href="./apex.html" style="text-decoration:none; color:#6b7280;">SPX Benchmarks</a><a href="./platform/intent-benchmark.html" style="text-decoration:none; color:#6b7280;">Intent Benchmark</a><a href="./platform/benchmark-report.html" style="text-decoration:none; color:#6b7280;">Benchmark Report</a></div>
+        </div>
+        <div style="padding:24px; border-right:1px solid #f3f4f6;">
+          <div style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#9ca3af; margin-bottom:10px;">Platform</div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;"><a href="./platform/architecture.html" style="text-decoration:none; color:#6b7280;">Architecture</a><a href="./platform/hardware-drivers.html" style="text-decoration:none; color:#6b7280;">Hardware</a><a href="./api.html" style="text-decoration:none; color:#6b7280;">API</a></div>
+        </div>
+        <div style="padding:24px;">
+          <div style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#9ca3af; margin-bottom:10px;">Company</div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="text-decoration:none; color:#6b7280;">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank" style="text-decoration:none; color:#6b7280;">MIT License</a></div>
+        </div>
       </footer>
     </div>
     <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
   </main>
 </body>
