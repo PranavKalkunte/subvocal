@@ -136,12 +136,12 @@ def main():
     print("-" * 71)
     
     if violations:
-        print(f"\n[❌ FAIL] Dependency scanning failed with {len(violations)} warnings:")
+        print(f"\n[FAIL] Dependency scanning failed with {len(violations)} warnings:")
         for pkg, lic, reason in violations:
             print(f"  - {pkg} ({lic}): {reason}")
         sys.exit(1)
     else:
-        print("\n[✅ PASS] All dependencies comply with open-source distribution policies.")
+        print("\n[PASS] All dependencies comply with open-source distribution policies.")
         sys.exit(0)
 
 

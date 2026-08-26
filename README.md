@@ -6,7 +6,7 @@ Rather than locking developers to a proprietary neckband or a closed whole-word 
 
 ---
 
-## 🛠️ Installation
+## Installation
 
 ```bash
 pip install subvocal
@@ -25,7 +25,7 @@ The base install is lightweight (pydantic + numpy) and covers the pipeline, hard
 
 Security hardening is enforced in CI and requires no extra install: `pip-audit` for dependency CVEs, `ruff` bandit rules (`S`), validated core models, sanitized model paths (path-traversal protection), and `torch.load(weights_only=True)` for safe deserialization. Research frontier modules (Wave 1: `dsp/handcrafted`, `dsp/spd`, `ml/spd_gru`, `ml/adaptor`, `ml/mona`, `ml/lisa`, `ml/speechnet`, `hardware/datasets GaddyDriver`; Wave 2: `foundation/tinymyo`, `foundation/aemg_tokenizer`, `foundation/spectre`, `adaptation/sal_lbn`, `adaptation/cpep`, `adaptation/variance_transfer`, `hardware/datasets MetaEMGDriver`, `benchmarks/emgbench`) are optional under `subvocal[ml]` (require `torch`) and reuse the same hardening (path sanitization, `weights_only=True`, guarded lazy imports).
 
-## 🚀 Quickstart
+## Quickstart
 
 A complete pipeline—synthetic sEMG source through intent reconstruction to action execution—runs offline in a few lines:
 
@@ -146,7 +146,7 @@ board.stop_stream(); board.release_session()
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 subvocal/
@@ -167,7 +167,7 @@ subvocal/
 
 ---
 
-## 🚀 Core Features
+## Core Features
 
 1. **Articulatory Shorthand Decoder**: Overcomes the whole-word sEMG vocabulary ceiling. Decodes compressed phonetic consonant shorthand inputs (e.g. `g gl` -> `Google`) under heavy muscle-movement noise.
 2. **Asymmetric Levenshtein Distance**: A dynamic programming string alignment cost matrix configured with physiological sEMG confusion clusters (Glottal, Labial, Alveolar, Velar, Rhotic) to discount vowel/consonant omissions in silent speech.
@@ -208,7 +208,7 @@ Wave 1 recap (v2.0): handcrafted 112 (`dsp/handcrafted`), SPD matrices + SPD-GRU
 
 ---
 
-## 🧪 Development
+## Development
 
 ```bash
 git clone https://github.com/PranavKalkunte/subvocal.git
@@ -231,5 +231,5 @@ Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the wor
 
 ---
 
-## 📄 License
+## License
 This repository is open-sourced under the **MIT License**. See [LICENSE](LICENSE) for details.

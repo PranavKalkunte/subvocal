@@ -4,10 +4,10 @@
 
 | Version | Supported |
 | ------- | --------- |
-| 2.1.x   | ✅ |
-| 2.0.x   | ✅ |
-| 1.0.x   | ✅ |
-| < 1.0   | ❌ |
+| 2.1.x   | Yes |
+| 2.0.x   | Yes |
+| 1.0.x   | Yes |
+| < 1.0   | No |
 
 ## Reporting a vulnerability
 

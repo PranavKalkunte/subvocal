@@ -135,7 +135,7 @@ from subvocal.core.pipeline import SubvocalPipeline
 # Define mock client executor
 class MyExecutor(ActionExecutor):
     def execute(self, action: Action):
-        print(f"\n[⚡ EXECUTOR DISPATCH] Action Executed: {action.action_type.upper()}")
+        print(f"\n[EXECUTOR DISPATCH] Action Executed: {action.action_type.upper()}")
         print(f"Arguments: {action.params.get('arguments')}")
         
     def can_execute(self, action: Action) -> bool:
