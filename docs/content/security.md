@@ -109,6 +109,15 @@ The persistent session store maintains session configurations and active states 
 * **Database Isolation**: The SQLite database file (typically `sessions.db`) is stored inside the user's localized app data directory. The SDK applies strict filesystem permissions (e.g., owner read/write only, Unix mode `0600`) to prevent local privilege escalation.
 * **Configuration Scrubbing**: When config YAML states are stored, highly sensitive parameters (like raw provider API keys) are scrubbed before persistence, leaving credential validation to runtime keyring retrievals.
 
+### 2.5 Foundation Model Supply Chain
+
+Foundation and adaptor weights are distributed out-of-band from `SubvocalConfig` (opt-in `subvocal[ml]`) and must be treated as untrusted supply-chain artifacts:
+
+* **TinyMyo weights from HuggingFace** (`arXiv:2512.15729`, `subvocal.emg_core.foundation.tinymyo`): pre-trained 3.6 M checkpoints, when released, are fetched via `huggingface_hub` (or manual `curl` from `huggingface.co/<org>/tinymyo`) pinned to a specific commit SHA. Consumers must verify `SHA-256` (or `sha256sum` + `etag`) against the checksum published in the model card / `model.safetensors.sha256` before `torch.load(..., weights_only=True)` — identical to [§1.5 Safe deserialization](#15-model-deserialization-and-path-traversal). `safetensors` is preferred over `pickle`; legacy `.pth` fallback remains jailed to `MODELS_DIR` with `is_relative_to` path validation.
+* **AEMG / SPECTRE vocabularies**: codebooks and STFT K-means pseudo-labels are derived locally; no binary weights. When a shared vocabulary is imported, validate the JSON/NPY source and load with `allow_pickle=False`.
+* **EMG Adaptor** (`subvocal.emg_core.ml.adaptor`, Mohapatra et al. ACL 2025, `112→768→3072` MLP into a frozen LLM): runs locally and does not persist raw sEMG beyond the volatile frame buffer. The adaptor handles only handcrafted 112-D spectral-temporal vectors (or speech-encoder 768-D) and produces transient LLM input embeddings that are immediately forwarded to the provider's TLS 1.3 channel; no PII is written to disk beyond the existing [§3.1 trace opt-out](security.md) and the 10 MB `pipeline_traces.jsonl` cap (disabled via `telemetry.trace_enabled=false` / `runtime.trace_enabled=false`). Calibration embeddings follow the same local-first, memory-only residency as §3.1 and are subject to the §4 BIPA/GDPR erasure guarantees (`CorrectionManager.clear_logs`).
+* **Verification guidance**: pin the Hub revision (`revision="<git-sha>"`), compare `sha256` after download, and reject mismatches before deserialization; do not auto-execute remote code (`trust_remote_code=False`). Document the verified hash in the release manifest per [Release Process](release-process.md).
+
 ---
 
 ## 3. Data Residency and Sovereignty

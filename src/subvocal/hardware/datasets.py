@@ -699,3 +699,671 @@ class GaddyDriver(HardwareSource):
                 except Exception:
                     return {}
         return {}
+
+
+class MetaEMGDriver(HardwareSource):
+    """Driver for Meta's sEMG-RD emg2pose / surface-typing datasets.
+
+    Open-sourced Dec 2024 (blog_), Nature 2025 (Sivakumar & Landau et al.
+    "Generic hand pose tracking..." + Salter et al. NeurIPS 2024 emg2pose
+    ``arXiv:2412.02725``). Wristband is the sEMG-RD: 16 bipolar channels per
+    wrist at 2 kHz (12-bit), paired with hand-pose labels at 2 kHz from a
+    26-camera motion-capture rig (19 markers/hand → IK joint angles,
+    linearly interpolated to 2 kHz).
+
+    Layout (HDF5 per recording, 25k files / 193 participants / 370 h):
+
+    * ``/emg``  → ``(T, 16)`` float32 (also accepted: ``raw_emg``, ``semg``)
+    * ``/pose`` → ``(T, D)`` float32 (also accepted: ``joint_angles``,
+      ``hand_pose``, ``joints``; typically 63 = 21 joints × 3 or 84-dim)
+
+    Also supports unpacked NPY layout: ``*_emg.npy`` paired with
+    ``*_pose.npy`` / ``*_joint_angles.npy``.
+
+    Streaming concatenates recordings sequentially and exposes
+    :class:`Frame` (EMG) via the :class:`HardwareSource` interface; pose
+    is available via :meth:`load_pair`, :meth:`get_pose`, and
+    :meth:`read_frame_with_pose`.
+
+    Args:
+        data_dir: Root of the extracted archive (may contain ``train`` /
+            ``val`` / ``test`` subfolders; see blog).
+        fs: Sampling frequency in Hz (sEMG-RD is 2000.0).
+        split: Dataset split — ``"train"`` / ``"val"`` / ``"test"``.
+            Sanitized to ``[A-Za-z0-9_-]`` and used to scope to
+            ``data_dir/split`` if that subdirectory exists, otherwise
+            filtered by path substring. ``"all"`` disables filtering.
+        loop: Whether to loop when recordings are exhausted.
+
+    Raises:
+        FileNotFoundError: If ``data_dir`` is missing or contains no
+            recordings, with instructions to download from
+            https://ai.meta.com/blog/open-sourcing-surface-electromyography-datasets-neurips-2024
+            and https://github.com/facebookresearch/emg2pose.
+
+    .. _blog: https://ai.meta.com/blog/open-sourcing-surface-electromyography-datasets-neurips-2024
+    """
+
+    _DOWNLOAD_URL = "https://ai.meta.com/blog/open-sourcing-surface-electromyography-datasets-neurips-2024"
+    _GITHUB_URL = "https://github.com/facebookresearch/emg2pose"
+    _EMG_KEYS = ("emg", "raw_emg", "semg", "sEMG", "data")
+    _POSE_KEYS = ("pose", "joint_angles", "hand_pose", "joints", "angles", "pose_3d", "jointAngles")
+
+    def __init__(
+        self,
+        data_dir: str,
+        fs: float = 2000.0,
+        split: str = "train",
+        loop: bool = True,
+    ) -> None:
+        self.data_dir = os.path.abspath(data_dir)
+        self.fs = float(fs)
+        self.loop = bool(loop)
+        # traversal sanitization on split
+        raw_split = str(split)
+        self.split = re.sub(r"[^A-Za-z0-9_-]", "_", raw_split) if raw_split else "train"
+        if not self.split:
+            self.split = "train"
+
+        self._connected = False
+        self._sample_counter = 0
+        self._rec_idx = 0
+        self._sample_idx = 0
+        self._current_emg: np.ndarray | None = None
+        self._current_pose: np.ndarray | None = None
+
+        # validate base dir with traversal sanitization
+        try:
+            base_resolved = Path(self.data_dir).resolve()
+        except Exception:
+            base_resolved = Path(self.data_dir).absolute()
+        if not os.path.isdir(self.data_dir):
+            raise FileNotFoundError(
+                f"Meta EMG dataset not found at {self.data_dir} (split='{self.split}'). "
+                f"Download the emg2pose / surface-typing archive from {self._DOWNLOAD_URL} "
+                f"(code & docs: {self._GITHUB_URL}) and extract so that the directory "
+                f"contains HDF5 recordings (e.g. data_dir/{self.split}/*.h5 with "
+                f"/emg (T,16) and /pose (T,D) at 2000 Hz). See emg2pose.data.Emg2PoseSessionData."
+            )
+
+        # optional h5py (only needed for HDF5 layout)
+        self._h5py = None
+        try:
+            import h5py as _h5py  # type: ignore[import-not-found]
+
+            self._h5py = _h5py
+        except ImportError:
+            self._h5py = None  # defer error until HDF5 file encountered
+
+        self._recordings: list[dict[str, str]] = []
+        self._load_index(base_resolved)
+
+        if not self._recordings:
+            raise FileNotFoundError(
+                f"No Meta EMG recordings found under {self.data_dir} (split='{self.split}'). "
+                f"Expected HDF5 files with '/emg' and '/pose' at 2000 Hz, or paired "
+                f"'*_emg.npy' + '*_pose.npy'. Download from {self._DOWNLOAD_URL} "
+                f"({self._GITHUB_URL}) and ensure extraction preserved the split layout."
+            )
+
+        # infer dims from first recording header
+        first = self._recordings[0]
+        try:
+            if first.get("type") == "h5":
+                if self._h5py is None:
+                    raise MissingDependencyError(
+                        "h5py is required to read Meta emg2pose HDF5 files. "
+                        'Install with: pip install "subvocal[hardware]" or pip install h5py'
+                    )
+                with self._h5py.File(first["emg_path"], "r") as hf:  # type: ignore[union-attr]
+                    emg_ds = self._find_dataset(hf, self._EMG_KEYS)
+                    pose_ds = self._find_dataset(hf, self._POSE_KEYS)
+                    if emg_ds is None:
+                        raise KeyError(f"No EMG dataset {self._EMG_KEYS} in {first['emg_path']}")
+                    self.num_channels: int = int(emg_ds.shape[1]) if len(emg_ds.shape) == 2 else 16
+                    self.pose_dim: int = int(pose_ds.shape[1]) if pose_ds is not None and len(pose_ds.shape) == 2 else 0
+            else:
+                arr = np.load(first["emg_path"], allow_pickle=False, mmap_mode="r")
+                if arr.ndim != 2:
+                    raise ValueError(f"EMG array must be 2D (T,16), got {arr.shape}")
+                self.num_channels = int(arr.shape[1])
+                # pose may be in companion file
+                pose_path = first.get("pose_path", "")
+                if pose_path and os.path.exists(pose_path):
+                    parr = np.load(pose_path, allow_pickle=False, mmap_mode="r")
+                    self.pose_dim = int(parr.shape[1]) if parr.ndim == 2 else 0
+                else:
+                    self.pose_dim = 0
+        except MissingDependencyError:
+            raise
+        except Exception as e:
+            raise ValueError(f"Failed to probe Meta EMG recording {first}: {e}") from e
+
+    # ------------------------------------------------------------------
+    # helpers
+    # ------------------------------------------------------------------
+    def _sanitize_id(self, rec_id: str) -> str:
+        return re.sub(r"[^A-Za-z0-9._/-]", "_", rec_id)
+
+    def _find_dataset(self, h5obj: object, candidates: tuple[str, ...]) -> object | None:
+        """Find first matching dataset key in HDF5 file (top-level or one group deep)."""
+        # direct keys
+        for key in candidates:
+            if key in h5obj:  # type: ignore[operator]
+                try:
+                    ds = h5obj[key]  # type: ignore[index]
+                    # h5py Dataset has shape
+                    if hasattr(ds, "shape") and len(getattr(ds, "shape", ())) >= 1:
+                        return ds
+                except Exception:
+                    continue
+        # search one level deep
+        try:
+            for name in list(h5obj.keys()):  # type: ignore[union-attr]
+                try:
+                    grp = h5obj[name]  # type: ignore[index]
+                    if hasattr(grp, "keys"):
+                        for key in candidates:
+                            if key in grp:
+                                ds = grp[key]  # type: ignore[index]
+                                if hasattr(ds, "shape"):
+                                    return ds
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        # fallback: first 2D dataset with second dim plausible
+        best = None
+        try:
+            def _visitor(n: str, o: object) -> None:
+                nonlocal best
+                if best is not None:
+                    return
+                if hasattr(o, "shape") and hasattr(o, "dtype"):
+                    shp = getattr(o, "shape", ())
+                    if len(shp) == 2 and shp[1] in (16, 63, 84, 21, 48, 42):
+                        # heauristic: pick emg-like (16) first, else any
+                        best = o
+
+            h5obj.visititems(_visitor)  # type: ignore[union-attr]
+        except Exception:
+            pass
+        return best
+
+    def _rel_id(self, resolved: Path, base: Path, suffix_len: int = 0) -> str:
+        """Compute sanitized recording id from resolved path relative to base."""
+        try:
+            rel = str(resolved.relative_to(base))
+        except ValueError:
+            try:
+                rel = os.path.relpath(str(resolved), str(base))
+            except Exception:
+                rel = resolved.name
+        if suffix_len and len(rel) > suffix_len:
+            rel = rel[:-suffix_len]
+        # strip leading slashes
+        rel = rel.lstrip("/")
+        return self._sanitize_id(rel)
+
+    def _load_index(self, base_resolved: Path) -> None:
+        """Scan for HDF5 and paired NPY recordings under data_dir[/split]."""
+        base = base_resolved
+        # decide search root
+        split_path = Path(self.data_dir) / self.split
+        if self.split.lower() != "all" and split_path.is_dir():
+            search_root = split_path.resolve()
+            filter_by_split = False
+        else:
+            search_root = base
+            filter_by_split = self.split.lower() != "all"
+
+        # walk recursively
+        for root, _dirs, files in os.walk(search_root):
+            for fname in files:
+                low = fname.lower()
+                fpath = os.path.join(root, fname)
+                # sanitization: ensure within base
+                try:
+                    resolved = Path(fpath).resolve()
+                    try:
+                        if not resolved.is_relative_to(base):
+                            continue
+                    except AttributeError:
+                        try:
+                            resolved.relative_to(base)
+                        except ValueError:
+                            continue
+                except Exception:
+                    continue
+
+                rec: dict[str, str] | None = None
+                if low.endswith((".h5", ".hdf5", ".h5py")):
+                    # for split filtering, if enabled and no split term in path, skip
+                    if filter_by_split and self.split.lower() not in fpath.lower():
+                        continue
+                    suffix_len = len(os.path.splitext(resolved.name)[1])
+                    rec_id = self._rel_id(resolved, base, suffix_len)
+                    rec = {
+                        "id": rec_id,
+                        "type": "h5",
+                        "emg_path": str(resolved),
+                        "pose_path": str(resolved),  # same file, diff keys
+                    }
+                elif fname.endswith("_emg.npy"):
+                    if filter_by_split and self.split.lower() not in fpath.lower():
+                        continue
+                    # companion pose candidates (resolve each)
+                    # derive companion base from resolved path
+                    res_str = str(resolved)
+                    base_no_suffix = res_str[: -len("_emg.npy")]
+                    pose_cands = [
+                        base_no_suffix + "_pose.npy",
+                        base_no_suffix + "_joint_angles.npy",
+                        base_no_suffix + "_joints.npy",
+                        base_no_suffix + "_angles.npy",
+                        base_no_suffix + "_hand_pose.npy",
+                    ]
+                    pose_path = ""
+                    for cand in pose_cands:
+                        if os.path.exists(cand):
+                            try:
+                                rp = Path(cand).resolve()
+                                try:
+                                    if not rp.is_relative_to(base):
+                                        continue
+                                except AttributeError:
+                                    try:
+                                        rp.relative_to(base)
+                                    except ValueError:
+                                        continue
+                            except Exception:
+                                continue
+                            pose_path = str(rp)
+                            break
+                    rec_id = self._rel_id(resolved, base, len("_emg.npy"))
+                    rec = {
+                        "id": rec_id,
+                        "type": "npy",
+                        "emg_path": str(resolved),
+                        "pose_path": pose_path,
+                    }
+                else:
+                    continue
+
+                if rec is not None:
+                    self._recordings.append(rec)
+
+        # If we filtered too aggressively (zero results but files exist), retry without split filter
+        if not self._recordings and filter_by_split:
+            # fallback: ignore split substring, keep all
+            self._recordings.clear()
+            for root, _dirs, files in os.walk(search_root):
+                for fname in files:
+                    low = fname.lower()
+                    fpath = os.path.join(root, fname)
+                    try:
+                        resolved = Path(fpath).resolve()
+                        try:
+                            if not resolved.is_relative_to(base):
+                                continue
+                        except AttributeError:
+                            try:
+                                resolved.relative_to(base)
+                            except ValueError:
+                                continue
+                    except Exception:
+                        continue
+                    if low.endswith((".h5", ".hdf5", ".h5py")):
+                        suffix_len = len(os.path.splitext(resolved.name)[1])
+                        rec_id = self._rel_id(resolved, base, suffix_len)
+                        self._recordings.append(
+                            {"id": rec_id, "type": "h5", "emg_path": str(resolved), "pose_path": str(resolved)}
+                        )
+                    elif fname.endswith("_emg.npy"):
+                        res_str = str(resolved)
+                        base_no_suffix = res_str[: -len("_emg.npy")]
+                        pose_path = ""
+                        for cand in [
+                            base_no_suffix + "_pose.npy",
+                            base_no_suffix + "_joint_angles.npy",
+                            base_no_suffix + "_joints.npy",
+                        ]:
+                            if os.path.exists(cand):
+                                try:
+                                    rp = Path(cand).resolve()
+                                    try:
+                                        if not rp.is_relative_to(base):
+                                            continue
+                                    except AttributeError:
+                                        try:
+                                            rp.relative_to(base)
+                                        except ValueError:
+                                            continue
+                                except Exception:
+                                    continue
+                                pose_path = str(rp)
+                                break
+                        rec_id = self._rel_id(resolved, base, len("_emg.npy"))
+                        self._recordings.append(
+                            {"id": rec_id, "type": "npy", "emg_path": str(resolved), "pose_path": pose_path}
+                        )
+
+        self._recordings.sort(key=lambda x: x["id"])
+
+    # ------------------------------------------------------------------
+    # HardwareSource interface
+    # ------------------------------------------------------------------
+    def start(self) -> None:
+        self._connected = True
+        self._rec_idx = 0
+        self._sample_idx = 0
+        self._sample_counter = 0
+        self._current_emg = None
+        self._current_pose = None
+        self._load_current_pair()
+
+    def stop(self) -> None:
+        self._connected = False
+        self._current_emg = None
+        self._current_pose = None
+
+    def is_connected(self) -> bool:
+        return self._connected
+
+    def _load_current_pair(self) -> None:
+        if not self._recordings:
+            self._current_emg = None
+            self._current_pose = None
+            return
+        if self._rec_idx >= len(self._recordings):
+            if self.loop:
+                self._rec_idx = 0
+                self._sample_idx = 0
+            else:
+                self._rec_idx = len(self._recordings) - 1
+                self._sample_idx = 0
+        rec = self._recordings[self._rec_idx]
+        try:
+            if rec["type"] == "h5":
+                if self._h5py is None:
+                    raise MissingDependencyError(
+                        "h5py is required to read Meta emg2pose HDF5 files. "
+                        'Install with: pip install "subvocal[hardware]" or pip install h5py'
+                    )
+                with self._h5py.File(rec["emg_path"], "r") as hf:  # type: ignore[union-attr]
+                    emg_ds = self._find_dataset(hf, self._EMG_KEYS)
+                    pose_ds = self._find_dataset(hf, self._POSE_KEYS)
+                    if emg_ds is None:
+                        raise KeyError(f"No EMG dataset in {rec['emg_path']} (tried {self._EMG_KEYS})")
+                    emg = np.array(emg_ds, dtype=np.float32)
+                    if emg.ndim != 2:
+                        raise ValueError(f"EMG must be 2D (T,16), got {emg.shape}")
+                    self._current_emg = emg
+                    if pose_ds is not None:
+                        pose = np.array(pose_ds, dtype=np.float32)
+                        if pose.ndim == 1:
+                            pose = pose[:, None]
+                        # align lengths (IK may be shorter due to failures)
+                        if pose.shape[0] != emg.shape[0]:
+                            # truncate or pad with last valid pose
+                            if pose.shape[0] < emg.shape[0]:
+                                pad = np.repeat(pose[-1:], emg.shape[0] - pose.shape[0], axis=0)
+                                pose = np.concatenate([pose, pad], axis=0)
+                            else:
+                                pose = pose[: emg.shape[0]]
+                        self._current_pose = pose
+                    else:
+                        self._current_pose = np.zeros((emg.shape[0], self.pose_dim if self.pose_dim else 63), dtype=np.float32)
+            else:
+                emg = np.load(rec["emg_path"], allow_pickle=False)
+                if emg.ndim != 2:
+                    raise ValueError(f"EMG array must be 2D (T,16), got {emg.shape}")
+                if emg.dtype == object:
+                    raise ValueError("Object arrays not allowed")
+                self._current_emg = emg.astype(np.float32, copy=False)
+                pose_path = rec.get("pose_path", "")
+                if pose_path and os.path.exists(pose_path):
+                    pose = np.load(pose_path, allow_pickle=False)
+                    if pose.ndim == 1:
+                        pose = pose[:, None]
+                    if pose.shape[0] != emg.shape[0]:
+                        if pose.shape[0] < emg.shape[0]:
+                            pad = np.repeat(pose[-1:], emg.shape[0] - pose.shape[0], axis=0)
+                            pose = np.concatenate([pose, pad], axis=0)
+                        else:
+                            pose = pose[: emg.shape[0]]
+                    self._current_pose = pose.astype(np.float32, copy=False)
+                else:
+                    self._current_pose = np.zeros((emg.shape[0], self.pose_dim if self.pose_dim else 0), dtype=np.float32)
+        except MissingDependencyError:
+            raise
+        except Exception as e:
+            raise ValueError(f"Failed to load Meta recording {rec['id']} ({rec['emg_path']}): {e}") from e
+
+    def read_frame(self, window_ms: int) -> Frame:
+        if not self._connected:
+            raise HardwareError("Meta EMG stream is not started. Call start().")
+        if not self._recordings:
+            raise HardwareError("No recordings indexed.")
+        now = time.time()
+        num_samples = int((window_ms / 1000.0) * self.fs)
+        if num_samples <= 0:
+            num_samples = 1
+        samples: list[Sample] = []
+        if self._current_emg is None:
+            self._load_current_pair()
+        collected = 0
+        while collected < num_samples:
+            if self._current_emg is None:
+                self._load_current_pair()
+                if self._current_emg is None:
+                    break
+            assert self._current_emg is not None
+            remaining = self._current_emg.shape[0] - self._sample_idx
+            need = num_samples - collected
+            take = min(remaining, need)
+            chunk = self._current_emg[self._sample_idx : self._sample_idx + take]
+            for i in range(take):
+                self._sample_counter += 1
+                row = chunk[i]
+                channels = [float(v) for v in row]
+                idx = collected + i
+                ts = now - ((num_samples - idx) / self.fs)
+                samples.append(Sample(timestamp=ts, channels=channels, sample_index=self._sample_counter))
+            collected += take
+            self._sample_idx += take
+            if self._sample_idx >= self._current_emg.shape[0]:
+                self._rec_idx += 1
+                self._sample_idx = 0
+                if self._rec_idx >= len(self._recordings):
+                    if self.loop:
+                        self._rec_idx = 0
+                    else:
+                        if collected < num_samples and self._current_emg is not None and self._current_emg.shape[0] > 0:
+                            last_row = [float(v) for v in self._current_emg[-1]]
+                            while collected < num_samples:
+                                self._sample_counter += 1
+                                ts = now - ((num_samples - collected) / self.fs)
+                                samples.append(Sample(timestamp=ts, channels=last_row, sample_index=self._sample_counter))
+                                collected += 1
+                        break
+                self._current_emg = None
+                self._current_pose = None
+                if collected < num_samples:
+                    self._load_current_pair()
+        return Frame(
+            samples=samples,
+            start_time=now - (window_ms / 1000.0),
+            end_time=now,
+            fs=self.fs,
+        )
+
+    # ------------------------------------------------------------------
+    # Paired EMG + pose helpers
+    # ------------------------------------------------------------------
+    def list_recordings(self) -> list[str]:
+        """Return sorted recording IDs indexed from data_dir/split."""
+        return [r["id"] for r in self._recordings]
+
+    def load_pair(self, idx: int | str) -> tuple[np.ndarray, np.ndarray]:
+        """Load paired EMG and pose arrays for a recording.
+
+        Args:
+            idx: Integer index or recording ID string.
+
+        Returns:
+            Tuple ``(emg, pose)`` where ``emg`` is ``(T, 16)`` float32 and
+            ``pose`` is ``(T, D)`` float32 (D is joint-angle dim, e.g. 63).
+        """
+        rec: dict[str, str] | None = None
+        if isinstance(idx, int):
+            if not 0 <= idx < len(self._recordings):
+                raise IndexError(f"Recording index {idx} out of range [0, {len(self._recordings)})")
+            rec = self._recordings[idx]
+        else:
+            safe = self._sanitize_id(str(idx))
+            for r in self._recordings:
+                if r["id"] == idx or r["id"] == safe:
+                    rec = r
+                    break
+            if rec is None:
+                raise KeyError(f"Recording '{idx}' not found. Available: {[rr['id'] for rr in self._recordings[:5]]}...")
+
+        # load without affecting streaming cursor
+        if rec["type"] == "h5":
+            if self._h5py is None:
+                raise MissingDependencyError(
+                    "h5py is required to read Meta emg2pose HDF5 files. "
+                    'Install with: pip install "subvocal[hardware]" or pip install h5py'
+                )
+            with self._h5py.File(rec["emg_path"], "r") as hf:  # type: ignore[union-attr]
+                emg_ds = self._find_dataset(hf, self._EMG_KEYS)
+                pose_ds = self._find_dataset(hf, self._POSE_KEYS)
+                if emg_ds is None:
+                    raise KeyError(f"No EMG dataset in {rec['emg_path']}")
+                emg = np.array(emg_ds, dtype=np.float32)
+                pose = np.array(pose_ds, dtype=np.float32) if pose_ds is not None else np.zeros((emg.shape[0], 0), dtype=np.float32)
+                if pose.ndim == 1:
+                    pose = pose[:, None]
+                if pose.shape[0] != emg.shape[0]:
+                    if pose.shape[0] < emg.shape[0]:
+                        pad = np.repeat(pose[-1:], emg.shape[0] - pose.shape[0], axis=0) if pose.shape[0] > 0 else np.zeros((emg.shape[0] - pose.shape[0], pose.shape[1] if pose.ndim == 2 else 0), dtype=np.float32)
+                        pose = np.concatenate([pose, pad], axis=0) if pose.size else pose
+                    else:
+                        pose = pose[: emg.shape[0]]
+                return emg, pose
+        else:
+            emg = np.load(rec["emg_path"], allow_pickle=False).astype(np.float32, copy=False)
+            pose_path = rec.get("pose_path", "")
+            if pose_path and os.path.exists(pose_path):
+                pose = np.load(pose_path, allow_pickle=False).astype(np.float32, copy=False)
+                if pose.ndim == 1:
+                    pose = pose[:, None]
+            else:
+                pose = np.zeros((emg.shape[0], 0), dtype=np.float32)
+            if pose.shape[0] != emg.shape[0]:
+                if pose.shape[0] < emg.shape[0]:
+                    pad = np.repeat(pose[-1:], emg.shape[0] - pose.shape[0], axis=0) if pose.shape[0] > 0 else np.zeros((emg.shape[0] - pose.shape[0], pose.shape[1] if pose.ndim == 2 else 0), dtype=np.float32)
+                    pose = np.concatenate([pose, pad], axis=0) if pose.size else pose
+                else:
+                    pose = pose[: emg.shape[0]]
+            return emg, pose
+
+    def get_emg(self, idx: int | str) -> np.ndarray:
+        """Return EMG array ``(T, 16)`` for recording ``idx``."""
+        emg, _ = self.load_pair(idx)
+        return emg
+
+    def get_pose(self, idx: int | str) -> np.ndarray:
+        """Return pose array ``(T, D)`` for recording ``idx``."""
+        _, pose = self.load_pair(idx)
+        return pose
+
+    def read_frame_with_pose(self, window_ms: int) -> tuple[Frame, np.ndarray]:
+        """Stream EMG as :class:`Frame` and return time-aligned pose window.
+
+        Returns:
+            Tuple of ``(frame, pose_window)`` where ``pose_window`` is an
+            ``(num_samples, D)`` array aligned to the EMG samples.
+
+        Note:
+            Pose windows are contiguous across recordings (like EMG).
+        """
+        if not self._connected:
+            raise HardwareError("Meta EMG stream is not started. Call start().")
+        # snapshot current pose cursor before reading EMG, then collect parallel
+        # We implement by duplicating the read_frame loop but also gathering pose.
+        now = time.time()
+        num_samples = int((window_ms / 1000.0) * self.fs)
+        if num_samples <= 0:
+            num_samples = 1
+        samples: list[Sample] = []
+        pose_chunks: list[np.ndarray] = []
+        if self._current_emg is None:
+            self._load_current_pair()
+        collected = 0
+        while collected < num_samples:
+            if self._current_emg is None:
+                self._load_current_pair()
+                if self._current_emg is None:
+                    break
+            assert self._current_emg is not None
+            assert self._current_pose is not None
+            remaining = self._current_emg.shape[0] - self._sample_idx
+            need = num_samples - collected
+            take = min(remaining, need)
+            emg_chunk = self._current_emg[self._sample_idx : self._sample_idx + take]
+            pose_chunk = self._current_pose[self._sample_idx : self._sample_idx + take]
+            for i in range(take):
+                self._sample_counter += 1
+                row = emg_chunk[i]
+                channels = [float(v) for v in row]
+                idx = collected + i
+                ts = now - ((num_samples - idx) / self.fs)
+                samples.append(Sample(timestamp=ts, channels=channels, sample_index=self._sample_counter))
+            pose_chunks.append(pose_chunk)
+            collected += take
+            self._sample_idx += take
+            if self._sample_idx >= self._current_emg.shape[0]:
+                self._rec_idx += 1
+                self._sample_idx = 0
+                if self._rec_idx >= len(self._recordings):
+                    if self.loop:
+                        self._rec_idx = 0
+                    else:
+                        if collected < num_samples and self._current_emg is not None:
+                            last_row = [float(v) for v in self._current_emg[-1]]
+                            last_pose = self._current_pose[-1:] if self._current_pose.size else np.zeros((1, self.pose_dim), dtype=np.float32)
+                            while collected < num_samples:
+                                self._sample_counter += 1
+                                ts = now - ((num_samples - collected) / self.fs)
+                                samples.append(Sample(timestamp=ts, channels=last_row, sample_index=self._sample_counter))
+                                pose_chunks.append(last_pose)
+                                collected += 1
+                        break
+                self._current_emg = None
+                self._current_pose = None
+                if collected < num_samples:
+                    self._load_current_pair()
+        frame = Frame(
+            samples=samples,
+            start_time=now - (window_ms / 1000.0),
+            end_time=now,
+            fs=self.fs,
+        )
+        if pose_chunks:
+            try:
+                pose_window = np.concatenate(pose_chunks, axis=0)
+            except ValueError:
+                # mismatched dims (zero-dim fallback)
+                pose_window = np.zeros((len(samples), self.pose_dim if self.pose_dim else 0), dtype=np.float32)
+        else:
+            pose_window = np.zeros((0, self.pose_dim if hasattr(self, "pose_dim") else 0), dtype=np.float32)
+        # ensure length matches frame
+        if pose_window.shape[0] != len(samples):
+            if pose_window.shape[0] < len(samples):
+                pad = np.repeat(pose_window[-1:], len(samples) - pose_window.shape[0], axis=0) if pose_window.shape[0] > 0 else np.zeros((len(samples), pose_window.shape[1] if pose_window.ndim == 2 else 0), dtype=np.float32)
+                pose_window = np.concatenate([pose_window, pad], axis=0) if pose_window.size else np.zeros((len(samples), self.pose_dim), dtype=np.float32)
+            else:
+                pose_window = pose_window[: len(samples)]
+        return frame, pose_window

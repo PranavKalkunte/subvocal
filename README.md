@@ -23,7 +23,7 @@ The base install is lightweight (pydantic + numpy) and covers the pipeline, hard
 | `subvocal[export]` | ONNX model export | onnx |
 | `subvocal[all]` | Everything above | — |
 
-Security hardening is enforced in CI and requires no extra install: `pip-audit` for dependency CVEs, `ruff` bandit rules (`S`), validated core models, sanitized model paths (path-traversal protection), and `torch.load(weights_only=True)` for safe deserialization.
+Security hardening is enforced in CI and requires no extra install: `pip-audit` for dependency CVEs, `ruff` bandit rules (`S`), validated core models, sanitized model paths (path-traversal protection), and `torch.load(weights_only=True)` for safe deserialization. Research frontier modules (Wave 1: `dsp/handcrafted`, `dsp/spd`, `ml/spd_gru`, `ml/adaptor`, `ml/mona`, `ml/lisa`, `ml/speechnet`, `hardware/datasets GaddyDriver`; Wave 2: `foundation/tinymyo`, `foundation/aemg_tokenizer`, `foundation/spectre`, `adaptation/sal_lbn`, `adaptation/cpep`, `adaptation/variance_transfer`, `hardware/datasets MetaEMGDriver`, `benchmarks/emgbench`) are optional under `subvocal[ml]` (require `torch`) and reuse the same hardening (path sanitization, `weights_only=True`, guarded lazy imports).
 
 ## 🚀 Quickstart
 
@@ -152,14 +152,14 @@ board.stop_stream(); board.release_session()
 subvocal/
 ├── src/subvocal/           # The installable package
 │   ├── core/               # Data models, interfaces, pipeline, security policies, LLM providers
-│   ├── hardware/           # HAL drivers (file replay, synthetic, OpenBCI, Delsys) + dataset loaders
-│   ├── emg_core/           # DSP filters, TD10 features, classifiers (RF/CNN/GRU/Transformer)
+│   ├── hardware/           # HAL drivers (file replay, synthetic, OpenBCI, Delsys) + dataset loaders (Ninapro/PutEMG/CSL-HDEMG/Gaddy/MetaEMG)
+│   ├── emg_core/           # sEMG stack: dsp (filters/handcrafted 112/spd), ml (adaptor/spd_gru/mona/lisa/speechnet), foundation (tinymyo/aemg_tokenizer/spectre), adaptation (sal_lbn/cpep/variance_transfer), benchmarks (emgbench)
 │   ├── shorthand/          # Phonetic shorthand vocabulary, simulator, hybrid decoder
 │   ├── context/            # User context schemas and phonetic context matching
 │   ├── mcp/                # Model Context Protocol stdio server
 │   └── tts/                # Multi-backend TTS feedback engine
-├── tests/                  # Pytest suite
-├── benchmarks/             # 50-case intent-reconstruction eval harnesses
+├── tests/                  # Pytest suite (incl. foundation/adaptation/emgbench)
+├── benchmarks/             # 50-case intent-reconstruction eval harnesses + EMGBench LOSO harness
 ├── tools/                  # Site/API-page builders, license audit, benchmark runner
 └── docs/                   # GitHub Pages site (landing, docs, platform corpus, API reference)
     └── content/            # Markdown sources for the platform corpus and walkthrough
@@ -172,18 +172,39 @@ subvocal/
 1. **Articulatory Shorthand Decoder**: Overcomes the whole-word sEMG vocabulary ceiling. Decodes compressed phonetic consonant shorthand inputs (e.g. `g gl` -> `Google`) under heavy muscle-movement noise.
 2. **Asymmetric Levenshtein Distance**: A dynamic programming string alignment cost matrix configured with physiological sEMG confusion clusters (Glottal, Labial, Alveolar, Velar, Rhotic) to discount vowel/consonant omissions in silent speech.
 3. **Command-Aware Context Prioritization**: Dynamic target matching against active user contacts (`TYPE`), calendar events (`SEARCH`), browser URLs (`GOTO`), and active application screen elements (`CLICK`).
-4. **Physiological Signal Conditioning**: Preprocessing filter configurations defaulting to AlterEgo's `1.3–50.0 Hz` bandpass filter (designed for low-velocity articulatory gestures) with configuration support for standard `20.0–450.0 hz` EMG.
-5. **Classifiers (RF + Deep Learning)**: Custom pipelines to train scikit-learn **Random Forest**, PyTorch **1D CNN**, **GRU**, and **Transformer** architectures on raw multi-channel sEMG traces.
-6. **Asynchronous Execution (V2 Architecture)**: Low-latency, thread-safe orchestration on LiveKit's `OpsQueue`/`IncrementalDispatcher`; `OpsQueue` is now bounded (`maxsize=min_size`) with backpressure and `qsize()`/`is_full()`, `pipeline.step()` has deadlock protection (5 s timeout → `HardwareError`), and `pipeline.inject_token()` provides thread-safe deque-based injection.
-7. **Physiological Signal Monitoring**: Real-time EMA-smoothed signal level activity detection and MOS-like connection quality scoring (saturation, drift, dropouts); validated `Frame` ordering and `CommandToken` confidence 0–1.
-8. **Prometheus Telemetry**: Integrated exporter and Grafana dashboard with low-cardinality metrics (no `session_id` label), bounded port registry, and `trace_enabled` opt-out plus 10 MB JSONL rotation.
-9. **HMAC-Signed Capability Grants**: Capability-scoped `ActionGrants` (HMAC-SHA256) with corrected `=` padding (fixes ~25% verification failures), verified via `GrantsPolicy`.
-10. **MCP Integration**: Zero-dependency stdio JSON-RPC server exposing pipeline status, thread-safe token injection, phrase processing, and calibration as MCP tools.
-11. **Persistent Session Storage**: SQLite and in-memory backends to serialize and reload session configurations, states, and active metrics.
-12. **Real-Time TCP Biometric Streaming**: Dedicated TCP socket server broadcasting live signal attributes (quality, levels, tokens) to visualization dashboards; `BoardShim` buffers are now bounded to prevent leaks.
-13. **Ingress/Egress Orchestration**: Ingress failover for primary sensors/simulation streams; egress dispatcher for audio TTS and trace logs with sanitized model paths and `torch.load(weights_only=True)` deserialization.
-14. **Intelligent Node Routing**: Load-balanced session assignment via CPU or session-count selectors; routing status filter now correctly excludes non-ACTIVE sessions.
-15. **Zero-Dependency BrainFlow & DSP**: Pure-Python fallback emulating `SYNTHETIC_BOARD`/`CYTON_BOARD` and `DataFilter` (filtering, windowing, Welch PSD, bandpower) with correctly-plumbed notch `50/60 Hz` and sanitized file I/O.
+4. **Physiological Signal Conditioning**: Preprocessing filter configurations defaulting to AlterEgo's `1.3–50.0 Hz` bandpass filter (designed for low-velocity articulatory gestures) with configuration support for standard `20.0–450.0 Hz` EMG; notch 50/60 Hz correctly plumbed.
+5. **Handcrafted 112-D sEMG Features** (`emg_core/dsp/handcrafted`): Per-channel 28 (temporal 11 MAV/RMS/VAR/WL/ZC/SSC/WAMP/IEMG/SSI/DASDV/LOGVAR + stats 7 mean/std/min/max/ptp/skew/kurt + spectral 10 MNF/MDF/centroid/bandpower/peak/entropy/spread/rolloff) → 112 for 4-ch; FFT/Welch, numpy-only. Mohapatra ACL 2025; Jou 2006; Gaddy & Klein 2020.
+6. **SPD Manifold & Riemannian Features** (`emg_core/dsp/spd`): Sample covariance + `eps·I` (1e-6), affine-invariant `logm` via `eigh` in sparse spectral domain, upper-tri flatten (C=4→K=10), time-varying 50 ms/20 ms windows. Gowda & Miller ACL 2026 Findings; J Neural Eng 2024.
+7. **SPD-GRU CTC Decoder** (`emg_core/ml/spd_gru`): `SPD (B,T,C,C) → logm → Linear(K→hidden) → 3-layer GRU (hidden 64, dropout 0.2) → Linear → CTC logits (B,T,V)`, batch `torch.linalg.eigh` inside forward for gradient flow. Gowda ACL 2025/2026.
+8. **EMG Adaptor 112→768→3072 + Provider** (`emg_core/ml/adaptor`): 2-layer MLP `Linear→ReLU→Dropout→Linear` mapping handcrafted 112 (or 768 speech-encoder) to frozen Llama-3.2-3B input (3072); `EMGAdaptorProvider.encode_emg_features()` handles raw `(T,4)`/`(B,T,4)` or precomputed. Mohapatra ACL 2025.
+9. **MONA Cross-Modal Losses + DTW** (`emg_core/ml/mona`): crossCon bidirectional InfoNCE EMG↔audio, supTcon SupCon, latent DTW warping (numpy/torch, batched), `mona_loss` + `BatchSampler` undersampling LibriSpeech to 50% per epoch (MONA Algo 1). Benster et al. arXiv:2403.05583.
+10. **LISA LLM Rescoring** (`emg_core/ml/lisa`): `final = (1-α)·acoustic + α·llm + β·length`, `LISA.rescore`/`lisa_rescore`/`beam_search_rescore` via `LLMProvider`, min-max normalization for scale mismatch. Same MONA arXiv:2403.05583.
+11. **SpeechNet Tiny CNN 15k** (`emg_core/ml/speechnet`): 3× depthwise-separable Conv1d blocks (groups → pointwise, BN/ReLU/MaxPool2/Dropout) + AdaptiveAvgPool + Linear, ~15k params, 63.9 µJ on GAP9, inter-session finetune <10 min head-only. Spacone SilentWear 2026 (ETH Zurich).
+12. **Gaddy Silent Speech Driver** (`hardware/datasets GaddyDriver`): Zenodo 4064409, 8-ch facial EMG @1000 Hz (ACL 2021 resampled 800 Hz) + audio + `info.json` transcripts, recursive `*_emg.npy` index, `silent`/`vocalized` split filter, `allow_pickle=False`, path-traversal sanitized.
+13. **TinyMyo 3.6M Transformer** (`foundation/tinymyo`): Channel-independent patching (`patch_size` 10), shared linear proj, SimMIM 50% masking via learned `mask_token`, 8 bidirectional Transformer blocks with RoPE and pre-norm, linear decoder `embed_dim→patch_size`; RoPE enables length extrapolation. arXiv:2512.15729.
+14. **AEMG NCT + VQ Vocabulary** (`foundation/aemg_tokenizer`): Sliding-window 32/16 contraction primitives (~30–60 ms) → `token_dim` 64 via interpolation, codebook K=512 (0.1σ init), numpy `cdist` or `torch.cdist` VQ, overlap-add decode, BERT-style masked modeling (15% masking, Transformer LM). Huang et al. CVPR 2026.
+15. **SPECTRE Spectral + CyRoPE** (`foundation/spectre`): Per-channel STFT magnitude (scipy with numpy Hann fallback) → per-frame concat → K-means pseudo-labels, CyRoPE factorized temporal (linear) + spatial annular (8×16 grid, `2π·c/num_channels`) rotary, depthwise CNN front-end + Transformer + masked spectral head `D→n_clusters`. arXiv:2512.22481.
+16. **SAL/LBN 7-Param Spatial Adaptation** (`adaptation/sal_lbn`): SAL prependable warp — 2-D affine `2×3` (6 DoF) or 2-DoF translation via `affine_grid`+`grid_sample` on 8×16 HDEMG grid plus per-channel `x·scale+shift` (2·C); LBN per-channel bias `x-bias`; `adapt_sal_lbn()` freezes backbone, Adam on SAL/LBN only (3–5 epochs, <2 min calib). Pereira et al. arXiv:2409.08058.
+17. **CPEP Pose-EMG Contrastive** (`adaptation/cpep`): Dual 4-layer Transformers (EMG 8-ch/pose 63-D, d_model 256, 8 heads) → 1-layer 256-d projection + L2 norm, symmetric InfoNCE `τ=0.02` learnable, pose encoder frozen, zero-shot `k=10` kNN cosine. Cui et al. arXiv:2509.04699.
+18. **Variance Transfer Bayesian GCM** (`adaptation/variance_transfer`): Normal-Wishart shared precision (means subject-specific), priors `m0=0, β0=1, ν0=D+1, W0=I`, `w_s`-scaled source posterior, 1-trial target calibration with diagonally-regularized update, QDA `log p(x|k)` with `0.5·log|Λ|`. Yoneda & Furui EMBC 2024 / arXiv:2505.15381.
+19. **MetaEMGDriver + EMGBench 9-Dataset LOSO** (`hardware/datasets MetaEMGDriver` + `emg_core/benchmarks/emgbench`): Meta sEMG-RD 16-ch×2000 Hz wristband + pose 63-D (HDF5 `/emg`/`/pose` or `*_emg.npy`+`*_pose.npy`), split-filtered; EMGBench harness evaluates LOSO-CV and few-shot `n_shot` adaptation across 9 datasets (Ninapro DB2/DB3/DB5, CapgMyo DB-b, Myo Armband, UCI EMG, MCS, Hyser, FlexWear-HD) with `evaluate_loso`/`evaluate_adaptation`/`evaluate_all`. Yang et al. NeurIPS 2024 D&B (arXiv:2410.23625).
+20. **Hardened V2 Runtime & Infra**: Bounded `OpsQueue` (`maxsize=min_size`, `qsize`/`is_full`), thread-safe `deque` + `inject_token()`, 5 s `pipeline.step()` timeout → `HardwareError`, validated `Frame`/`CommandToken`, sanitized `model_path` + `torch.load(weights_only=True)`, HMAC `=` padding fix, Prometheus low-cardinality (no `session_id`, bounded port/registry) + `trace_enabled` opt-out (10 MB rotation), `BoardShim` bounded buffers, TTS flag-injection sanitization; MCP stdio server, SQLite session store, TCP biometric channel, ingress/egress failover, `CPULoadSelector`/`SessionCountSelector` routing, pure-Python BrainFlow `BoardShim`/`DataFilter` fallback.
+
+---
+
+## Research Frontier (v2.1) — SOTA Expansion
+
+Wave 2 foundation/adaptation modules complement Wave 1 (handcrafted/SPD/adaptor/MONA/LISA/SpeechNet/Gaddy) and live under `subvocal[ml]` (`torch` guarded, citation in every docstring):
+
+- **TinyMyo** (`foundation/tinymyo`): 3.6M Transformer encoder, channel-independent patching + SimMIM 50% masking, RoPE for variable-length extrapolation — *TinyMyo arXiv:2512.15729*.
+- **AEMG NCT + VQ** (`foundation/aemg_tokenizer`): Neuromuscular Contraction Tokenizer sliding-window primitives + codebook K=512 VQ + overlap-add + masked collective token prediction — *Huang et al. CVPR 2026*.
+- **SPECTRE** (`foundation/spectre`): STFT per-channel magnitude → K-means pseudo-labels + Cylindrical RoPE (temporal linear + annular 8×16 forearm grid) + depthwise CNN front-end — *SPECTRE arXiv:2512.22481*.
+- **SAL/LBN** (`adaptation/sal_lbn`): 7-param spatial adaptation layer (2-D affine warp via `affine_grid`/`grid_sample` + per-channel scale/shift) + learnable baseline norm `x-bias`, <2 min calibration — *Pereira et al. arXiv:2409.08058*.
+- **CPEP** (`adaptation/cpep`): Dual 4-layer Transformers (EMG+pose) to shared 256-d L2 space, symmetric InfoNCE τ=0.02 (pose frozen), zero-shot kNN `k=10` — *Cui et al. arXiv:2509.04699*.
+- **Variance Transfer Bayesian GCM** (`adaptation/variance_transfer`): Normal-Wishart shared precision, `w_s`-scaled source posterior → target per-class means + shared covariance, 1-trial regularization — *Yoneda & Furui EMBC 2024 / arXiv:2505.15381*.
+- **MetaEMGDriver + EMGBench** (`hardware/datasets MetaEMGDriver` + `emg_core/benchmarks/emgbench`): LOSO-CV and few-shot adaptation across 9 datasets (Ninapro DB2/DB3/DB5, CapgMyo DB-b, Myo, UCI, MCS, Hyser, FlexWear-HD) — *Yang et al. NeurIPS 2024 D&B arXiv:2410.23625*.
+
+Wave 1 recap (v2.0): handcrafted 112 (`dsp/handcrafted`), SPD matrices + SPD-GRU CTC (`dsp/spd` + `ml/spd_gru`), EMG Adaptor 112→768→3072 + provider (`ml/adaptor`), MONA crossCon/supTcon + DTW + LISA rescoring (`ml/mona` + `ml/lisa`), SpeechNet 15k CNN 63.9 µJ (`ml/speechnet`), GaddyDriver (`hardware/datasets` Zenodo 4064409). All research code is optional (`subvocal[ml]`) and documented with paper citations in docstrings.
 
 ---
 
@@ -194,12 +215,15 @@ git clone https://github.com/PranavKalkunte/subvocal.git
 cd subvocal
 pip install -e ".[all,dev]"
 
-pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=65  # test suite (65% floor)
+pytest --cov=subvocal --cov-report=term-missing --cov-fail-under=65  # test suite (65% floor, covers foundation/tinymyo/aemg_tokenizer/spectre, adaptation/sal_lbn/cpep/variance_transfer, benchmarks/emgbench, dsp/handcrafted/spd, ml/*)
 ruff check src tests benchmarks tools   # lint (E,F,I,UP,B; E501/E741 ignored)
 pyright                                # type check (standard mode, 0 errors required)
 pip-audit                              # dependency CVE audit
 python benchmarks/eval_runner.py       # 50-case heuristic benchmark (74% @0.36ms)
+python -m subvocal.emg_core.benchmarks.emgbench  # EMGBench LOSO harness sanity (synthetic fallback when DatasetsProcessed_hdf5 absent)
 ```
+
+Research modules are under `subvocal[ml]` (lazy `torch` guard → `MissingDependencyError` with `pip install "subvocal[ml]"` hint) and are exercised by `tests/emg_core/test_foundation.py`, `test_adaptation.py`, `test_spd.py`, `test_mona_lisa.py`, etc. New research code must carry its paper citation in the module docstring (see `CONTRIBUTING.md`).
 
 Runtime artifacts (traces, trained models) are written to the per-user data directory; override with `SUBVOCAL_DATA_DIR` / `SUBVOCAL_MODELS_DIR`.
 

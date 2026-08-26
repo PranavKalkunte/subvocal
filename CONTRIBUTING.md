@@ -32,6 +32,8 @@ python tools/check_licenses.py           # dependency license audit
 
 New file I/O code must include model validation (Pydantic field validators, e.g. `Frame` ordering / `confidence` 0–1) and path sanitization (reject `..` / absolute escapes, constrain to `get_data_dir()` / `get_models_dir()`); deserialization of checkpoints must use `torch.load(..., weights_only=True)`.
 
+Research modules (`emg_core/foundation/tinymyo`, `aemg_tokenizer`, `spectre`, `emg_core/adaptation/sal_lbn`, `cpep`, `variance_transfer`, `emg_core/ml/spd_gru`, `adaptor`, `mona`, `lisa`, `speechnet`, `emg_core/dsp/handcrafted`, `spd`, `hardware/datasets` Gaddy/MetaEMG, `emg_core/benchmarks/emgbench`) are optional under `subvocal[ml]` and require `torch` — gate them with lazy guarded imports raising `MissingDependencyError` naming the extra (`pip install "subvocal[ml]"`), keep numpy/scipy fallbacks where feasible (handcrafted, SPD `eigh`, AEMG VQ, SPECTRE STFT/K-means, SAL/LBN numpy fallback, CPEP kNN), and include the paper citation in the module docstring (e.g. TinyMyo arXiv:2512.15729, AEMG CVPR 2026, SPECTRE 2512.22481, SAL 2409.08058, CPEP 2509.04699, Variance Transfer EMBC 2024/2505.15381, MONA 2403.05583, SilentWear 2026, Gaddy Zenodo 4064409, Meta emg2pose 2412.02725, EMGBench 2410.23625).
+
 Generated artifacts must be in sync with their sources — CI fails if these
 produce a diff:
 

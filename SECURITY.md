@@ -4,6 +4,7 @@
 
 | Version | Supported |
 | ------- | --------- |
+| 2.1.x   | ✅ |
 | 2.0.x   | ✅ |
 | 1.0.x   | ✅ |
 | < 1.0   | ❌ |
@@ -40,3 +41,4 @@ document. Key defaults:
   (`SUBVOCAL_DATA_DIR`); they may contain reconstructed intent text and should
   be treated as sensitive. Disable entirely with `telemetry.trace_enabled: false` / `runtime.trace_enabled: false` or env `SUBVOCAL_TELEMETRY__TRACE_ENABLED=false` / `SUBVOCAL_RUNTIME__TRACE_ENABLED=false` (opt-out, traces rotate at 10 MB when enabled).
 - **2.0.1 hardening**: secure deserialization (`torch.load(weights_only=True)` — C1), path-traversal sanitization for `model_path` and file I/O (C2), HMAC `=` padding fix (C3), deadlock-free `pipeline.step()` timeout (C4), thread-safe `deque` + `inject_token()` (C5), bounded `BoardShim` buffers (C6), TTS flag-injection sanitization (C7), Prometheus low-cardinality (removed `session_id` label, bounded port/registry — H9), and correctly-plumbed DSP notch (H2). See [CHANGELOG.md](CHANGELOG.md) for full C1–C8 / H1–H10 list.
+- **2.1.0 research modules** (`foundation/tinymyo`, `aemg_tokenizer`, `spectre`, `adaptation/sal_lbn`, `cpep`, `variance_transfer`, `ml/speechnet`, `mona`, `lisa`, `dsp/handcrafted`, `spd`, `hardware/datasets` Gaddy/MetaEMG, `benchmarks/emgbench`): optional under `subvocal[ml]` (lazy `torch` guard); do not handle raw PII beyond the existing trace opt-out — calibration EMG windows and pose/EMG embeddings stay in-memory or under `SUBVOCAL_DATA_DIR`/`SUBVOCAL_MODELS_DIR` and are not logged unless `telemetry.trace_enabled`/`runtime.trace_enabled` is true (opt-out via `SUBVOCAL_TELEMETRY__TRACE_ENABLED=false`, traces rotate at 10 MB when enabled). New loaders reuse `allow_pickle=False`, `h5py` context managers, and traversal sanitization (`is_relative_to`/`relative_to` + regex).

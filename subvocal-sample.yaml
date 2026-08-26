@@ -52,3 +52,67 @@ runtime:
 # Authentication Grants for external surfaces
 auth:
   api_key: null            # API key to protect MCP and HTTP control interfaces
+
+# ---------------------------------------------------------------------------
+# Foundation / Adaptation — optional research frontier (requires subvocal[ml] + torch)
+# Uncomment to enable; all modules are lazy-guarded and citation-documented.
+# See README.md "Research Frontier (v2.1)" and src/subvocal/emg_core/*.
+# ---------------------------------------------------------------------------
+# foundation:
+#   tinymyo:               # TinyMyo 3.6M Transformer + RoPE (foundation/tinymyo, arXiv:2512.15729)
+#     num_channels: 4
+#     patch_size: 10
+#     embed_dim: 128
+#     depth: 8
+#     num_heads: 4
+#     mask_ratio: 0.5
+#   aemg:                  # AEMG NCT + VQ vocab (foundation/aemg_tokenizer, CVPR 2026)
+#     codebook_size: 512
+#     token_dim: 64
+#     window_size: 32
+#     stride: 16
+#   spectre:               # SPECTRE STFT K-means + CyRoPE (foundation/spectre, 2512.22481)
+#     num_channels: 16
+#     embed_dim: 128
+#     depth: 4
+#     n_clusters: 64
+#     nhead: 4
+#
+# adaptation:
+#   sal_lbn:               # SAL/LBN 7-param spatial adaptation (adaptation/sal_lbn, 2409.08058)
+#     num_channels: 8
+#     use_affine: true     # 6-DoF 2×3 affine via affine_grid; false = per-channel only
+#     use_translation_only: false  # 2-DoF (tx,ty) when true
+#   cpep:                  # CPEP pose-EMG contrastive (adaptation/cpep, 2509.04699)
+#     emg_channels: 8
+#     pose_dim: 63
+#     d_model: 256
+#     embed_dim: 256
+#     tau_init: 0.02
+#   variance_transfer:     # Variance Transfer Bayesian GCM (adaptation/variance_transfer, EMBC 2024 / 2505.15381)
+#     w_s: 1.0             # transfer strength (larger = less uncertainty, more transfer)
+#     # m0: 0, beta0: 1, nu0: D+1, W0: I (fixed priors, see Yoneda et al.)
+#
+# datasets:                # Public dataset drivers (hardware/datasets)
+#   # gaddy:               # Gaddy silent speech (Zenodo 4064409, 8×1000 Hz) — hardware/datasets GaddyDriver
+#   #   data_dir: "./data/gaddy"
+#   #   fs: 800.0
+#   #   split: null        # silent | vocalized | null (all)
+#   # meta:                # Meta sEMG-RD emg2pose (16×2000 Hz + pose) — hardware/datasets MetaEMGDriver
+#   #   data_dir: "./data/meta"
+#   #   fs: 2000.0
+#   #   split: "train"     # train | val | test | all
+#
+# benchmarks:
+#   emgbench:              # EMGBench 9-dataset LOSO (emg_core/benchmarks/emgbench, NeurIPS 2024 2410.23625)
+#     root_dir: "./DatasetsProcessed_hdf5"
+#     datasets: ["ninapro-db2","ninapro-db3","ninapro-db5","capgmyo-db-b","myoarmband","uciemg","mcs","hyser","flexwear-hd"]
+#     mode: "loso"         # loso | adaptation
+#     n_shot: 1
+#
+# # Notes:
+# # - All foundation/adaptation/dataset/benchmark modules are optional under
+# #   `pip install "subvocal[ml]"` (and `subvocal[hardware]` for HDF5) and do
+# #   not handle raw PII beyond existing `telemetry.trace_enabled` opt-out
+# #   (see SECURITY.md). Guarded imports raise MissingDependencyError with install hint.
+# # - Keep YAML minimal; unknown keys are rejected (`extra="forbid"`).

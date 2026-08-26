@@ -160,3 +160,142 @@ SciPy), so existing BrainFlow code runs with no native build. If the official
 `brainflow` package is installed it is used transparently as the backend;
 otherwise the built-in synthetic generator and direct Cyton serial parser take
 over.
+
+## Foundation models (opt-in, `subvocal[ml]`)
+
+Foundation and spectral pre-training modules live in `subvocal.emg_core.foundation`
+and are **not** fields of `SubvocalConfig`. They are instantiated directly and
+guard `torch`/`scipy`/`sklearn` with `MissingDependencyError` → `pip install "subvocal[ml]"`.
+
+### TinyMyo (`tinymyo.py`, `arXiv:2512.15729`)
+
+3.6 M-parameter Transformer encoder with channel-independent patching,
+50 % SimMIM masking and RoPE length extrapolation. `TinyMyoEncoder` /
+`TinyMyoFoundation` expose `pretrain_step` (masked MSE) and `finetune_step`
+(classification / regression / speech CTC):
+
+```python
+from subvocal.emg_core.foundation import TinyMyoEncoder, TinyMyoFoundation
+
+enc = TinyMyoEncoder(num_channels=4, patch_size=10, embed_dim=128, depth=8, num_heads=4, mask_ratio=0.5)
+fm  = TinyMyoFoundation(encoder=enc, num_classes=8, regression_dim=1, vocab_size=40)
+loss = fm.pretrain_step(x)          # x: (B,C,T)
+loss = fm.finetune_step(x, y, task="classification")
+```
+
+Defaults (`embed_dim=128`, `depth=8`, `num_heads=4`, `mask_ratio=0.5`) reproduce
+the paper's 3.6 M count; `count_parameters()` / `estimate_flops(seq_len=150)`
+report size and cost.Weights, when released, are fetched from HuggingFace —
+see [Security — Foundation Model Supply Chain](security.md).
+
+### AEMG tokenizer (`aemg_tokenizer.py`, CVPR 2026 Huang et al.)
+
+Neuromuscular Contraction Tokenizer (NCT) + VQ discretizing `(T,C)` windows
+into contraction-primitive tokens (~30–60 ms) with overlap-add reconstruction:
+
+```python
+from subvocal.emg_core.foundation import EMGTokenizer, AEMGFramework
+
+tok = EMGTokenizer(codebook_size=512, token_dim=64, window_size=32, stride=16)
+ids = tok.encode(signal)                 # (T,C) -> (num_tokens,)
+sig = tok.decode(ids)                    # overlap-add via codebook
+fw  = AEMGFramework(tokenizer=tok, mask_ratio=0.15)  # BERT-style masked LM
+res = fw.pretrain_step(ids)              # collective token prediction
+```
+
+`AEMGFramework.pretrain_step` uses a 2-layer Transformer encoder when `torch`
+is present, otherwise a NumPy heuristic loss. Both classes are NumPy-first
+(`torch` only accelerates VQ `cdist` for `N>64`).
+
+### SPECTRE (`spectre.py`, `arXiv:2512.22481`)
+
+Spectral pre-training with STFT pseudo-labels and Cylindrical RoPE that
+factorizes temporal (linear) and spatial (annular 8×16 forearm grid) rotations:
+
+```python
+from subvocal.emg_core.foundation import SPECTREEncoder, CyRoPE, stft_kmeans_pseudolabels
+
+labels = stft_kmeans_pseudolabels(signal, fs=1000, n_fft=64, hop=16, n_clusters=64)
+enc = SPECTREEncoder(num_channels=16, embed_dim=128, depth=4, n_clusters=64)
+logits = enc(x)                          # (B,T,C) -> (B,T,C,K)
+loss = enc.ssl_loss(logits, labels, mask)
+rope = CyRoPE(dim=128, num_channels=16)  # (B,T,C,D) -> (B,T,C,D)
+```
+
+`stft_kmeans_pseudolabels` uses `scipy.signal.stft` + `sklearn.cluster.KMeans`
+when available with NumPy fallbacks; `SPECTREEncoder.ssl_loss` accepts both
+logits `(B,T,C,K)` and raw `(B,T,C)` (computes logits internally).
+
+## Adaptation modules (opt-in, `subvocal[ml]`)
+
+Lightweight session/subject adaptation in `subvocal.emg_core.adaptation`,
+also outside `SubvocalConfig` and guarded by `subvocal[ml]`.
+
+### SAL / LBN (`sal_lbn.py`, Pereira et al. `arXiv:2409.08058`; Gaddy & Klein EMNLP 2020 / J. Neural Eng. 2024)
+
+Supervised inter-session shift correction. `SAL` is a per-channel affine
+`y = x * scale + bias` (spatial), `LBN` is a learnable baseline subtract;
+`SAL_LBN` composes them as `backbone(sal_lbn(emg))`:
+
+```python
+from subvocal.emg_core.adaptation import SAL, LBN, SAL_LBN, adapt_sal_lbn
+
+sal_lbn = SAL_LBN(num_channels=8)
+adapt_sal_lbn(backbone, sal_lbn, calib_loader, epochs=5, lr=1e-3)
+logits = backbone(sal_lbn(emg_new_session))
+```
+
+Only `sal_lbn` parameters are optimized; the backbone stays frozen/eval.
+Calibrate with 3–5 epochs on a few utterances from the new session.
+
+### CPEP (`cpep.py`, Cui et al. `arXiv:2509.04699`)
+
+Contrastive Pose-EMG Pretraining: paired `EMGEncoder` / `PoseEncoder`
+(4-layer Transformer, `d_model=256`, `embed_dim=256`, `nhead=8`) with a
+shared 256-D L2-normalized space, symmetric InfoNCE `tau=0.02` (learnable),
+pose encoder frozen per paper:
+
+```python
+from subvocal.emg_core.adaptation import CPEPFramework, knn_classify
+
+cpep = CPEPFramework(emg_channels=8, pose_dim=63, tau_init=0.02, freeze_pose=True)
+loss = cpep(emg_batch, pose_batch)              # InfoNCE
+pred = cpep.zero_shot_predict(query_emg, gallery_pose_embs, gallery_labels, k=10)
+```
+
+Zero-shot evaluation is Top-K kNN cosine majority vote (`k=10`). Standalone
+helpers `pose_emg_contrastive_loss` / `contrastive_loss`, `l2_normalize_embeddings`,
+and `knn_classify` / `embedding_knn_classify` are also exported; `h5py`/`sklearn`
+are optional with NumPy fallbacks.
+
+### Variance Transfer (`variance_transfer.py`, Yoneda & Furui EMBC 2024 / `arXiv:2505.15381`)
+
+Bayesian GCM that shares variance (precision) not mean across subjects
+(Normal-Wishart prior `m0=0, beta0=1, nu0=D+1, W0=I`):
+
+```python
+from subvocal.emg_core.adaptation import pretrain_variance_transfer, transfer_to_target, predict
+
+posterior = pretrain_variance_transfer(source_data, source_labels)     # list[(N,D)], list[(N,)]
+model = transfer_to_target(posterior, calib_data, calib_labels, w_s=1.0)  # 1 trial
+pred = predict(model, test_data)  # or model.predict(X)
+```
+
+`VarianceTransferGCM` wraps the same flow (`pretrain` / `transfer` / `predict`);
+`w_s` scales transferred concentration (larger = less uncertainty). Handles
+`N_t=0/1` and diagonal regularization for singularity; no `torch` required.
+
+## Hardware drivers — dataset sources (config notes)
+
+`GaddyDriver` and `MetaEMGDriver` (in `subvocal.hardware.datasets`) are not
+configured via `SubvocalConfig`; pass `data_dir`/`split`/`fs` directly at
+construction (see [Hardware Drivers](hardware-drivers.md)). Both drivers
+sanitize `data_dir` with `Path.resolve().is_relative_to` and require
+`h5py` only for HDF5 layouts — `pip install "subvocal[hardware]"`.
+
+* **Gaddy (Zenodo 4064409)**: `GaddyDriver(data_dir="...", fs=800.0, loop=True, split=None)` — `(T, 8)` at 1000 Hz (800 Hz ACL 2021 resampled), `*_emg.npy` + `*_info.json`.
+* **Meta sEMG-RD / emg2pose (2 kHz, 16 ch)**: `MetaEMGDriver(data_dir="...", fs=2000.0, split="train", loop=True)` — HDF5 `/emg (T,16)` + `/pose (T,D)` or paired `*_emg.npy`/`*_pose.npy`; see [Hardware Drivers](hardware-drivers.md).
+
+`EMGBench` (`subvocal.emg_core.benchmarks`, Yang et al. `arXiv:2410.23625`) is the
+9-dataset LOSO / few-shot harness (`evaluate_loso`, `evaluate_adaptation`,
+`evaluate_all`) with synthetic fallback — no extra config keys.

@@ -149,9 +149,11 @@ flowchart TD
         C -->|Raw sEMG stream| D[Stage 4: Classifier\nML Inference: <25ms]
         C -.->|Dashed Feedback Path\nRaw logging| H[(Data Log)]
         H -.->|Calibration update| I[Training Pipeline]
-        I -.->|Model weights| D
+        I -.->|Model weights| ADAPT[Adaptation Layer\nSAL/LBN · CPEP · Variance]
+        ADAPT -.->|Adapted weights/embeddings| D
+        I -.->|Pretrained foundation| D
         
-        D -->|Noisy tokens + Confidence| E[Stage 5: LLM Intent Reconstruction\nClaude Haiku: <200ms]
+        D -->|Noisy tokens + Confidence| E[Stage 5: LLM Intent Reconstruction\nEMG Adaptor vs Heuristic · Claude Haiku: <200ms]
         E -->|Structured JSON| F[Stage 6: Agent/Tool Execution\nDevice API call: <100ms]
         F -->|Audio status| G[Stage 7: Bone Conduction Feedback\nTTS synthesis: <150ms]
         E -->|Low Confidence\nClarification prompt| G
@@ -172,11 +174,23 @@ flowchart TD
 ### The 7-Stage Pipeline Specifications:
 1. **Stage 1: Subvocalize (60 ms):** The user internally articulates a command. Efferent signals propagate to the speech muscles, generating sEMG potentials on the skin surface.
 2. **Stage 2: sEMG acquisition (100 ms):** Bipolar dry contacts capture differential voltages. Signals are amplified, filtered (20–450 Hz bandpass + 60 Hz notch), and digitized using a 16-bit ADC. The sliding window buffers 100 ms of data.
-3. **Stage 3: BLE transmission (<20 ms):** An ESP32 microcontroller packetizes the data and transmits it via BLE GATT notification to a paired edge host, targeting a 15 ms connection interval.
-4. **Stage 4: Classifier (<25 ms):** The phone-side host runs a classifier (1D CNN or Random Forest) on the raw sEMG stream, outputting a softmax probability distribution over vocabulary classes.
-5. **Stage 5: LLM intent reconstruction (<200 ms):** Claude 3.5 Haiku receives the raw tokens, confidence scores, and active device context, outputting a structured JSON intent schema. If the classifier confidence falls below 0.75, the LLM triggers a confirmation request.
+3. **Stage 3: DSP & transmission (<20 ms):** An ESP32 packetizes and streams via BLE GATT (15 ms interval). Host-side DSP applies (a) 20–450 Hz bandpass + 60 Hz notch (BrainFlow-compat SciPy), then one of: **TD10** classical ±10-frame 840-D baseline, **Handcrafted 112** (`subvocal.emg_core.dsp.handcrafted`, 28 per channel × 4: MAV/RMS/VAR/WL/ZC/SSC/WAMP/IEMG/SSI/DASDV/LOGVAR + 7 stats + 10 spectral MNF/MDF/centroid/bandpower/entropy/spread/rolloff per Mohapatra et al. ACL 2025, Jou et al. 2006, Gaddy & Klein EMNLP 2020), **SPD manifold** (`subvocal.emg_core.dsp.spd`, `compute_spd_matrix` + `spd_logm` via `eigh` + `spd_flatten_upper` to `C(C+1)/2` Riemannian tangent features per Gowda & Miller ACL 2026 Findings / J. Neural Eng. 2024), or **STFT spectral** pseudo-label path (`stft_kmeans_pseudolabels`, `n_fft=64`/`hop=16` → K-means 64 clusters per SPECTRE `arXiv:2512.22481`).
+4. **Stage 4: Classifier (<25 ms):** The phone host runs one of: **Classical** RF/SVM on TD10; **Handcrafted→MLP**; **SPD-GRU CTC** (`subvocal.emg_core.ml.spd_gru`, 3-layer GRU `hidden=64`, `num_phonemes=40` with blank 0, CTC `logm`-tangent input `K=C(C+1)/2` → `Linear→GRU→Linear`, per Gowda & Miller ACL 2025/2026); **SpeechNet** (`subvocal.emg_core.ml.speechnet`, 15k depthwise-separable CNN 3 blocks → AdaptiveAvgPool, Spacone et al. 2026, GAP9 63.9 uJ); **TinyMyo FM** (`subvocal.emg_core.foundation.tinymyo`, `arXiv:2512.15729`, 3.6 M Transformer with channel-independent patching, SimMIM 50 % masking, RoPE extrapolation, `TinyMyoEncoder`/`TinyMyoFoundation`); or **AEMG tokenizer** (`subvocal.emg_core.foundation.aemg_tokenizer`, CVPR 2026 Huang et al., NCT sliding-window `window=32/stride=16` + VQ `K=512/D=64` → `AEMGFramework` masked LM). Output is softmax/CTC logits over vocabulary/phonemes with per-token confidence.
+5. **Stage 5: LLM intent reconstruction (<200 ms):** Two modes: **EMG Adaptor** (`subvocal.emg_core.ml.adaptor`, Mohapatra et al. ACL 2025, 2-layer MLP `112→768→3072` mapping handcrafted/speech-encoder features to frozen LLM embedding) → `EMGAdaptorProvider.reconstruct_intent` (delegates to underlying `LLMProvider` or `HeuristicProvider` fallback); or **HeuristicProvider** deterministic phonetic shorthand decoder. Both receive noisy tokens + confidence + 5-layer context (app state, GPS/weather, notification history, user profile, phonetic confusion map), output structured JSON intent. If confidence < 0.75, the LLM triggers bone-conduction confirmation.
 6. **Stage 6: Agent / tool execution (<100 ms):** The structured intent is dispatched to a local mobile app tool or consumer API (e.g., music control, messaging).
 7. **Stage 7: Bone conduction audio feedback (<150 ms):** Native system TTS synthesizes the response (e.g., "Skipping track") and plays it via bone conduction transducers integrated into the neckband wings.
+
+#### Adaptation layer (between training and inference)
+
+Real-world re-don + inter-subject shift is handled by an explicit adaptation
+layer inserted between the training pipeline and Stage 4/5 inference (opt-in,
+`subvocal[ml]`, see [Configuration](configuration.md)):
+
+* **SAL / LBN** (`subvocal.emg_core.adaptation.sal_lbn`, Pereira et al. `arXiv:2409.08058` + Gaddy & Klein 2020/JNE 2024): supervised `SAL` (per-channel affine) + `LBN` (learnable baseline norm) composed as `logits = backbone(sal_lbn(emg))`, adapted via `adapt_sal_lbn` for 3–5 epochs on the new session (backbone frozen). Fixes spatial shift and baseline drift.
+* **CPEP** (`subvocal.emg_core.adaptation.cpep`, Cui et al. `arXiv:2509.04699`): contrastive pose-EMG pretraining (`EMGEncoder`/`PoseEncoder` 4-layer Transformer `d_model=256`, `embed_dim=256`, `tau=0.02`, pose frozen) → zero-shot kNN (`k=10` cosine) in the shared 256-D space.
+* **Variance Transfer** (`subvocal.emg_core.adaptation.variance_transfer`, Yoneda & Furui EMBC 2024 / `arXiv:2505.15381`): Bayesian GCM that shares covariance/precision not mean across subjects (`pretrain_variance_transfer` on sources → `transfer_to_target` with `w_s` to target, 1-trial capable, `Normal-Wishart m0=0, beta0=1, nu0=D+1, W0=I`).
+
+EMGBench (`subvocal.emg_core.benchmarks`, Yang et al. `arXiv:2410.23625`, 9 datasets) evaluates the stack with `EMGBench.evaluate_loso` (LOSO-CV) and `evaluate_adaptation` (few-shot, e.g. `n_shot=5`) — see [Hardware Drivers](hardware-drivers.md).
 
 ### Latency Budget:
 

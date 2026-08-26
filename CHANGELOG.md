@@ -6,6 +6,46 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
+## [2.1.0] - 2026-08-25 (Research SOTA Expansion)
+
+> **Note:** `2.0.1` was security & reliability hardening (C1–C8/H1–H10); `2.1.0` is the research expansion — Wave 1 (already in code, now documented) + Wave 2 (just added). All new modules are optional under `subvocal[ml]` (lazy `torch` guard), reuse path-traversal/`weights_only=True` hardening, and carry paper citations in docstrings.
+
+### Added
+
+#### DSP (Wave 1)
+*   **Handcrafted 112-D features** (`emg_core/dsp/handcrafted`): `extract_handcrafted_features` (112 = 4×28: temporal 11 + stats 7 + spectral 10 via FFT/Welch) and `extract_handcrafted_timevarying` (50 ms/20 ms sliding) with numpy/scipy fallback. References Mohapatra et al. ACL 2025; Jou et al. 2006; Gaddy & Klein 2020.
+*   **SPD manifold** (`emg_core/dsp/spd`): `compute_covariance_matrix`, `compute_spd_matrix` (+`eps·I`), `compute_spd_timevarying`, `spd_logm` via `scipy.linalg.eigh`, `spd_flatten_upper` (C=4→K=10), `spd_riemannian_features` + aliases. References Gowda & Miller ACL 2026 Findings; J Neural Eng 2024; Gowda 2025/2026 SPD-GRU.
+
+#### ML (Wave 1)
+*   **SPD-GRU CTC** (`emg_core/ml/spd_gru`): `SPDGRU` (`(B,T,C,C)→eigh logm→upper→Linear→3-layer GRU→FC`) with CTC helpers `ctc_loss`/`greedy_decode`/`train_spd_gru`, batched `torch.linalg.eigh` inside forward. Gowda ACL 2025 & Findings 2026.
+*   **EMG Adaptor 112→768→3072** (`emg_core/ml/adaptor`): `EMGAdaptor` 2-layer MLP + `EMGAdaptorProvider` (`encode_emg_features`/`encode`/`adapt`, `LLMProvider` wrapper) handling raw `(T,4)`/`(B,T,4)` or precomputed vectors; guarded `MissingDependencyError`. Mohapatra et al. ACL 2025.
+*   **MONA losses + DTW + BatchSampler** (`emg_core/ml/mona`): `cross_contrastive_loss` (bidirectional InfoNCE), `supervised_temporal_contrastive_loss`, `dtw_align` (numpy/torch, batched), `mona_loss` combined, `BatchSampler` undersampling LibriSpeech 50% per epoch (MONA Algo 1). Benster et al. arXiv:2403.05583.
+*   **LISA rescoring** (`emg_core/ml/lisa`): `LISA` (`alpha`/`beta`, `rescore`/`beam_search_rescore`, numpy fallback) + `lisa_rescore` functional (`(1-α)·acoustic+α·llm+β·length`), LLMProvider scoring with heuristic fallback. Same arXiv:2403.05583.
+*   **SpeechNet 15k CNN** (`emg_core/ml/speechnet`): `SpeechNet` depthwise-separable 3-block CNN + `AdaptiveAvgPool→Linear`, `count_parameters` (~15k), `estimate_energy` 63.9 µJ / `estimate_latency` on GAP9, `finetune_inter_session` head-only (<10 min). Spacone et al. SilentWear 2026 (ETH Zurich, GAP9).
+
+#### Hardware / Datasets (Wave 1)
+*   **GaddyDriver** (`hardware/datasets GaddyDriver`): Zenodo 4064409, 8-ch facial EMG @1000 Hz (ACL 2021 800 Hz), `*_emg.npy` + `*_info.json` + `*_audio.flac` index, `silent`/`vocalized` split, `allow_pickle=False`, traversal sanitization, `list_utterances`/`get_transcript`.
+
+#### Foundation (Wave 2 — SOTA)
+*   **TinyMyo 3.6M Transformer** (`emg_core/foundation/tinymyo`): `TinyMyoEncoder` channel-independent patching (`patch_size` 10→`embed_dim` 128), SimMIM 50% masking via `mask_token`, 8 bidirectional Transformer blocks with RoPE (`_rope_cos_sin`/`_apply_rope`, pre-norm, SwiGLU-free), linear decoder; `TinyMyoFoundation` task heads + `pretrain_step`/`finetune_step`. *TinyMyo arXiv:2512.15729*.
+*   **AEMG NCT + VQ vocabulary** (`emg_core/foundation/aemg_tokenizer`): `EMGTokenizer` sliding-window 32/16 contraction primitives → `token_dim` 64, codebook K=512, `torch.cdist` (fallback numpy chunked), overlap-add `decode`/`decode_with_channels`, `AEMGFramework` masked modeling (mask_ratio 0.15, BERT 80/10/10 simplified). *Huang et al. CVPR 2026*.
+*   **SPECTRE STFT K-means + CyRoPE** (`emg_core/foundation/spectre`): `stft_kmeans_pseudolabels` (scipy `stft` → magnitude concat → sklearn/numpy K-means), `CyRoPE` factorized temporal+annular (8×16 forearm grid, `2π·c/num_channels`) rotary, `SPECTREEncoder` (depthwise Conv1d front-end + CyRoPE + Transformer + `D→n_clusters` head, `ssl_loss`). *SPECTRE arXiv:2512.22481*.
+
+#### Adaptation (Wave 2 — SOTA)
+*   **SAL/LBN 7-param spatial adaptation** (`emg_core/adaptation/sal_lbn`): `SAL` 2-D affine `2×3` (6 DoF) or 2-DoF translation via `affine_grid`/`grid_sample` + per-channel `scale/shift` (2·C); `LBN` per-channel `x-bias`; `SAL_LBN` + `adapt_sal_lbn()` (freeze backbone, Adam on SAL/LBN only, 3–5 epochs). NumPy fallback when `torch` absent. *Pereira et al. arXiv:2409.08058*.
+*   **CPEP pose-EMG contrastive** (`emg_core/adaptation/cpep`): `EMGEncoder`/`PoseEncoder` (4-layer Transformers d_model 256, 8 heads, 512 FFN, CLS token, 1-layer 256-d projection + L2), `pose_emg_contrastive_loss` symmetric InfoNCE `τ=0.02` learnable, `CPEPFramework` (pose frozen), `knn_classify` (sklearn or numpy majority vote, `k=10`). *Cui et al. arXiv:2509.04699*.
+*   **Variance Transfer Bayesian GCM** (`emg_core/adaptation/variance_transfer`): `GaussianClassificationModel` QDA `log p(x|k) = -0.5·mahal +0.5·log|Λ|+const`, `pretrain_variance_transfer` Normal-Wishart posterior (`m0=0, β0=1, ν0=D+1, W0=I`), `transfer_to_target` `w_s`-scaled source posterior + regularized 1-trial update, `VarianceTransferGCM` wrapper. *Yoneda & Furui EMBC 2024 / arXiv:2505.15381*.
+
+#### Hardware / Benchmarks (Wave 2)
+*   **MetaEMGDriver** (`hardware/datasets MetaEMGDriver`): Meta sEMG-RD 16×2000 Hz wristband + hand pose 63-D (HDF5 `/emg`/`/pose` + `*_emg.npy`/`*_pose.npy`), `train`/`val`/`test` split sanitization, download note to `ai.meta.com/blog` + `github.com/facebookresearch/emg2pose`, traversal-safe, `read_frame_with_pose`/`load_pair`. Salter et al. NeurIPS 2024 `arXiv:2412.02725`; Sivakumar & Landau Nature 2025.
+*   **EMGBench LOSO harness** (`emg_core/benchmarks/emgbench` + `benchmarks/`): `EMGBench` with 9 datasets (`DEFAULT_DATASETS`: Ninapro DB2/DB3/DB5, CapgMyo DB-b, Myo Armband, UCI EMG, MCS, Hyser, FlexWear-HD), `evaluate_loso`/`evaluate_adaptation` (`n_shot`)/`evaluate_all` + `summarize_results`, synthetic deterministic fallback when `DatasetsProcessed_hdf5` absent. *Yang et al. NeurIPS 2024 D&B Track arXiv:2410.23625*.
+
+### Changed
+*   `pyproject.toml` / README Development: new research modules documented as optional `subvocal[ml]`; CI still base-install (`pydantic+numpy`) + `torch` only via `[ml]`.
+*   Hardening reuse: all new loaders (`*_emg.npy`, HDF5 via `h5py`) use `allow_pickle=False` / context managers, traversal checks (`is_relative_to` + `relative_to` fallback + regex sanitization), `pip-audit` retains green.
+
+---
+
 ## [2.0.1] - 2026-08-25 (Security & Reliability Hardening)
 ### Added
 *   **Trace opt-out**: `telemetry.trace_enabled` and `runtime.trace_enabled` (env `SUBVOCAL_TELEMETRY__TRACE_ENABLED` / `SUBVOCAL_RUNTIME__TRACE_ENABLED`) to disable JSONL PII tracing; `false` skips file creation entirely.
