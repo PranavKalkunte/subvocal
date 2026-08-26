@@ -4,56 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configuration & Runtime | Subvocal SDK</title>
-  <link rel="stylesheet" href="../index.css">
-  <style>
-    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
-    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
-    .docs-body img { max-width: 100%; }
-    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
-    .mermaid { background: transparent; margin: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="../index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="../docs.html">Docs</a></li>
-            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
-            <li><a href="../api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-          <h4>Platform Corpus</h4>
-          <ul>
-            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
-            <li><a href="../platform/configuration.html" aria-current="page"><span>[*]</span> Configuration & Runtime</a></li>
-            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
-            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
-            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
-            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
-            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
-            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
-            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
-            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
-            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
-            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
-            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
-            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
-          </ul>
-          <h4>Tutorials</h4>
-          <ul>
-            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
-          </ul>
-        </aside>
-        <article class="docs-body">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="../apex.html">SPX Benchmarks</a>
+        <a href="../platform/index.html" aria-current="page">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="../api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="../docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="../apex.html">SPX Benchmarks</a>
+      <a href="../platform/index.html">Platform</a>
+      <a href="../docs.html">Docs</a>
+      <a href="../api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <h4>Platform Corpus</h4>
+      <ul>
+        <li><a href="../platform/positioning.html">Platform Positioning</a></li>
+        <li><a href="../platform/configuration.html" aria-current="page">Configuration & Runtime</a></li>
+        <li><a href="../platform/declaration.html">Declaration Post</a></li>
+        <li><a href="../platform/architecture.html">Architecture</a></li>
+        <li><a href="../platform/intent-layer.html">Intent Layer</a></li>
+        <li><a href="../platform/intent-benchmark.html">Intent Reconstruction Benchmark</a></li>
+        <li><a href="../platform/benchmark-report.html">Benchmark Report</a></li>
+        <li><a href="../platform/hardware-drivers.html">Hardware Drivers</a></li>
+        <li><a href="../platform/classifiers.html">Classifier Infrastructure</a></li>
+        <li><a href="../platform/security.html">Security & Threat Model</a></li>
+        <li><a href="../platform/mcp-profile.html">MCP Intent Profile (RFC)</a></li>
+        <li><a href="../platform/release-process.html">Release Process</a></li>
+        <li><a href="../platform/reference-bom.html">Reference Hardware BOM</a></li>
+        <li><a href="../platform/phase0-results.html">Phase 0: Method & Results</a></li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="../walkthrough.html">End-to-End Walkthrough</a></li>
+      </ul>
+      <h4>Benchmarks</h4>
+      <ul>
+        <li><a href="../apex.html">SPX Leaderboard</a></li>
+        <li><a href="../platform/benchmark-report.html">Report</a></li>
+        <li><a href="../api.html">API Reference</a></li>
+      </ul>
+    </aside>
+    <article class="docs-body">
 <h1>Configuration &amp; Runtime (v2)</h1>
 <p>The v2 architecture introduces a single source of configuration truth and a
 production runtime layer (sessions, signal monitoring, telemetry, and auth
@@ -183,20 +195,130 @@ SciPy), so existing BrainFlow code runs with no native build. If the official
 <code>brainflow</code> package is installed it is used transparently as the backend;
 otherwise the built-in synthetic generator and direct Cyton serial parser take
 over.</p>
-        </article>
+<h2>Foundation models (opt-in, <code>subvocal[ml]</code>)</h2>
+<p>Foundation and spectral pre-training modules live in <code>subvocal.emg_core.foundation</code>
+and are <strong>not</strong> fields of <code>SubvocalConfig</code>. They are instantiated directly and
+guard <code>torch</code>/<code>scipy</code>/<code>sklearn</code> with <code>MissingDependencyError</code> → <code>pip install "subvocal[ml]"</code>.</p>
+<h3>TinyMyo (<code>tinymyo.py</code>, <code>arXiv:2512.15729</code>)</h3>
+<p>3.6 M-parameter Transformer encoder with channel-independent patching,
+50 % SimMIM masking and RoPE length extrapolation. <code>TinyMyoEncoder</code> /
+<code>TinyMyoFoundation</code> expose <code>pretrain_step</code> (masked MSE) and <code>finetune_step</code>
+(classification / regression / speech CTC):</p>
+<pre><code class="language-python">from subvocal.emg_core.foundation import TinyMyoEncoder, TinyMyoFoundation
+
+enc = TinyMyoEncoder(num_channels=4, patch_size=10, embed_dim=128, depth=8, num_heads=4, mask_ratio=0.5)
+fm  = TinyMyoFoundation(encoder=enc, num_classes=8, regression_dim=1, vocab_size=40)
+loss = fm.pretrain_step(x)          # x: (B,C,T)
+loss = fm.finetune_step(x, y, task=&quot;classification&quot;)
+</code></pre>
+<p>Defaults (<code>embed_dim=128</code>, <code>depth=8</code>, <code>num_heads=4</code>, <code>mask_ratio=0.5</code>) reproduce
+the paper's 3.6 M count; <code>count_parameters()</code> / <code>estimate_flops(seq_len=150)</code>
+report size and cost.Weights, when released, are fetched from HuggingFace —
+see <a href="security.md">Security — Foundation Model Supply Chain</a>.</p>
+<h3>AEMG tokenizer (<code>aemg_tokenizer.py</code>, CVPR 2026 Huang et al.)</h3>
+<p>Neuromuscular Contraction Tokenizer (NCT) + VQ discretizing <code>(T,C)</code> windows
+into contraction-primitive tokens (~30–60 ms) with overlap-add reconstruction:</p>
+<pre><code class="language-python">from subvocal.emg_core.foundation import EMGTokenizer, AEMGFramework
+
+tok = EMGTokenizer(codebook_size=512, token_dim=64, window_size=32, stride=16)
+ids = tok.encode(signal)                 # (T,C) -&gt; (num_tokens,)
+sig = tok.decode(ids)                    # overlap-add via codebook
+fw  = AEMGFramework(tokenizer=tok, mask_ratio=0.15)  # BERT-style masked LM
+res = fw.pretrain_step(ids)              # collective token prediction
+</code></pre>
+<p><code>AEMGFramework.pretrain_step</code> uses a 2-layer Transformer encoder when <code>torch</code>
+is present, otherwise a NumPy heuristic loss. Both classes are NumPy-first
+(<code>torch</code> only accelerates VQ <code>cdist</code> for <code>N&gt;64</code>).</p>
+<h3>SPECTRE (<code>spectre.py</code>, <code>arXiv:2512.22481</code>)</h3>
+<p>Spectral pre-training with STFT pseudo-labels and Cylindrical RoPE that
+factorizes temporal (linear) and spatial (annular 8×16 forearm grid) rotations:</p>
+<pre><code class="language-python">from subvocal.emg_core.foundation import SPECTREEncoder, CyRoPE, stft_kmeans_pseudolabels
+
+labels = stft_kmeans_pseudolabels(signal, fs=1000, n_fft=64, hop=16, n_clusters=64)
+enc = SPECTREEncoder(num_channels=16, embed_dim=128, depth=4, n_clusters=64)
+logits = enc(x)                          # (B,T,C) -&gt; (B,T,C,K)
+loss = enc.ssl_loss(logits, labels, mask)
+rope = CyRoPE(dim=128, num_channels=16)  # (B,T,C,D) -&gt; (B,T,C,D)
+</code></pre>
+<p><code>stft_kmeans_pseudolabels</code> uses <code>scipy.signal.stft</code> + <code>sklearn.cluster.KMeans</code>
+when available with NumPy fallbacks; <code>SPECTREEncoder.ssl_loss</code> accepts both
+logits <code>(B,T,C,K)</code> and raw <code>(B,T,C)</code> (computes logits internally).</p>
+<h2>Adaptation modules (opt-in, <code>subvocal[ml]</code>)</h2>
+<p>Lightweight session/subject adaptation in <code>subvocal.emg_core.adaptation</code>,
+also outside <code>SubvocalConfig</code> and guarded by <code>subvocal[ml]</code>.</p>
+<h3>SAL / LBN (<code>sal_lbn.py</code>, Pereira et al. <code>arXiv:2409.08058</code>; Gaddy &amp; Klein EMNLP 2020 / J. Neural Eng. 2024)</h3>
+<p>Supervised inter-session shift correction. <code>SAL</code> is a per-channel affine
+<code>y = x * scale + bias</code> (spatial), <code>LBN</code> is a learnable baseline subtract;
+<code>SAL_LBN</code> composes them as <code>backbone(sal_lbn(emg))</code>:</p>
+<pre><code class="language-python">from subvocal.emg_core.adaptation import SAL, LBN, SAL_LBN, adapt_sal_lbn
+
+sal_lbn = SAL_LBN(num_channels=8)
+adapt_sal_lbn(backbone, sal_lbn, calib_loader, epochs=5, lr=1e-3)
+logits = backbone(sal_lbn(emg_new_session))
+</code></pre>
+<p>Only <code>sal_lbn</code> parameters are optimized; the backbone stays frozen/eval.
+Calibrate with 3–5 epochs on a few utterances from the new session.</p>
+<h3>CPEP (<code>cpep.py</code>, Cui et al. <code>arXiv:2509.04699</code>)</h3>
+<p>Contrastive Pose-EMG Pretraining: paired <code>EMGEncoder</code> / <code>PoseEncoder</code>
+(4-layer Transformer, <code>d_model=256</code>, <code>embed_dim=256</code>, <code>nhead=8</code>) with a
+shared 256-D L2-normalized space, symmetric InfoNCE <code>tau=0.02</code> (learnable),
+pose encoder frozen per paper:</p>
+<pre><code class="language-python">from subvocal.emg_core.adaptation import CPEPFramework, knn_classify
+
+cpep = CPEPFramework(emg_channels=8, pose_dim=63, tau_init=0.02, freeze_pose=True)
+loss = cpep(emg_batch, pose_batch)              # InfoNCE
+pred = cpep.zero_shot_predict(query_emg, gallery_pose_embs, gallery_labels, k=10)
+</code></pre>
+<p>Zero-shot evaluation is Top-K kNN cosine majority vote (<code>k=10</code>). Standalone
+helpers <code>pose_emg_contrastive_loss</code> / <code>contrastive_loss</code>, <code>l2_normalize_embeddings</code>,
+and <code>knn_classify</code> / <code>embedding_knn_classify</code> are also exported; <code>h5py</code>/<code>sklearn</code>
+are optional with NumPy fallbacks.</p>
+<h3>Variance Transfer (<code>variance_transfer.py</code>, Yoneda &amp; Furui EMBC 2024 / <code>arXiv:2505.15381</code>)</h3>
+<p>Bayesian GCM that shares variance (precision) not mean across subjects
+(Normal-Wishart prior <code>m0=0, beta0=1, nu0=D+1, W0=I</code>):</p>
+<pre><code class="language-python">from subvocal.emg_core.adaptation import pretrain_variance_transfer, transfer_to_target, predict
+
+posterior = pretrain_variance_transfer(source_data, source_labels)     # list[(N,D)], list[(N,)]
+model = transfer_to_target(posterior, calib_data, calib_labels, w_s=1.0)  # 1 trial
+pred = predict(model, test_data)  # or model.predict(X)
+</code></pre>
+<p><code>VarianceTransferGCM</code> wraps the same flow (<code>pretrain</code> / <code>transfer</code> / <code>predict</code>);
+<code>w_s</code> scales transferred concentration (larger = less uncertainty). Handles
+<code>N_t=0/1</code> and diagonal regularization for singularity; no <code>torch</code> required.</p>
+<h2>Hardware drivers — dataset sources (config notes)</h2>
+<p><code>GaddyDriver</code> and <code>MetaEMGDriver</code> (in <code>subvocal.hardware.datasets</code>) are not
+configured via <code>SubvocalConfig</code>; pass <code>data_dir</code>/<code>split</code>/<code>fs</code> directly at
+construction (see <a href="hardware-drivers.md">Hardware Drivers</a>). Both drivers
+sanitize <code>data_dir</code> with <code>Path.resolve().is_relative_to</code> and require
+<code>h5py</code> only for HDF5 layouts — <code>pip install "subvocal[hardware]"</code>.</p>
+<ul>
+<li><strong>Gaddy (Zenodo 4064409)</strong>: <code>GaddyDriver(data_dir="...", fs=800.0, loop=True, split=None)</code> — <code>(T, 8)</code> at 1000 Hz (800 Hz ACL 2021 resampled), <code>*_emg.npy</code> + <code>*_info.json</code>.</li>
+<li><strong>Meta sEMG-RD / emg2pose (2 kHz, 16 ch)</strong>: <code>MetaEMGDriver(data_dir="...", fs=2000.0, split="train", loop=True)</code> — HDF5 <code>/emg (T,16)</code> + <code>/pose (T,D)</code> or paired <code>*_emg.npy</code>/<code>*_pose.npy</code>; see <a href="hardware-drivers.md">Hardware Drivers</a>.</li>
+</ul>
+<p><code>EMGBench</code> (<code>subvocal.emg_core.benchmarks</code>, Yang et al. <code>arXiv:2410.23625</code>) is the
+9-dataset LOSO / few-shot harness (<code>evaluate_loso</code>, <code>evaluate_adaptation</code>,
+<code>evaluate_all</code>) with synthetic fallback — no extra config keys.</p>
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="../apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="../apex.html">SPX Benchmarks</a><a href="../platform/intent-benchmark.html">Intent Benchmark</a><a href="../platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="../platform/architecture.html">Architecture</a><a href="../platform/hardware-drivers.html">Hardware</a><a href="../api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
   
 </body>
 </html>

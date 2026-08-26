@@ -4,56 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Platform Positioning | Subvocal SDK</title>
-  <link rel="stylesheet" href="../index.css">
-  <style>
-    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
-    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
-    .docs-body img { max-width: 100%; }
-    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
-    .mermaid { background: transparent; margin: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="../index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="../docs.html">Docs</a></li>
-            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
-            <li><a href="../api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-          <h4>Platform Corpus</h4>
-          <ul>
-            <li><a href="../platform/positioning.html" aria-current="page"><span>[*]</span> Platform Positioning</a></li>
-            <li><a href="../platform/configuration.html"><span>[*]</span> Configuration & Runtime</a></li>
-            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
-            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
-            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
-            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
-            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
-            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
-            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
-            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
-            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
-            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
-            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
-            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
-          </ul>
-          <h4>Tutorials</h4>
-          <ul>
-            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
-          </ul>
-        </aside>
-        <article class="docs-body">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="../apex.html">SPX Benchmarks</a>
+        <a href="../platform/index.html" aria-current="page">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="../api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="../docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="../apex.html">SPX Benchmarks</a>
+      <a href="../platform/index.html">Platform</a>
+      <a href="../docs.html">Docs</a>
+      <a href="../api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <h4>Platform Corpus</h4>
+      <ul>
+        <li><a href="../platform/positioning.html" aria-current="page">Platform Positioning</a></li>
+        <li><a href="../platform/configuration.html">Configuration & Runtime</a></li>
+        <li><a href="../platform/declaration.html">Declaration Post</a></li>
+        <li><a href="../platform/architecture.html">Architecture</a></li>
+        <li><a href="../platform/intent-layer.html">Intent Layer</a></li>
+        <li><a href="../platform/intent-benchmark.html">Intent Reconstruction Benchmark</a></li>
+        <li><a href="../platform/benchmark-report.html">Benchmark Report</a></li>
+        <li><a href="../platform/hardware-drivers.html">Hardware Drivers</a></li>
+        <li><a href="../platform/classifiers.html">Classifier Infrastructure</a></li>
+        <li><a href="../platform/security.html">Security & Threat Model</a></li>
+        <li><a href="../platform/mcp-profile.html">MCP Intent Profile (RFC)</a></li>
+        <li><a href="../platform/release-process.html">Release Process</a></li>
+        <li><a href="../platform/reference-bom.html">Reference Hardware BOM</a></li>
+        <li><a href="../platform/phase0-results.html">Phase 0: Method & Results</a></li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="../walkthrough.html">End-to-End Walkthrough</a></li>
+      </ul>
+      <h4>Benchmarks</h4>
+      <ul>
+        <li><a href="../apex.html">SPX Leaderboard</a></li>
+        <li><a href="../platform/benchmark-report.html">Report</a></li>
+        <li><a href="../api.html">API Reference</a></li>
+      </ul>
+    </aside>
+    <article class="docs-body">
 <h1>Subvocal Middleware Thesis &amp; Positioning</h1>
 <p>This document defines the core positioning, technical hypothesis, bridge strategy, and Year 1 scope of the <strong>Subvocal SDK</strong> platform.</p>
 <hr />
@@ -98,20 +110,27 @@
 <li><strong>Hosted Commercial Cloud Platform</strong>: Managed SSO, enterprise RBAC, hosted database storage, or dashboard telemetry.</li>
 <li><strong>Microcontroller Firmware Edge Inference</strong>: Compiling models for low-power bare-metal MCUs.</li>
 </ol>
-        </article>
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="../apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="../apex.html">SPX Benchmarks</a><a href="../platform/intent-benchmark.html">Intent Benchmark</a><a href="../platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="../platform/architecture.html">Architecture</a><a href="../platform/hardware-drivers.html">Hardware</a><a href="../api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
   
 </body>
 </html>

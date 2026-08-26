@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPX Benchmarks — Silent Productivity Index | Subvocal SDK</title>
+  <meta name="description" content="SPX — Silent Productivity Index. 50 shorthand→intent tasks, 5 domains, 11 commands. Leaderboard: heuristic 74% @ 0.36ms, hybrid 96% target, classifier and streaming benchmarks.">
+  <link rel="stylesheet" href="./index.css?v=2">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="./apex.html" aria-current="page">SPX Benchmarks</a>
+        <a href="./platform/index.html">Platform</a>
+        <a href="./docs.html">Docs</a>
+        <a href="./api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="./docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="./apex.html" aria-current="page">SPX Benchmarks →</a>
+      <a href="./platform/index.html">Platform</a>
+      <a href="./docs.html">Docs</a>
+      <a href="./api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" style="padding-bottom:18px">
+      <div class="container">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span class="badge-dark">APEX-style</span>
+          <span style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af">Research</span>
+        </div>
+        <h1 style="max-width:780px">SPX Benchmarks</h1>
+        <p class="hero-sub" style="max-width:720px">
+          The Silent Productivity Index family. Measures whether silent speech interfaces can perform economically valuable tasks — from intent reconstruction to streaming stability — offline and in real time.
+        </p>
+        <div class="statsbar">
+          <span class="stat"><span>50</span> Tasks <span>·</span> <span>5</span> Domains <span>·</span> <span>11</span> Commands</span>
+          <span class="stat"><span>4</span> Benchmarks <span>·</span> <span>1</span> Harness</span>
+          <span class="stat"><span>74.0%</span> @ 0.36 ms <span style="color:#9ca3af;font-weight:400">heuristic</span></span>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn-dark" href="#leaderboard">View leaderboard →</a>
+          <a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal/tree/main/benchmarks" target="_blank">Code — benchmarks/</a>
+        </div>
+        <div style="margin-top:10px;font-size:12.5px;color:#6b7280">In the spirit of Mercor APEX — one harness, every bench imports <span style="font-family:var(--mono);background:#f9fafb;border:1px solid #e5e7eb;padding:1px 6px;border-radius:6px">subvocal</span>. MIT, HF <span style="font-family:var(--mono)">subvocal/spx-*</span> coming soon.</div>
+      </div>
+    </section>
+
+    <!-- OUR BENCHMARKS — 4 cards -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Our benchmarks</h2>
+            <p style="margin-top:6px;max-width:620px;color:#6b7280;font-size:13.5px;line-height:1.5">Each benchmark tests a different dimension — intent, signal, streaming, hardware. All tasks are built from <code style="font-family:var(--mono);background:#f9fafb;border:1px solid #e5e7eb;padding:1px 6px;border-radius:6px">src/subvocal/shorthand/eval_set.py</code> and real HAL drivers.</p>
+          </div>
+          <a class="link-arrow" href="https://github.com/PranavKalkunte/subvocal/blob/main/docs/content/intent-benchmark.md" target="_blank">Read spec →</a>
+        </div>
+
+        <div class="grid2" style="gap:16px">
+          <!-- SPX-Intent -->
+          <div class="card" id="spx-intent" style="padding:0;overflow:hidden">
+            <div style="padding:18px 18px 0">
+              <div class="card-top"><span class="badge">SPX-Intent · 50 tasks</span><span style="font-size:12px;color:#9ca3af">5 domains</span></div>
+              <div class="card-title" style="margin-top:10px">Shorthand → Intent reconstruction</div>
+              <div class="card-desc">Tests whether articulatory shorthand + context can resolve noisy tokens (e.g., <code>srch snt spch</code> → <code>SEARCH silent speech</code>) across GOTO, CLICK/SCROLL/CLOSE, SEARCH, TYPE, System.</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="#leaderboard" style="font-size:12.5px;font-weight:600;color:#0a0a0a;text-decoration:underline;text-underline-offset:3px">View Leaderboard</a><span style="color:#e5e7eb">·</span><a href="./platform/intent-benchmark.html" style="font-size:12.5px;font-weight:500;color:#6b7280">Paper</a><span style="color:#e5e7eb">·</span><a href="https://huggingface.co/datasets/subvocal/spx-intent" target="_blank" style="font-size:12.5px;font-weight:500;color:#6b7280">Data (HF)</a><span style="color:#e5e7eb">·</span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/src/subvocal/shorthand/eval_set.py" target="_blank" style="font-size:12.5px;font-weight:500;color:#6b7280">Code</a></div>
+            </div>
+            <div style="margin-top:16px;border-top:1px solid #e5e7eb">
+              <div class="mini-head"><strong>Leaderboard — SPX-Intent</strong><span style="font-size:12px;color:#9ca3af">50 tasks</span></div>
+              <div class="mini-row"><span class="rank">1</span><span class="model">Hybrid LLM (target) · simulated</span><span class="acc">96.0%</span><div class="bar"><i style="width:96%"></i></div></div>
+              <div class="mini-row"><span class="rank">2</span><span class="model">Heuristic — articulatory distance</span><span class="acc">74.0%</span><div class="bar"><i style="width:74%"></i></div></div>
+              <div class="mini-row"><span class="rank">3</span><span class="model">GOTO / CLICK / SCROLL · 100%</span><span class="acc">100%</span><div class="bar"><i style="width:100%"></i></div></div>
+              <div class="mini-row"><span class="rank">4</span><span class="model">SEARCH · 10 tasks</span><span class="acc">30%</span><div class="bar"><i style="width:30%"></i></div></div>
+              <div class="mini-row"><span class="rank">5</span><span class="model">TYPE · 10 tasks</span><span class="acc">40%</span><div class="bar"><i style="width:40%"></i></div></div>
+              <div style="padding:10px 14px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12.5px;color:#6b7280;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span><strong style="color:#0a0a0a">0.36 ms</strong> avg heuristic latency</span><span>13 failures · plural & vocab collisions</span></div>
+            </div>
+          </div>
+
+          <!-- SPX-Signal -->
+          <div class="card" id="spx-signal" style="padding:0;overflow:hidden">
+            <div style="padding:18px 18px 0">
+              <div class="card-top"><span class="badge">SPX-Signal · classifiers</span><span style="font-size:12px;color:#9ca3af">2 models</span></div>
+              <div class="card-title" style="margin-top:10px">Raw sEMG → tokens</div>
+              <div class="card-desc">Profiles real-time inference: latency, footprint, FLOPs, and cross-subject generalization. Will extend to LOSO harness across 9 datasets (Ninapro DB2/DB3/DB5, CapgMyo DB-b, Myo, UCI, MCS, Hyser, FlexWear-HD).</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="#leaderboard" style="font-size:12.5px;font-weight:600;color:#0a0a0a;text-decoration:underline;text-underline-offset:3px">View Leaderboard</a><span style="color:#e5e7eb">·</span><a href="./platform/classifiers.html" style="font-size:12.5px;font-weight:500;color:#6b7280">Paper</a><span style="color:#e5e7eb">·</span><a href="./platform/benchmark-report.html" style="font-size:12.5px;font-weight:500;color:#6b7280">Data</a></div>
+            </div>
+            <div style="margin-top:16px;border-top:1px solid #e5e7eb">
+              <div class="mini-head"><strong>Leaderboard — SPX-Signal</strong><span style="font-size:12px;color:#9ca3af">latency @ params</span></div>
+              <div class="mini-row"><span class="rank">1</span><span class="model">1D CNN · 102,053 params</span><span class="acc">1.66 ms</span><div class="bar"><i style="width:92%"></i></div></div>
+              <div class="mini-row"><span class="rank">2</span><span class="model">GRU · 105,669 params</span><span class="acc">8.27 ms</span><div class="bar"><i style="width:22%"></i></div></div>
+              <div class="mini-row"><span class="rank">3</span><span class="model">SpeechNet · ~15k · GAP9 63.9 µJ</span><span class="acc">~0.9 ms*</span><div class="bar"><i style="width:96%"></i></div></div>
+              <div class="mini-row"><span class="rank">4</span><span class="model">SVM baseline</span><span class="acc">0.00 ms</span><div class="bar"><i style="width:8%"></i></div></div>
+              <div style="padding:10px 14px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12.5px;color:#6b7280">* SpeechNet Tiny CNN depthwise-separable (Spacone SilentWear 2026). Next: cross-subject LOSO + few-shot <code>n_shot</code> adaptation.</div>
+            </div>
+          </div>
+
+          <!-- SPX-Streaming -->
+          <div class="card" id="spx-streaming" style="padding:0;overflow:hidden">
+            <div style="padding:18px 18px 0">
+              <div class="card-top"><span class="badge">SPX-Streaming · runtime</span><span style="font-size:12px;color:#9ca3af">bounded</span></div>
+              <div class="card-title" style="margin-top:10px">Bounded streaming & stability</div>
+              <div class="card-desc">Measures pipeline health: <code>pipeline.step(window_ms)</code> ≤5s timeout, bounded <code>OpsQueue(maxsize)</code> + backpressure (<code>is_full/qsize</code>), thread-safe <code>inject_token</code>, JSONL 10 MB rotation.</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="#leaderboard" style="font-size:12.5px;font-weight:600;color:#0a0a0a;text-decoration:underline;text-underline-offset:3px">View Leaderboard</a><span style="color:#e5e7eb">·</span><a href="./platform/configuration.html" style="font-size:12.5px;font-weight:500;color:#6b7280">Paper</a><span style="color:#e5e7eb">·</span><a href="./api.html" style="font-size:12.5px;font-weight:500;color:#6b7280">Code</a></div>
+            </div>
+            <div style="margin-top:16px;border-top:1px solid #e5e7eb">
+              <div class="mini-head"><strong>Leaderboard — SPX-Streaming</strong><span style="font-size:12px;color:#9ca3af">correctness</span></div>
+              <div class="mini-row"><span class="rank">1</span><span class="model">step() ≤5s → HardwareError (no hang)</span><span class="acc">pass</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div class="mini-row"><span class="rank">2</span><span class="model">OpsQueue bounded · backpressure</span><span class="acc">pass</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div class="mini-row"><span class="rank">3</span><span class="model">inject_token thread-safe (deque+lock)</span><span class="acc">pass</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div class="mini-row"><span class="rank">4</span><span class="model">JSONL trace 10 MB rotation · opt-out</span><span class="acc">pass</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div style="padding:10px 14px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12.5px;color:#6b7280">Session state machine STARTING→ACTIVE→DEGRADED→CLOSED (no rollback) + watchdog liveness + Prometheus low-cardinality.</div>
+            </div>
+          </div>
+
+          <!-- SPX-Hardware -->
+          <div class="card" id="spx-hardware" style="padding:0;overflow:hidden">
+            <div style="padding:18px 18px 0">
+              <div class="card-top"><span class="badge">SPX-Hardware · HAL</span><span style="font-size:12px;color:#9ca3af">4 drivers</span></div>
+              <div class="card-title" style="margin-top:10px">Hardware abstraction</div>
+              <div class="card-desc">Hardware-agnostic HAL: <code>SyntheticSignalGenerator</code>, <code>FileReplayDriver</code>, <code>OpenBCICytonDriver</code>, <code>DelsysTrignoDriver</code> + BrainFlow <code>BoardShim</code> pure-Python fallback, bounded buffers.</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="#leaderboard" style="font-size:12.5px;font-weight:600;color:#0a0a0a;text-decoration:underline;text-underline-offset:3px">View Leaderboard</a><span style="color:#e5e7eb">·</span><a href="./platform/hardware-drivers.html" style="font-size:12.5px;font-weight:500;color:#6b7280">Paper</a><span style="color:#e5e7eb">·</span><a href="./platform/reference-bom.html" style="font-size:12.5px;font-weight:500;color:#6b7280">BOM</a></div>
+            </div>
+            <div style="margin-top:16px;border-top:1px solid #e5e7eb">
+              <div class="mini-head"><strong>Leaderboard — SPX-Hardware</strong><span style="font-size:12px;color:#9ca3af">drivers</span></div>
+              <div class="mini-row"><span class="rank">1</span><span class="model">Synthetic · 8ch @ 1000 Hz</span><span class="acc">ready</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div class="mini-row"><span class="rank">2</span><span class="model">FileReplay · CSV/HDF5</span><span class="acc">ready</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div class="mini-row"><span class="rank">3</span><span class="model">OpenBCI Cyton · Delsys Trigno</span><span class="acc">via HAL</span><div class="bar"><i style="width:86%"></i></div></div>
+              <div class="mini-row"><span class="rank">4</span><span class="model">BoardShim · pure-Python fallback</span><span class="acc">ready</span><div class="bar"><i style="width:100%;background:#16a34a"></i></div></div>
+              <div style="padding:10px 14px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12.5px;color:#6b7280">Dataset loaders: Ninapro DB2/DB5, PutEMG, CSL-HDEMG (192ch), Gaddy (8ch facial), MetaEMG (16ch wrist + pose).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FULL LEADERBOARD TABLES -->
+    <section class="section" id="leaderboard">
+      <div class="container">
+        <div class="section-head"><h2>SPX — Full leaderboard</h2><span style="font-size:12.5px;color:#6b7280">Generated from <code style="font-family:var(--mono)">benchmarks/eval_runner.py</code> · <a href="./platform/benchmark-report.html" style="color:#0a0a0a;text-decoration:underline">full report →</a></span></div>
+
+        <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff">
+          <div style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <strong style="font-size:14px;letter-spacing:-0.02em">SPX-Intent — Shorthand to Intent (50 tasks)</strong>
+            <span style="font-size:12px;color:#6b7280">Heuristic (offline articulatory distance) · deterministic</span>
+          </div>
+          <div style="overflow:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:640px">
+              <thead>
+                <tr style="background:#f9fafb">
+                  <th style="text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Rank</th>
+                  <th style="text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Decoder</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Accuracy</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Latency avg</th>
+                  <th style="text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><span class="rank-pill">1</span></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><strong>Hybrid LLM (target)</strong><div style="font-size:12px;color:#6b7280">simulated · contextual prompt + Claude/GPT/Gemini adapters</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-weight:700">96.0% ±2.4%<div style="font-size:11px;color:#16a34a">48/50</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-size:13px">0.68 ms</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><div class="lb-bar" style="width:140px"><i style="width:96%"></i></div></td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><span class="rank-pill" style="background:#6b7280">2</span></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><strong>Heuristic (offline)</strong><div style="font-size:12px;color:#6b7280">asymmetric Levenshtein · Glottal/Labial/Alveolar/Velar/Rhotic</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-weight:700">74.0%<div style="font-size:11px;color:#6b7280">37/50</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-size:13px">0.36 ms</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><div class="lb-bar" style="width:140px"><i style="width:74%"></i></div></td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><span class="rank-pill" style="background:#d1d5db;color:#111827">3</span></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><strong>GOTO · CLICK · SCROLL · CLOSE · System</strong><div style="font-size:12px;color:#6b7280">26 tasks · deterministic vocab</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-weight:700">100%<div style="font-size:11px;color:#16a34a">26/26</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-size:13px">0.36 ms</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><div class="lb-bar" style="width:140px"><i style="width:100%"></i></div></td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><span style="display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;border-radius:9999px;border:1px solid #e5e7eb;font-size:11px;font-weight:700;color:#6b7280">4</span></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><strong>TYPE</strong><div style="font-size:12px;color:#6b7280">10 tasks · contact-aware matching</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-weight:700">40.0%<div style="font-size:11px;color:#dc2626">4/10</div></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono);font-size:13px">0.36 ms</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><div class="lb-bar" style="width:140px"><i style="width:40%"></i></div></td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 12px"><span style="display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;border-radius:9999px;border:1px solid #e5e7eb;font-size:11px;font-weight:700;color:#6b7280">5</span></td>
+                  <td style="padding:10px 12px"><strong>SEARCH</strong><div style="font-size:12px;color:#6b7280">10 tasks · free-text + calendar context</div></td>
+                  <td style="padding:10px 12px;text-align:right;font-family:var(--mono);font-weight:700">30.0%<div style="font-size:11px;color:#dc2626">3/10</div></td>
+                  <td style="padding:10px 12px;text-align:right;font-family:var(--mono);font-size:13px">0.36 ms</td>
+                  <td style="padding:10px 12px"><div class="lb-bar" style="width:140px"><i style="width:30%"></i></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 16px;background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:#6b7280">
+            <span><strong style="color:#0a0a0a">Category breakdown:</strong> GOTO 10 @100% · CLICK 9 @100% · SCROLL 4 @100% · CLOSE 2 @100% · SEARCH 10 @30% · TYPE 10 @40% · System 5 @100%</span>
+          </div>
+        </div>
+
+        <!-- Classifier table -->
+        <div style="margin-top:16px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff">
+          <div style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <strong style="font-size:14px;letter-spacing:-0.02em">SPX-Signal — sEMG Classifier Inference</strong>
+            <span style="font-size:12px;color:#6b7280">FLOPs & energy estimated · real wall-clock</span>
+          </div>
+          <div style="overflow:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:640px">
+              <thead>
+                <tr style="background:#f9fafb">
+                  <th style="text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Model</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Mean</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Median</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Params</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Disk</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">FLOPs</th>
+                  <th style="text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;padding:10px 12px;border-bottom:1px solid #e5e7eb">Energy</th>
+                </tr>
+              </thead>
+              <tbody style="font-size:13px">
+                <tr><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><strong>1D CNN</strong></td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">1.66 ms</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">1.64 ms</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">102,053</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">409.7 KB</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">3,678,336</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">367.834 µJ</td></tr>
+                <tr><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6"><strong>GRU</strong></td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">8.27 ms</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">8.25 ms</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">105,669</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">420.5 KB</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">30,190,912</td><td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-family:var(--mono)">3019.091 µJ</td></tr>
+                <tr><td style="padding:10px 12px"><strong>SVM Baseline</strong></td><td style="padding:10px 12px;text-align:right;font-family:var(--mono)">0.00 ms</td><td style="padding:10px 12px;text-align:right;font-family:var(--mono)">0.00 ms</td><td style="padding:10px 12px;text-align:right;font-family:var(--mono)">0</td><td style="padding:10px 12px;text-align:right;font-family:var(--mono)">0.0 KB</td><td style="padding:10px 12px;text-align:right;font-family:var(--mono)">0</td><td style="padding:10px 12px;text-align:right;font-family:var(--mono)">0.000 µJ</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 16px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12.5px;color:#6b7280">Source: <code style="font-family:var(--mono)">docs/content/benchmark-report.md</code> · v2.0.1 hardened wall-clock. Next: EMGBench LOSO across 9 datasets + SpeechNet 15k GAP9 profile.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Subvocal-extended -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head"><h2>Subvocal-extended</h2><p>OSS datasets + SPX tasks — like Mercor-extended (OSS + 50–99 Mercor tasks), but for sEMG.</p></div>
+        <div class="grid3">
+          <div class="card">
+            <div class="badge">Ninapro DB2 / DB5</div>
+            <div class="card-title">Hand gesture + SPX</div>
+            <div class="card-desc">Public sparse sEMG hand gestures. Add SPX shorthand labels, evaluate cross-subject adaptor (112→768→3072) to frozen Llama.</div>
+            <div class="card-meta"><span>Requires <span style="font-family:var(--mono)">subvocal[hardware]</span></span></div>
+          </div>
+          <div class="card">
+            <div class="badge">PutEMG · CSL-HDEMG</div>
+            <div class="card-title">Dense HD + contractions</div>
+            <div class="card-desc">PutEMG sequential, CSL-HDEMG 192ch high-density. SAL/LBN 7-param spatial adaptation (<2 min calibration) benchmark.</div>
+            <div class="card-meta"><span>192ch grid 8×16 · affine warp</span></div>
+          </div>
+          <div class="card">
+            <div class="badge">Gaddy · MetaEMG</div>
+            <div class="card-title">Silent speech + pose</div>
+            <div class="card-desc">Gaddy 8ch facial EMG + audio (Zenodo 4064409); Meta sEMG-RD 16ch wrist + 63-D pose. EMGBench LOSO + few-shot <code>n_shot</code>.</div>
+            <div class="card-meta"><span>Drivers: <span style="font-family:var(--mono)">GaddyDriver</span> · <span style="font-family:var(--mono)">MetaEMGDriver</span></span></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:12.5px;color:#6b7280">Install: <code style="font-family:var(--mono);background:#f9fafb;border:1px solid #e5e7eb;padding:2px 8px;border-radius:9999px">pip install "subvocal[hardware]"</code> · <code style="font-family:var(--mono);background:#f9fafb;border:1px solid #e5e7eb;padding:2px 8px;border-radius:9999px">pip install "subvocal[ml]"</code> for MONA/LISA/SpeechNet/TinyMyo etc.</div>
+      </div>
+    </section>
+
+    <!-- Failure profile -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head"><h2>Failure profile — why hybrid?</h2><p>13 heuristic failures highlight where LLM reasoning wins.</p></div>
+        <div class="grid3">
+          <div class="card" style="border-left-width:3px;border-left-color:#dc2626">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#dc2626">Pluralization</div>
+            <div class="card-title" style="margin-top:6px">srch nrl ntwk</div>
+            <div class="card-desc">Expected <strong>SEARCH neural networks</strong> → got <strong>Neural network</strong> (singular bias — shorter Levenshtein distance).</div>
+            <div class="card-meta">Fix: LLM picks plural via language semantics.</div>
+          </div>
+          <div class="card" style="border-left-width:3px;border-left-color:#dc2626">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#dc2626">Phonetic tie</div>
+            <div class="card-title" style="margin-top:6px">srch fgt calb</div>
+            <div class="card-desc">Expected <strong>Figma calibration</strong> → got <strong>logout confirm</strong> (<code>fgt→logout</code> tie, hallucinated bigram).</div>
+            <div class="card-meta">Fix: LLM knows “Figma calibration” is a calendar event.</div>
+          </div>
+          <div class="card" style="border-left-width:3px;border-left-color:#dc2626">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#dc2626">Vocab collision</div>
+            <div class="card-title" style="margin-top:6px">srch snt spch</div>
+            <div class="card-desc">Expected <strong>silent speech</strong> → got <strong>send Speech</strong> (<code>snt→send</code> present in dictionary).</div>
+            <div class="card-meta">Fix: bigram cohesion “silent speech” vs “send speech”.</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn-ghost" href="./platform/intent-benchmark.html">Read benchmark spec →</a>
+          <a class="btn-ghost" href="./platform/benchmark-report.html">Full report →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to run -->
+    <section class="section" style="background:#0a0a0a;color:#e5e7eb;border-bottom:0">
+      <div class="container">
+        <div class="grid2" style="align-items:start">
+          <div>
+            <h2 style="color:#fff;border:0;padding:0;margin:0">How to run</h2>
+            <p style="color:#9ca3af;margin-top:8px;font-size:14px;line-height:1.6">One harness, every bench imports <span style="font-family:var(--mono);background:#1f2937;border:1px solid #2a3441;padding:1px 6px;border-radius:6px;color:#fff">subvocal</span>. Heuristic runs offline; hybrid needs API keys.</p>
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+              <a href="./docs.html" style="background:#fff;color:#0a0a0a;padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:700">Start building →</a>
+              <a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="border:1px solid #2a3441;color:#e5e7eb;padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:600">GitHub</a>
+            </div>
+          </div>
+          <div style="border:1px solid #1f2937;border-radius:12px;overflow:hidden;background:#111827">
+            <div style="padding:10px 14px;border-bottom:1px solid #1f2937;display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444"></span><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></span><span style="width:10px;height:10px;border-radius:50%;background:#22c55e"></span><span style="margin-left:8px;font-family:var(--mono);font-size:12px;color:#9ca3af">terminal</span></div>
+            <pre style="margin:0;background:transparent;border:0;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#e5e7eb;overflow:auto"><code># heuristic — no keys, deterministic
+PYTHONPATH=src python3 benchmarks/eval_runner.py
+
+# live LLM — picks best provider with key present
+export ANTHROPIC_API_KEY=... # or OPENAI_API_KEY / GEMINI_API_KEY
+PYTHONPATH=src python3 benchmarks/eval_runner.py
+
+# install extras
+pip install "subvocal[all,dev]"  # then pytest / ruff / pyright</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Off-the-shelf data -->
+    <section class="section">
+      <div class="container">
+        <div class="grid2">
+          <div>
+            <h2 style="font-size:18px;font-weight:700;letter-spacing:-0.02em">Off-the-shelf data</h2>
+            <p style="margin-top:10px;font-size:14px;line-height:1.65;color:#6b7280">50 tasks MIT today (<code style="font-family:var(--mono)">src/subvocal/shorthand/eval_set.py</code>), 250+ next with sEMG waveform pairs. License-ready, expert-written and graded — like Mercor’s 50k+ tasks across 30+ domains, but for silent speech.</p>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><span class="badge">50+ tasks MIT</span><span class="badge">250+ next + waveforms</span><span class="badge">HF: subvocal/spx-*</span></div>
+          </div>
+          <div class="kv" style="background:#fff">
+            <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af">Roadmap for adoption (not revenue)</div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:#111827">
+              <div style="display:flex;gap:10px"><span style="width:22px;height:22px;border-radius:9999px;background:#0a0a0a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</span><span><strong>SPX-Intent v1.1</strong> — 250 text, hidden 50, publish HF + leaderboard</span></div>
+              <div style="display:flex;gap:10px"><span style="width:22px;height:22px;border-radius:9999px;border:1px solid #e5e7eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</span><span><strong>SPX-Signal</strong> — 100 sEMG traces, cross-subject LOSO</span></div>
+              <div style="display:flex;gap:10px"><span style="width:22px;height:22px;border-radius:9999px;border:1px solid #e5e7eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</span><span><strong>SPX-Live</strong> — real-time streaming + hardware partner</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="./docs.html">Start building →</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="./apex.html">SPX Benchmarks</a><a href="./platform/intent-benchmark.html">Intent Benchmark Spec</a><a href="./platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="./platform/architecture.html">Architecture</a><a href="./platform/hardware-drivers.html">Hardware</a><a href="./api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
+      </div>
+    </div>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
+    </div>
+  </footer>
+
+<script>
+function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}
+</script>
+</body>
+</html>

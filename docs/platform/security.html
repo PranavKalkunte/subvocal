@@ -4,56 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Security & Threat Model | Subvocal SDK</title>
-  <link rel="stylesheet" href="../index.css">
-  <style>
-    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
-    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
-    .docs-body img { max-width: 100%; }
-    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
-    .mermaid { background: transparent; margin: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="../index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="../docs.html">Docs</a></li>
-            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
-            <li><a href="../api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-          <h4>Platform Corpus</h4>
-          <ul>
-            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
-            <li><a href="../platform/configuration.html"><span>[*]</span> Configuration & Runtime</a></li>
-            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
-            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
-            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
-            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
-            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
-            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
-            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
-            <li><a href="../platform/security.html" aria-current="page"><span>[*]</span> Security & Threat Model</a></li>
-            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
-            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
-            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
-            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
-          </ul>
-          <h4>Tutorials</h4>
-          <ul>
-            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
-          </ul>
-        </aside>
-        <article class="docs-body">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="../apex.html">SPX Benchmarks</a>
+        <a href="../platform/index.html" aria-current="page">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="../api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="../docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="../apex.html">SPX Benchmarks</a>
+      <a href="../platform/index.html">Platform</a>
+      <a href="../docs.html">Docs</a>
+      <a href="../api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <h4>Platform Corpus</h4>
+      <ul>
+        <li><a href="../platform/positioning.html">Platform Positioning</a></li>
+        <li><a href="../platform/configuration.html">Configuration & Runtime</a></li>
+        <li><a href="../platform/declaration.html">Declaration Post</a></li>
+        <li><a href="../platform/architecture.html">Architecture</a></li>
+        <li><a href="../platform/intent-layer.html">Intent Layer</a></li>
+        <li><a href="../platform/intent-benchmark.html">Intent Reconstruction Benchmark</a></li>
+        <li><a href="../platform/benchmark-report.html">Benchmark Report</a></li>
+        <li><a href="../platform/hardware-drivers.html">Hardware Drivers</a></li>
+        <li><a href="../platform/classifiers.html">Classifier Infrastructure</a></li>
+        <li><a href="../platform/security.html" aria-current="page">Security & Threat Model</a></li>
+        <li><a href="../platform/mcp-profile.html">MCP Intent Profile (RFC)</a></li>
+        <li><a href="../platform/release-process.html">Release Process</a></li>
+        <li><a href="../platform/reference-bom.html">Reference Hardware BOM</a></li>
+        <li><a href="../platform/phase0-results.html">Phase 0: Method & Results</a></li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="../walkthrough.html">End-to-End Walkthrough</a></li>
+      </ul>
+      <h4>Benchmarks</h4>
+      <ul>
+        <li><a href="../apex.html">SPX Leaderboard</a></li>
+        <li><a href="../platform/benchmark-report.html">Report</a></li>
+        <li><a href="../api.html">API Reference</a></li>
+      </ul>
+    </aside>
+    <article class="docs-body">
 <h1>Subvocal Middleware Platform Safety &amp; Security Specification</h1>
 <p>This document details the threat model, credential architecture, data residency standards, compliance posture, and safety design principles for the Subvocal Middleware Platform.</p>
 <hr />
@@ -166,6 +178,14 @@ def get_api_key(provider_name: str) -&gt; str:
 <p>The persistent session store maintains session configurations and active states on disk.
 * <strong>Database Isolation</strong>: The SQLite database file (typically <code>sessions.db</code>) is stored inside the user's localized app data directory. The SDK applies strict filesystem permissions (e.g., owner read/write only, Unix mode <code>0600</code>) to prevent local privilege escalation.
 * <strong>Configuration Scrubbing</strong>: When config YAML states are stored, highly sensitive parameters (like raw provider API keys) are scrubbed before persistence, leaving credential validation to runtime keyring retrievals.</p>
+<h3>2.5 Foundation Model Supply Chain</h3>
+<p>Foundation and adaptor weights are distributed out-of-band from <code>SubvocalConfig</code> (opt-in <code>subvocal[ml]</code>) and must be treated as untrusted supply-chain artifacts:</p>
+<ul>
+<li><strong>TinyMyo weights from HuggingFace</strong> (<code>arXiv:2512.15729</code>, <code>subvocal.emg_core.foundation.tinymyo</code>): pre-trained 3.6 M checkpoints, when released, are fetched via <code>huggingface_hub</code> (or manual <code>curl</code> from <code>huggingface.co/&lt;org&gt;/tinymyo</code>) pinned to a specific commit SHA. Consumers must verify <code>SHA-256</code> (or <code>sha256sum</code> + <code>etag</code>) against the checksum published in the model card / <code>model.safetensors.sha256</code> before <code>torch.load(..., weights_only=True)</code> — identical to <a href="#15-model-deserialization-and-path-traversal">§1.5 Safe deserialization</a>. <code>safetensors</code> is preferred over <code>pickle</code>; legacy <code>.pth</code> fallback remains jailed to <code>MODELS_DIR</code> with <code>is_relative_to</code> path validation.</li>
+<li><strong>AEMG / SPECTRE vocabularies</strong>: codebooks and STFT K-means pseudo-labels are derived locally; no binary weights. When a shared vocabulary is imported, validate the JSON/NPY source and load with <code>allow_pickle=False</code>.</li>
+<li><strong>EMG Adaptor</strong> (<code>subvocal.emg_core.ml.adaptor</code>, Mohapatra et al. ACL 2025, <code>112→768→3072</code> MLP into a frozen LLM): runs locally and does not persist raw sEMG beyond the volatile frame buffer. The adaptor handles only handcrafted 112-D spectral-temporal vectors (or speech-encoder 768-D) and produces transient LLM input embeddings that are immediately forwarded to the provider's TLS 1.3 channel; no PII is written to disk beyond the existing <a href="security.md">§3.1 trace opt-out</a> and the 10 MB <code>pipeline_traces.jsonl</code> cap (disabled via <code>telemetry.trace_enabled=false</code> / <code>runtime.trace_enabled=false</code>). Calibration embeddings follow the same local-first, memory-only residency as §3.1 and are subject to the §4 BIPA/GDPR erasure guarantees (<code>CorrectionManager.clear_logs</code>).</li>
+<li><strong>Verification guidance</strong>: pin the Hub revision (<code>revision="&lt;git-sha&gt;"</code>), compare <code>sha256</code> after download, and reject mismatches before deserialization; do not auto-execute remote code (<code>trust_remote_code=False</code>). Document the verified hash in the release manifest per <a href="release-process.md">Release Process</a>.</li>
+</ul>
 <hr />
 <h2>3. Data Residency and Sovereignty</h2>
 <p>Silent speech applications ingest deeply intimate biometric signals. Standardizing where data is processed is crucial to user trust and regulatory compliance.</p>
@@ -222,20 +242,27 @@ def get_api_key(provider_name: str) -&gt; str:
 <li><strong>Software Disconnect</strong>: The user context menu contains a global "Mute" toggle that instantly halts pipeline execution.</li>
 <li><strong>Hardware Disconnect</strong>: Reference neckband designs must include a physical slide switch that breaks the VCC connection line to the analog front-end, cutting power to the electrodes and instantly rendering the device inert.</li>
 </ul>
-        </article>
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="../apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="../apex.html">SPX Benchmarks</a><a href="../platform/intent-benchmark.html">Intent Benchmark</a><a href="../platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="../platform/architecture.html">Architecture</a><a href="../platform/hardware-drivers.html">Hardware</a><a href="../api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
   <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
 </body>
 </html>

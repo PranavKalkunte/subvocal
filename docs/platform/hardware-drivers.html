@@ -4,56 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hardware Drivers | Subvocal SDK</title>
-  <link rel="stylesheet" href="../index.css">
-  <style>
-    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
-    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
-    .docs-body img { max-width: 100%; }
-    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
-    .mermaid { background: transparent; margin: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="../index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="../docs.html">Docs</a></li>
-            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
-            <li><a href="../api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-          <h4>Platform Corpus</h4>
-          <ul>
-            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
-            <li><a href="../platform/configuration.html"><span>[*]</span> Configuration & Runtime</a></li>
-            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
-            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
-            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
-            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
-            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
-            <li><a href="../platform/hardware-drivers.html" aria-current="page"><span>[*]</span> Hardware Drivers</a></li>
-            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
-            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
-            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
-            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
-            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
-            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
-          </ul>
-          <h4>Tutorials</h4>
-          <ul>
-            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
-          </ul>
-        </aside>
-        <article class="docs-body">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="../apex.html">SPX Benchmarks</a>
+        <a href="../platform/index.html" aria-current="page">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="../api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="../docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="../apex.html">SPX Benchmarks</a>
+      <a href="../platform/index.html">Platform</a>
+      <a href="../docs.html">Docs</a>
+      <a href="../api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <h4>Platform Corpus</h4>
+      <ul>
+        <li><a href="../platform/positioning.html">Platform Positioning</a></li>
+        <li><a href="../platform/configuration.html">Configuration & Runtime</a></li>
+        <li><a href="../platform/declaration.html">Declaration Post</a></li>
+        <li><a href="../platform/architecture.html">Architecture</a></li>
+        <li><a href="../platform/intent-layer.html">Intent Layer</a></li>
+        <li><a href="../platform/intent-benchmark.html">Intent Reconstruction Benchmark</a></li>
+        <li><a href="../platform/benchmark-report.html">Benchmark Report</a></li>
+        <li><a href="../platform/hardware-drivers.html" aria-current="page">Hardware Drivers</a></li>
+        <li><a href="../platform/classifiers.html">Classifier Infrastructure</a></li>
+        <li><a href="../platform/security.html">Security & Threat Model</a></li>
+        <li><a href="../platform/mcp-profile.html">MCP Intent Profile (RFC)</a></li>
+        <li><a href="../platform/release-process.html">Release Process</a></li>
+        <li><a href="../platform/reference-bom.html">Reference Hardware BOM</a></li>
+        <li><a href="../platform/phase0-results.html">Phase 0: Method & Results</a></li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="../walkthrough.html">End-to-End Walkthrough</a></li>
+      </ul>
+      <h4>Benchmarks</h4>
+      <ul>
+        <li><a href="../apex.html">SPX Leaderboard</a></li>
+        <li><a href="../platform/benchmark-report.html">Report</a></li>
+        <li><a href="../api.html">API Reference</a></li>
+      </ul>
+    </aside>
+    <article class="docs-body">
 <h1>Subvocal SDK: Hardware Abstraction Layer (HAL)</h1>
 <p><strong>Status:</strong> Draft Spec<br />
 <strong>Version:</strong> v0.1.0-alpha<br />
@@ -63,11 +75,13 @@
 <h2>1. Overview and Interface Lifecycle</h2>
 <p>The <strong>Hardware Abstraction Layer (HAL)</strong> provides a uniform, vendor-agnostic interface between electromyographical (EMG) sensor sources and downstream digital signal processing (DSP) and classification pipelines. </p>
 <p>Every sensor driver, dataset replayer, and signal simulator in the Subvocal SDK inherits from the abstract base class <code>HardwareSource</code> defined in <code>sdk/core/interfaces.py</code>:</p>
-<pre><code>                       [ HardwareSource Interface ]
-                                    │
-       ┌───────────────┬────────────┼──────────────┬──────────────┐
-       ▼               ▼            ▼              ▼              ▼
- [ FileReplay ]  [ Synthetic ]  [ OpenBCI ]  [ Delsys Trigno ] [ Datasets ]
+<pre><code>                         [ HardwareSource Interface ]
+                                      │
+   ┌──────────┬──────────┼──────────┬──────────┬─────────┬──────────┐
+   ▼          ▼          ▼          ▼          ▼         ▼         ▼
+[FileReplay][Synthetic][OpenBCI] [Delsys][Ninapro/PutEMG/CSL][Gaddy][Meta sEMG-RD]
+                                                     │
+                                           [ EmgBench 9-Dataset Harness ]
 </code></pre>
 <h3>The Driver Lifecycle:</h3>
 <ol>
@@ -79,7 +93,9 @@
 </ol>
 <hr />
 <h2>2. Core Drivers</h2>
-<p>The SDK implements four baseline drivers under <code>sdk/hardware/drivers.py</code>:</p>
+<p>The SDK implements four baseline drivers under <code>src/subvocal/hardware/drivers.py</code>
+(plus dataset drivers in <code>src/subvocal/hardware/datasets.py</code> — Gaddy/Meta — and the
+<code>src/subvocal/emg_core/benchmarks/emgbench.py</code> EmgBench harness, §§4–5):</p>
 <h3>1. <code>FileReplayDriver</code></h3>
 <ul>
 <li><strong>Purpose:</strong> Reads multi-channel sEMG data from a local CSV file, simulating a real-time hardware stream.</li>
@@ -128,15 +144,82 @@
 <li><strong>Buffering:</strong> The driver uses non-blocking socket reads and byte arrays to partition incoming chunks into precise frame sizes based on requested window durations.</li>
 </ul>
 <hr />
-<h2>4. Public Dataset Streams</h2>
-<p>The SDK implements custom subject-file readers under <code>sdk/hardware/datasets.py</code> to stream standard public electromyographical datasets:</p>
+<h2>4. Extra Dataset Drivers — Gaddy &amp; Meta sEMG-RD</h2>
+<p>The dataset suite lives in <code>src/subvocal/hardware/datasets.py</code>. All drivers sanitize <code>data_dir</code> with <code>Path.resolve().is_relative_to</code> (traversal → <code>FileNotFoundError</code>) and use <code>np.load(..., allow_pickle=False)</code>.</p>
 <ol>
 <li><strong>Ninapro (<code>NinaproDriver</code>):</strong> Reads Ninapro subject <code>.mat</code> files (MATLAB format) using <code>scipy.io.loadmat</code> and extracts the <code>'emg'</code> matrix.</li>
 <li><strong>PutEMG (<code>PutEMGDriver</code>):</strong> Reads PutEMG subject <code>.h5</code> files (HDF5 format) by dynamically importing <code>h5py</code> and searching for active muscle channel datasets. <strong>Resource fix:</strong> <code>h5py.File</code> is always closed on failure — <code>visititems</code> exceptions, missing datasets, or shape errors close the file descriptor before re-raising, and <code>stop()</code> reliably closes the handle to prevent descriptor leaks in long-lived sessions.</li>
 <li><strong>CSL-HDEMG (<code>CSLHDEMGDriver</code>):</strong> Reads high-density silent speech sEMG recordings stored as NumPy arrays (<code>.npy</code>) or raw binary floats. Uses <code>np.load(..., allow_pickle=False)</code> to block pickle-based code execution; only raw numeric arrays are accepted.</li>
+<li><strong>Gaddy Silent Speech (<code>GaddyDriver</code>, Gaddy &amp; Klein EMNLP 2020 / ACL 2021, Zenodo 4064409):</strong> 8-channel facial sEMG at 1000 Hz (ACL 2021 model resamples to 800 Hz) paired with <code>info.json</code> transcripts and FLAC audio, covering both vocalized and silent modes.</li>
 </ol>
+<p><strong>Download:</strong>
+   <code>bash
+   # Zenodo record 4064409 (silent_speech) — ~2 GB archived tar
+   curl -L https://zenodo.org/records/4064409/files/silent_speech.tar.gz -o silent_speech.tar.gz
+   tar -xzf silent_speech.tar.gz -C data/gaddy
+   # Expected layout: data/gaddy/&lt;session&gt;/&lt;id&gt;_emg.npy (T,8) + &lt;id&gt;_info.json + &lt;id&gt;_audio.flac
+   # See https://github.com/dgaddy/silent_speech for session manifests</code></p>
+<p>```python
+   from subvocal.hardware.datasets import GaddyDriver</p>
+<p>drv = GaddyDriver(data_dir="data/gaddy", fs=800.0, loop=True, split=None)
+   # split="silent" or "vocalized" filters by path/info.json mode
+   drv.start()
+   frame = drv.read_frame(window_ms=100)          # Frame (T≈80 @800Hz, 8 ch)
+   drv.list_utterances()                          # ["session/0", ...]
+   drv.get_transcript("session/0")                # info.json text/prompt
+   drv.get_audio_path("session/0")                # .flac path if present
+   ```</p>
+<p>The driver indexes <code>*_emg.npy</code> recursively, mmap-probes the first file for <code>num_channels</code>, validates <code>(T,8)</code> on load, and concatenates utterances sequentially with padding/loop handling identical to <code>CSLHDEMGDriver</code>.</p>
+<ol start="5">
+<li><strong>Meta sEMG-RD / emg2pose (<code>MetaEMGDriver</code>, Salter et al. NeurIPS 2024 <code>arXiv:2412.02725</code>; Sivakumar &amp; Landau et al. Nature 2025; open-sourced Dec 2024):</strong> 16 bipolar channels per wrist at <strong>2 kHz</strong> (12-bit sEMG-RD band) + time-aligned hand-pose labels at 2 kHz (26-camera MoCap → 19 markers/hand → IK joint angles, linearly interpolated).</li>
+</ol>
+<p><strong>Datasets:</strong> <em>emg2pose</em> (surface typing, ~370 h / 193 participants / 25k HDF5) and <em>sEMG-RD</em> (general hand pose). Layout per recording HDF5: <code>/emg (T,16)</code> (aliases <code>raw_emg</code>/<code>semg</code>) + <code>/pose (T,D)</code> (aliases <code>joint_angles</code>/<code>hand_pose</code>, typically <code>D=63</code> i.e. 21 joints×3, or 84). Also supports unpacked <code>*_emg.npy</code> + <code>*_pose.npy</code>:</p>
+<p><strong>Download:</strong>
+   <code>bash
+   # Papers + data via Meta AI blog + emg2pose repo
+   # https://ai.meta.com/blog/open-sourcing-surface-electromyography-datasets-neurips-2024
+   # https://github.com/facebookresearch/emg2pose  (see emg2pose/data/README)
+   # Apply for the data release, then extract so HDF5 contain /emg and /pose
+   # Example after approval:
+   # data/emg2pose/train/*.h5  (each with /emg (T,16), /pose (T,63-84))
+   # data/emg2pose_npy/*_emg.npy + *_pose.npy
+   pip install "subvocal[hardware]"  # pulls h5py&gt;=3.0</code></p>
+<p>```python
+   from subvocal.hardware.datasets import MetaEMGDriver</p>
+<p>drv = MetaEMGDriver(data_dir="data/emg2pose", fs=2000.0, split="train", loop=True)
+   drv.start()
+   frame = drv.read_frame(window_ms=50)               # (T≈100 @2kHz, 16 ch)
+   pair  = drv.load_pair(recording_id)                # (emg (T,16), pose (T,D))
+   pose  = drv.get_pose(recording_id)                 # pose array alone
+   frame, pose_win = drv.read_frame_with_pose(window_ms=50)  # synchronized
+   ```</p>
+<p><code>split</code> is sanitized <code>[^A-Za-z0-9_-]→_</code> and scopes to <code>data_dir/split</code> if present, else path-substring filtered (use <code>split="all"</code> to disable). Missing <code>h5py</code> raises <code>MissingDependencyError</code> with <code>subvocal[hardware]</code> hint; <code>data_dir</code> absence raises <code>FileNotFoundError</code> with the Meta blog and GitHub links. Length mismatches between EMG and pose are truncated/padded to the EMG length.</p>
 <hr />
-<h2>5. Integration Code Example</h2>
+<h2>5. EmgBench 9-Dataset Harness</h2>
+<p><code>src/subvocal/emg_core/benchmarks/emgbench.py</code> (Yang et al. <em>EMGBench</em>, NeurIPS 2024 Datasets &amp; Benchmarks, <code>arXiv:2410.23625</code>, https://emgbench.github.io, https://github.com/jehanyang/emgbench) evaluates intersubject generalization and few-shot adaptation across 9 datasets:</p>
+<pre><code>ninapro-db2, ninapro-db3, ninapro-db5, capgmyo-db-b,
+myoarmband, uciemg, mcs, hyser, flexwear-hd   # DEFAULT_DATASETS
+</code></pre>
+<p>Two protocols, both with deterministic synthetic fallback (no 10–100 GiB download needed for CI):</p>
+<ul>
+<li><strong>LOSO-CV</strong> (<code>EMGBench.evaluate_loso</code>): leave-one-subject-out cross-validation. For each held-out subject <code>model_fn(train_X, train_y, test_X, test_y) → accuracy/dict/preds</code> is invoked (also supports <code>((train_X,train_y),(test_X,test_y))</code> or dict form) and reduced via <code>_accuracy_from_result</code>.</li>
+<li><strong>Few-shot adaptation</strong> (<code>evaluate_adaptation</code>, <code>n_shot=1/2/5</code>): pretrain on <code>N-1</code> subjects, take <code>n_shot</code> trials per gesture from the held-out subject as <em>support</em> (fine-tune) and score the remaining <em>query</em> set. Calls <code>model_fn(train_X, train_y, support_X, support_y, query_X, query_y)</code> when available; otherwise augments training with support and delegates to LOSO. Covers FT-X % / intersession FT / TSTS (Table 3).</li>
+</ul>
+<pre><code class="language-python">from subvocal.emg_core.benchmarks import EMGBench, DEFAULT_DATASETS
+
+bench = EMGBench(datasets=DEFAULT_DATASETS, root_dir=&quot;DatasetsProcessed_hdf5&quot;)
+# Real layout expected: root_dir/&lt;dataset&gt;/pN/participant_N.hdf5 (keys=gestures, shape=(trials,electrodes,timesteps))
+# Synthetic fallback is used automatically when files are absent.
+
+loso  = bench.evaluate_loso(my_model_fn, dataset=&quot;ninapro-db5&quot;)
+adapt = bench.evaluate_adaptation(my_model_fn, dataset=&quot;ninapro-db5&quot;, n_shot=5)
+all_res = bench.evaluate_all(my_model_fn, mode=&quot;loso&quot;)          # macro mean/std over 9 datasets
+# or bench.evaluate_all(my_model_fn, mode=&quot;adaptation&quot;, n_shot=5)
+# summarize_results(all_res) -&gt; {&quot;mean&quot;,&quot;std&quot;,&quot;min&quot;,&quot;max&quot;}
+</code></pre>
+<p><code>root_dir</code> and dataset slugs are sanitized (<code>[^A-Za-z0-9._-]</code> → <code>_</code>, <code>Path.resolve().is_relative_to</code>); <code>run_all</code> is an alias for <code>evaluate_all</code>. Dataset discovery accepts <code>pN</code>/<code>subject_N</code> subdirs or flat <code>*.h5</code> and normalizes <code>(trials, electrodes, timesteps)</code> ↔ <code>(trials, timesteps, electrodes)</code> by shape heuristics.</p>
+<hr />
+<h2>6. Integration Code Example</h2>
 <p>The following example shows how a developer can instantiate the <code>SyntheticSignalGenerator</code>, trigger simulated commands, and feed raw sEMG frames into the <code>SubvocalPipeline</code>:</p>
 <pre><code class="language-python">import time
 from hardware.drivers import SyntheticSignalGenerator
@@ -181,7 +264,7 @@ for _ in range(10):
 hardware.stop()
 </code></pre>
 <hr />
-<h2>6. Unified Ingress Manager for Multi-Source Feeds (v2.0)</h2>
+<h2>7. Unified Ingress Manager for Multi-Source Feeds (v2.0)</h2>
 <p>For high-reliability consumer and clinical deployments, the SDK provides the <code>IngressManager</code> in <code>subvocal.runtime.ingress</code> to orchestrate multiple sensor inputs and automate failovers:</p>
 <ul>
 <li><strong>Source Registration</strong>: Register primary acquisition feeds (e.g. Cyton or Delsys boards) along with fallback simulation replays.</li>
@@ -202,20 +285,27 @@ ingress.start()
 # Switch active source to fallback simulation on hardware dropouts
 ingress.trigger_failover()
 </code></pre>
-        </article>
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="../apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="../apex.html">SPX Benchmarks</a><a href="../platform/intent-benchmark.html">Intent Benchmark</a><a href="../platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="../platform/architecture.html">Architecture</a><a href="../platform/hardware-drivers.html">Hardware</a><a href="../api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
   
 </body>
 </html>

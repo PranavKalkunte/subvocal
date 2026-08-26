@@ -4,56 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Architecture | Subvocal SDK</title>
-  <link rel="stylesheet" href="../index.css">
-  <style>
-    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
-    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
-    .docs-body img { max-width: 100%; }
-    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
-    .mermaid { background: transparent; margin: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="../index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="../docs.html">Docs</a></li>
-            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
-            <li><a href="../api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-          <h4>Platform Corpus</h4>
-          <ul>
-            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
-            <li><a href="../platform/configuration.html"><span>[*]</span> Configuration & Runtime</a></li>
-            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
-            <li><a href="../platform/architecture.html" aria-current="page"><span>[*]</span> Architecture</a></li>
-            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
-            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
-            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
-            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
-            <li><a href="../platform/classifiers.html"><span>[*]</span> Classifier Infrastructure</a></li>
-            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
-            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
-            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
-            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
-            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
-          </ul>
-          <h4>Tutorials</h4>
-          <ul>
-            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
-          </ul>
-        </aside>
-        <article class="docs-body">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="../apex.html">SPX Benchmarks</a>
+        <a href="../platform/index.html" aria-current="page">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="../api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="../docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="../apex.html">SPX Benchmarks</a>
+      <a href="../platform/index.html">Platform</a>
+      <a href="../docs.html">Docs</a>
+      <a href="../api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <h4>Platform Corpus</h4>
+      <ul>
+        <li><a href="../platform/positioning.html">Platform Positioning</a></li>
+        <li><a href="../platform/configuration.html">Configuration & Runtime</a></li>
+        <li><a href="../platform/declaration.html">Declaration Post</a></li>
+        <li><a href="../platform/architecture.html" aria-current="page">Architecture</a></li>
+        <li><a href="../platform/intent-layer.html">Intent Layer</a></li>
+        <li><a href="../platform/intent-benchmark.html">Intent Reconstruction Benchmark</a></li>
+        <li><a href="../platform/benchmark-report.html">Benchmark Report</a></li>
+        <li><a href="../platform/hardware-drivers.html">Hardware Drivers</a></li>
+        <li><a href="../platform/classifiers.html">Classifier Infrastructure</a></li>
+        <li><a href="../platform/security.html">Security & Threat Model</a></li>
+        <li><a href="../platform/mcp-profile.html">MCP Intent Profile (RFC)</a></li>
+        <li><a href="../platform/release-process.html">Release Process</a></li>
+        <li><a href="../platform/reference-bom.html">Reference Hardware BOM</a></li>
+        <li><a href="../platform/phase0-results.html">Phase 0: Method & Results</a></li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="../walkthrough.html">End-to-End Walkthrough</a></li>
+      </ul>
+      <h4>Benchmarks</h4>
+      <ul>
+        <li><a href="../apex.html">SPX Leaderboard</a></li>
+        <li><a href="../platform/benchmark-report.html">Report</a></li>
+        <li><a href="../api.html">API Reference</a></li>
+      </ul>
+    </aside>
+    <article class="docs-body">
 <h1>The Architecture of a Practical Subvocal Interface</h1>
 <p><strong>Status:</strong> Proposed<br />
 <strong>Version:</strong> v0.1.0-alpha<br />
@@ -194,9 +206,11 @@
         C --&gt;|Raw sEMG stream| D[Stage 4: Classifier\nML Inference: &lt;25ms]
         C -.-&gt;|Dashed Feedback Path\nRaw logging| H[(Data Log)]
         H -.-&gt;|Calibration update| I[Training Pipeline]
-        I -.-&gt;|Model weights| D
+        I -.-&gt;|Model weights| ADAPT[Adaptation Layer\nSAL/LBN · CPEP · Variance]
+        ADAPT -.-&gt;|Adapted weights/embeddings| D
+        I -.-&gt;|Pretrained foundation| D
 
-        D --&gt;|Noisy tokens + Confidence| E[Stage 5: LLM Intent Reconstruction\nClaude Haiku: &lt;200ms]
+        D --&gt;|Noisy tokens + Confidence| E[Stage 5: LLM Intent Reconstruction\nEMG Adaptor vs Heuristic · Claude Haiku: &lt;200ms]
         E --&gt;|Structured JSON| F[Stage 6: Agent/Tool Execution\nDevice API call: &lt;100ms]
         F --&gt;|Audio status| G[Stage 7: Bone Conduction Feedback\nTTS synthesis: &lt;150ms]
         E --&gt;|Low Confidence\nClarification prompt| G
@@ -217,12 +231,22 @@
 <ol>
 <li><strong>Stage 1: Subvocalize (60 ms):</strong> The user internally articulates a command. Efferent signals propagate to the speech muscles, generating sEMG potentials on the skin surface.</li>
 <li><strong>Stage 2: sEMG acquisition (100 ms):</strong> Bipolar dry contacts capture differential voltages. Signals are amplified, filtered (20–450 Hz bandpass + 60 Hz notch), and digitized using a 16-bit ADC. The sliding window buffers 100 ms of data.</li>
-<li><strong>Stage 3: BLE transmission (&lt;20 ms):</strong> An ESP32 microcontroller packetizes the data and transmits it via BLE GATT notification to a paired edge host, targeting a 15 ms connection interval.</li>
-<li><strong>Stage 4: Classifier (&lt;25 ms):</strong> The phone-side host runs a classifier (1D CNN or Random Forest) on the raw sEMG stream, outputting a softmax probability distribution over vocabulary classes.</li>
-<li><strong>Stage 5: LLM intent reconstruction (&lt;200 ms):</strong> Claude 3.5 Haiku receives the raw tokens, confidence scores, and active device context, outputting a structured JSON intent schema. If the classifier confidence falls below 0.75, the LLM triggers a confirmation request.</li>
+<li><strong>Stage 3: DSP &amp; transmission (&lt;20 ms):</strong> An ESP32 packetizes and streams via BLE GATT (15 ms interval). Host-side DSP applies (a) 20–450 Hz bandpass + 60 Hz notch (BrainFlow-compat SciPy), then one of: <strong>TD10</strong> classical ±10-frame 840-D baseline, <strong>Handcrafted 112</strong> (<code>subvocal.emg_core.dsp.handcrafted</code>, 28 per channel × 4: MAV/RMS/VAR/WL/ZC/SSC/WAMP/IEMG/SSI/DASDV/LOGVAR + 7 stats + 10 spectral MNF/MDF/centroid/bandpower/entropy/spread/rolloff per Mohapatra et al. ACL 2025, Jou et al. 2006, Gaddy &amp; Klein EMNLP 2020), <strong>SPD manifold</strong> (<code>subvocal.emg_core.dsp.spd</code>, <code>compute_spd_matrix</code> + <code>spd_logm</code> via <code>eigh</code> + <code>spd_flatten_upper</code> to <code>C(C+1)/2</code> Riemannian tangent features per Gowda &amp; Miller ACL 2026 Findings / J. Neural Eng. 2024), or <strong>STFT spectral</strong> pseudo-label path (<code>stft_kmeans_pseudolabels</code>, <code>n_fft=64</code>/<code>hop=16</code> → K-means 64 clusters per SPECTRE <code>arXiv:2512.22481</code>).</li>
+<li><strong>Stage 4: Classifier (&lt;25 ms):</strong> The phone host runs one of: <strong>Classical</strong> RF/SVM on TD10; <strong>Handcrafted→MLP</strong>; <strong>SPD-GRU CTC</strong> (<code>subvocal.emg_core.ml.spd_gru</code>, 3-layer GRU <code>hidden=64</code>, <code>num_phonemes=40</code> with blank 0, CTC <code>logm</code>-tangent input <code>K=C(C+1)/2</code> → <code>Linear→GRU→Linear</code>, per Gowda &amp; Miller ACL 2025/2026); <strong>SpeechNet</strong> (<code>subvocal.emg_core.ml.speechnet</code>, 15k depthwise-separable CNN 3 blocks → AdaptiveAvgPool, Spacone et al. 2026, GAP9 63.9 uJ); <strong>TinyMyo FM</strong> (<code>subvocal.emg_core.foundation.tinymyo</code>, <code>arXiv:2512.15729</code>, 3.6 M Transformer with channel-independent patching, SimMIM 50 % masking, RoPE extrapolation, <code>TinyMyoEncoder</code>/<code>TinyMyoFoundation</code>); or <strong>AEMG tokenizer</strong> (<code>subvocal.emg_core.foundation.aemg_tokenizer</code>, CVPR 2026 Huang et al., NCT sliding-window <code>window=32/stride=16</code> + VQ <code>K=512/D=64</code> → <code>AEMGFramework</code> masked LM). Output is softmax/CTC logits over vocabulary/phonemes with per-token confidence.</li>
+<li><strong>Stage 5: LLM intent reconstruction (&lt;200 ms):</strong> Two modes: <strong>EMG Adaptor</strong> (<code>subvocal.emg_core.ml.adaptor</code>, Mohapatra et al. ACL 2025, 2-layer MLP <code>112→768→3072</code> mapping handcrafted/speech-encoder features to frozen LLM embedding) → <code>EMGAdaptorProvider.reconstruct_intent</code> (delegates to underlying <code>LLMProvider</code> or <code>HeuristicProvider</code> fallback); or <strong>HeuristicProvider</strong> deterministic phonetic shorthand decoder. Both receive noisy tokens + confidence + 5-layer context (app state, GPS/weather, notification history, user profile, phonetic confusion map), output structured JSON intent. If confidence &lt; 0.75, the LLM triggers bone-conduction confirmation.</li>
 <li><strong>Stage 6: Agent / tool execution (&lt;100 ms):</strong> The structured intent is dispatched to a local mobile app tool or consumer API (e.g., music control, messaging).</li>
 <li><strong>Stage 7: Bone conduction audio feedback (&lt;150 ms):</strong> Native system TTS synthesizes the response (e.g., "Skipping track") and plays it via bone conduction transducers integrated into the neckband wings.</li>
 </ol>
+<h4>Adaptation layer (between training and inference)</h4>
+<p>Real-world re-don + inter-subject shift is handled by an explicit adaptation
+layer inserted between the training pipeline and Stage 4/5 inference (opt-in,
+<code>subvocal[ml]</code>, see <a href="configuration.md">Configuration</a>):</p>
+<ul>
+<li><strong>SAL / LBN</strong> (<code>subvocal.emg_core.adaptation.sal_lbn</code>, Pereira et al. <code>arXiv:2409.08058</code> + Gaddy &amp; Klein 2020/JNE 2024): supervised <code>SAL</code> (per-channel affine) + <code>LBN</code> (learnable baseline norm) composed as <code>logits = backbone(sal_lbn(emg))</code>, adapted via <code>adapt_sal_lbn</code> for 3–5 epochs on the new session (backbone frozen). Fixes spatial shift and baseline drift.</li>
+<li><strong>CPEP</strong> (<code>subvocal.emg_core.adaptation.cpep</code>, Cui et al. <code>arXiv:2509.04699</code>): contrastive pose-EMG pretraining (<code>EMGEncoder</code>/<code>PoseEncoder</code> 4-layer Transformer <code>d_model=256</code>, <code>embed_dim=256</code>, <code>tau=0.02</code>, pose frozen) → zero-shot kNN (<code>k=10</code> cosine) in the shared 256-D space.</li>
+<li><strong>Variance Transfer</strong> (<code>subvocal.emg_core.adaptation.variance_transfer</code>, Yoneda &amp; Furui EMBC 2024 / <code>arXiv:2505.15381</code>): Bayesian GCM that shares covariance/precision not mean across subjects (<code>pretrain_variance_transfer</code> on sources → <code>transfer_to_target</code> with <code>w_s</code> to target, 1-trial capable, <code>Normal-Wishart m0=0, beta0=1, nu0=D+1, W0=I</code>).</li>
+</ul>
+<p>EMGBench (<code>subvocal.emg_core.benchmarks</code>, Yang et al. <code>arXiv:2410.23625</code>, 9 datasets) evaluates the stack with <code>EMGBench.evaluate_loso</code> (LOSO-CV) and <code>evaluate_adaptation</code> (few-shot, e.g. <code>n_shot=5</code>) — see <a href="hardware-drivers.md">Hardware Drivers</a>.</p>
 <h3>Latency Budget:</h3>
 <table>
 <thead>
@@ -324,20 +348,27 @@
 <p>[!IMPORTANT]
 <strong>Beta Opportunities:</strong> If you are a mobile developer or early adopter and want to participate in a simulated pilot of the intent-reconstruction software layer (which utilizes simulated noisy inputs and requires no physical hardware), please get in touch at <code>beta@subvocal.dev</code>.</p>
 </blockquote>
-        </article>
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="../apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="../apex.html">SPX Benchmarks</a><a href="../platform/intent-benchmark.html">Intent Benchmark</a><a href="../platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="../platform/architecture.html">Architecture</a><a href="../platform/hardware-drivers.html">Hardware</a><a href="../api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
   <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
 </body>
 </html>

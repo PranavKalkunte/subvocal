@@ -4,135 +4,162 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Reference | Subvocal SDK</title>
-  <link rel="stylesheet" href="./index.css">
+  <link rel="stylesheet" href="./index.css?v=2">
   <style>
     .api-module { margin-bottom: 3rem; }
-    .api-module h2 { font-family: var(--font-mono); }
+    .api-module h2 { font-family: Inter, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
     .api-member { margin: 1.25rem 0; }
-    .api-member h4 { font-family: var(--font-mono); margin-bottom: 0.25rem; }
-    .docs-sidebar ul { margin-bottom: 1rem; }
+    .api-member h4 { font-family: var(--mono); margin-bottom: 0.25rem; }
+    .sidebar ul { margin-bottom: 1rem; }
   </style>
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="./index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="./docs.html">Docs</a></li>
-            <li><a href="./platform/index.html">Platform</a></li>
-            <li><a href="./api.html" aria-current="page">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-<aside class="docs-sidebar">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="./apex.html">SPX Benchmarks</a>
+        <a href="./platform/index.html">Platform</a>
+        <a href="./docs.html">Docs</a>
+        <a href="./api.html" aria-current="page">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="./docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="./apex.html">SPX Benchmarks</a>
+      <a href="./platform/index.html">Platform</a>
+      <a href="./docs.html">Docs</a>
+      <a href="./api.html" aria-current="page">API →</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+<aside class="sidebar">
 <h4>API Reference</h4>
 <h4>subvocal.exceptions</h4>
 <ul>
-<li><a href="#subvocal-exceptions"><span>[*]</span> exceptions</a></li>
+<li><a href="#subvocal-exceptions">exceptions</a></li>
 </ul>
 <h4>subvocal.paths</h4>
 <ul>
-<li><a href="#subvocal-paths"><span>[*]</span> paths</a></li>
+<li><a href="#subvocal-paths">paths</a></li>
 </ul>
 <h4>subvocal.config</h4>
 <ul>
-<li><a href="#subvocal-config"><span>[*]</span> config</a></li>
+<li><a href="#subvocal-config">config</a></li>
 </ul>
 <h4>subvocal.core</h4>
 <ul>
-<li><a href="#subvocal-core-corrections"><span>[*]</span> corrections</a></li>
-<li><a href="#subvocal-core-interfaces"><span>[*]</span> interfaces</a></li>
-<li><a href="#subvocal-core-llm_providers"><span>[*]</span> llm_providers</a></li>
-<li><a href="#subvocal-core-models"><span>[*]</span> models</a></li>
-<li><a href="#subvocal-core-pipeline"><span>[*]</span> pipeline</a></li>
-<li><a href="#subvocal-core-prompts"><span>[*]</span> prompts</a></li>
-<li><a href="#subvocal-core-security"><span>[*]</span> security</a></li>
-<li><a href="#subvocal-core-testing"><span>[*]</span> testing</a></li>
+<li><a href="#subvocal-core-corrections">corrections</a></li>
+<li><a href="#subvocal-core-interfaces">interfaces</a></li>
+<li><a href="#subvocal-core-llm_providers">llm_providers</a></li>
+<li><a href="#subvocal-core-models">models</a></li>
+<li><a href="#subvocal-core-pipeline">pipeline</a></li>
+<li><a href="#subvocal-core-prompts">prompts</a></li>
+<li><a href="#subvocal-core-security">security</a></li>
+<li><a href="#subvocal-core-testing">testing</a></li>
 </ul>
 <h4>subvocal.context</h4>
 <ul>
-<li><a href="#subvocal-context-manager"><span>[*]</span> manager</a></li>
-<li><a href="#subvocal-context-mock_data"><span>[*]</span> mock_data</a></li>
-<li><a href="#subvocal-context-providers"><span>[*]</span> providers</a></li>
-<li><a href="#subvocal-context-schema"><span>[*]</span> schema</a></li>
+<li><a href="#subvocal-context-manager">manager</a></li>
+<li><a href="#subvocal-context-mock_data">mock_data</a></li>
+<li><a href="#subvocal-context-providers">providers</a></li>
+<li><a href="#subvocal-context-schema">schema</a></li>
 </ul>
 <h4>subvocal.hardware</h4>
 <ul>
-<li><a href="#subvocal-hardware-brainflow_compat"><span>[*]</span> brainflow_compat</a></li>
-<li><a href="#subvocal-hardware-datasets"><span>[*]</span> datasets</a></li>
-<li><a href="#subvocal-hardware-drivers"><span>[*]</span> drivers</a></li>
+<li><a href="#subvocal-hardware-brainflow_compat">brainflow_compat</a></li>
+<li><a href="#subvocal-hardware-datasets">datasets</a></li>
+<li><a href="#subvocal-hardware-drivers">drivers</a></li>
 </ul>
 <h4>subvocal.emg_core</h4>
 <ul>
-<li><a href="#subvocal-emg_core-dsp-brainflow_filter"><span>[*]</span> brainflow_filter</a></li>
-<li><a href="#subvocal-emg_core-dsp-features"><span>[*]</span> features</a></li>
-<li><a href="#subvocal-emg_core-dsp-filters"><span>[*]</span> filters</a></li>
-<li><a href="#subvocal-emg_core-ml-benchmark"><span>[*]</span> benchmark</a></li>
-<li><a href="#subvocal-emg_core-ml-config_schema"><span>[*]</span> config_schema</a></li>
-<li><a href="#subvocal-emg_core-ml-export"><span>[*]</span> export</a></li>
-<li><a href="#subvocal-emg_core-ml-infer"><span>[*]</span> infer</a></li>
-<li><a href="#subvocal-emg_core-ml-model_io"><span>[*]</span> model_io</a></li>
-<li><a href="#subvocal-emg_core-ml-pretrain"><span>[*]</span> pretrain</a></li>
-<li><a href="#subvocal-emg_core-ml-train"><span>[*]</span> train</a></li>
+<li><a href="#subvocal-emg_core-adaptation-cpep">cpep</a></li>
+<li><a href="#subvocal-emg_core-adaptation-sal_lbn">sal_lbn</a></li>
+<li><a href="#subvocal-emg_core-adaptation-variance_transfer">variance_transfer</a></li>
+<li><a href="#subvocal-emg_core-benchmarks-emgbench">emgbench</a></li>
+<li><a href="#subvocal-emg_core-dsp-brainflow_filter">brainflow_filter</a></li>
+<li><a href="#subvocal-emg_core-dsp-features">features</a></li>
+<li><a href="#subvocal-emg_core-dsp-filters">filters</a></li>
+<li><a href="#subvocal-emg_core-dsp-handcrafted">handcrafted</a></li>
+<li><a href="#subvocal-emg_core-dsp-spd">spd</a></li>
+<li><a href="#subvocal-emg_core-foundation-aemg_tokenizer">aemg_tokenizer</a></li>
+<li><a href="#subvocal-emg_core-foundation-spectre">spectre</a></li>
+<li><a href="#subvocal-emg_core-foundation-tinymyo">tinymyo</a></li>
+<li><a href="#subvocal-emg_core-ml-adaptor">adaptor</a></li>
+<li><a href="#subvocal-emg_core-ml-benchmark">benchmark</a></li>
+<li><a href="#subvocal-emg_core-ml-config_schema">config_schema</a></li>
+<li><a href="#subvocal-emg_core-ml-export">export</a></li>
+<li><a href="#subvocal-emg_core-ml-infer">infer</a></li>
+<li><a href="#subvocal-emg_core-ml-lisa">lisa</a></li>
+<li><a href="#subvocal-emg_core-ml-model_io">model_io</a></li>
+<li><a href="#subvocal-emg_core-ml-mona">mona</a></li>
+<li><a href="#subvocal-emg_core-ml-pretrain">pretrain</a></li>
+<li><a href="#subvocal-emg_core-ml-spd_gru">spd_gru</a></li>
+<li><a href="#subvocal-emg_core-ml-speechnet">speechnet</a></li>
+<li><a href="#subvocal-emg_core-ml-train">train</a></li>
 </ul>
 <h4>subvocal.mcp</h4>
 <ul>
-<li><a href="#subvocal-mcp-server"><span>[*]</span> server</a></li>
+<li><a href="#subvocal-mcp-server">server</a></li>
 </ul>
 <h4>subvocal.shorthand</h4>
 <ul>
-<li><a href="#subvocal-shorthand-decoder"><span>[*]</span> decoder</a></li>
-<li><a href="#subvocal-shorthand-simulator"><span>[*]</span> simulator</a></li>
-<li><a href="#subvocal-shorthand-spec"><span>[*]</span> spec</a></li>
-<li><a href="#subvocal-shorthand-vocab"><span>[*]</span> vocab</a></li>
+<li><a href="#subvocal-shorthand-decoder">decoder</a></li>
+<li><a href="#subvocal-shorthand-simulator">simulator</a></li>
+<li><a href="#subvocal-shorthand-spec">spec</a></li>
+<li><a href="#subvocal-shorthand-vocab">vocab</a></li>
 </ul>
 <h4>subvocal.tts</h4>
 <ul>
-<li><a href="#subvocal-tts-engine"><span>[*]</span> engine</a></li>
-<li><a href="#subvocal-tts-schema"><span>[*]</span> schema</a></li>
+<li><a href="#subvocal-tts-engine">engine</a></li>
+<li><a href="#subvocal-tts-schema">schema</a></li>
 </ul>
 <h4>subvocal.routing</h4>
 <ul>
-<li><a href="#subvocal-routing-selector"><span>[*]</span> selector</a></li>
+<li><a href="#subvocal-routing-selector">selector</a></li>
 </ul>
 <h4>subvocal.runtime</h4>
 <ul>
-<li><a href="#subvocal-runtime-egress"><span>[*]</span> egress</a></li>
-<li><a href="#subvocal-runtime-ingress"><span>[*]</span> ingress</a></li>
-<li><a href="#subvocal-runtime-session"><span>[*]</span> session</a></li>
-<li><a href="#subvocal-runtime-store"><span>[*]</span> store</a></li>
-<li><a href="#subvocal-runtime-worker"><span>[*]</span> worker</a></li>
+<li><a href="#subvocal-runtime-egress">egress</a></li>
+<li><a href="#subvocal-runtime-ingress">ingress</a></li>
+<li><a href="#subvocal-runtime-session">session</a></li>
+<li><a href="#subvocal-runtime-store">store</a></li>
+<li><a href="#subvocal-runtime-worker">worker</a></li>
 </ul>
 <h4>subvocal.stream</h4>
 <ul>
-<li><a href="#subvocal-stream-buffer"><span>[*]</span> buffer</a></li>
-<li><a href="#subvocal-stream-datachannel"><span>[*]</span> datachannel</a></li>
-<li><a href="#subvocal-stream-level"><span>[*]</span> level</a></li>
-<li><a href="#subvocal-stream-quality"><span>[*]</span> quality</a></li>
-<li><a href="#subvocal-stream-tracker"><span>[*]</span> tracker</a></li>
+<li><a href="#subvocal-stream-buffer">buffer</a></li>
+<li><a href="#subvocal-stream-datachannel">datachannel</a></li>
+<li><a href="#subvocal-stream-level">level</a></li>
+<li><a href="#subvocal-stream-quality">quality</a></li>
+<li><a href="#subvocal-stream-tracker">tracker</a></li>
 </ul>
 <h4>subvocal.auth</h4>
 <ul>
-<li><a href="#subvocal-auth-grants"><span>[*]</span> grants</a></li>
+<li><a href="#subvocal-auth-grants">grants</a></li>
 </ul>
 <h4>subvocal.telemetry</h4>
 <ul>
-<li><a href="#subvocal-telemetry-service"><span>[*]</span> service</a></li>
+<li><a href="#subvocal-telemetry-service">service</a></li>
 </ul>
 <h4>subvocal.utils</h4>
 <ul>
-<li><a href="#subvocal-utils-concurrency"><span>[*]</span> concurrency</a></li>
+<li><a href="#subvocal-utils-concurrency">concurrency</a></li>
 </ul>
 </aside>
 <article class="docs-body">
 <h1>API Reference</h1>
-<p>Auto-generated from docstrings across 49 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
+<p>Auto-generated from docstrings across 63 modules. Regenerate with <code>python tools/build_api_page.py</code>.</p>
 <section class="api-module" id="subvocal-exceptions">
 <h2>subvocal.exceptions</h2>
 <p>Typed exception hierarchy for the Subvocal SDK.</p><p>Every error the SDK raises derives from :class:`SubvocalError`, so integrators
@@ -1277,7 +1304,9 @@ and app state (including visible interactive elements).</p>
 </section>
 <section class="api-module" id="subvocal-hardware-datasets">
 <h2>subvocal.hardware.datasets</h2>
-<p>Dataset drivers for public electromyography databases (Ninapro, PutEMG, CSL-HDEMG).</p>
+<p>Dataset drivers for public electromyography databases (Ninapro, PutEMG, CSL-HDEMG, Gaddy).</p><p>GaddyDriver supports the Silent Speech EMG dataset (Gaddy &amp; Klein 2020,
+Zenodo 4064409): 8-channel facial EMG at 1000 Hz (resampled 800 Hz in ACL 2021
+model) paired with audio and info.json transcriptions.</p>
 <div class="api-member">
 <h3><code>class NinaproDriver(HardwareSource)</code></h3>
 <p>Streams electromyography signals from Ninapro MATLAB (.mat) files.</p>
@@ -1370,6 +1399,157 @@ and app state (including visible interactive elements).</p>
 <h4>read_frame</h4>
 <pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
 <p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class GaddyDriver(HardwareSource)</code></h3>
+<p>Streams EMG from the Gaddy &amp; Klein silent-speech dataset (Zenodo 4064409).</p><p>Dataset layout (per Zenodo): each utterance provides
+``{id}_emg.npy`` shape ``(T, 8)`` raw EMG at 1000 Hz (ACL 2021 resampled
+to 800 Hz), ``{id}_audio.flac`` / ``_audio_clean.flac``, and
+``{id}_info.json`` (contains ``text``/``transcript``/``prompt``). Utterances
+are sampled for both silent (``ES``) and vocalized (``EV``) modes; this
+driver indexes all ``*_emg.npy`` recursively and can filter by split.</p><p>Streaming emulates hardware by sequentially concatenating utterances and
+returning windowed :class:`Frame` objects.</p><p>Args:
+    data_dir: Root directory of the extracted Zenodo archive (contains
+        ``*_emg.npy`` files recursively).
+    fs: Sampling frequency in Hz. Raw data is 1000 Hz; ACL 2021 model
+        resamples to 800 Hz. Defaults to 1000.0.
+    loop: Whether to loop to the first utterance when EOF is reached.
+    split: Optional filter — ``"silent"`` or ``"vocalized"``. When set,
+        only utterances whose path or ``info.json`` mode contains the term
+        are retained. ``None`` retains all.</p><p>Raises:
+    FileNotFoundError: If ``data_dir`` does not exist, with download
+        instructions for https://zenodo.org/records/4064409.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, data_dir: str, fs: float = 800.0, loop: bool = True, split: str | None = None) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>list_utterances</h4>
+<pre><code>def list_utterances(self) -&gt; list[str]</code></pre>
+<p>Return list of utterance IDs indexed from data_dir.</p>
+</div>
+<div class="api-member">
+<h4>get_transcript</h4>
+<pre><code>def get_transcript(self, utterance_id: str | None = None) -&gt; str</code></pre>
+<p>Return transcript for an utterance.</p><p>Args:
+    utterance_id: ID as returned by list_utterances(). If None, returns
+        transcript of the current streaming utterance.</p><p>Returns:
+    Transcription string (may be empty if info.json missing).</p>
+</div>
+<div class="api-member">
+<h4>get_audio_path</h4>
+<pre><code>def get_audio_path(self, utterance_id: str) -&gt; str | None</code></pre>
+<p>Return audio file path for utterance if present.</p>
+</div>
+<div class="api-member">
+<h4>get_info</h4>
+<pre><code>def get_info(self, utterance_id: str) -&gt; dict[str, object]</code></pre>
+<p>Return parsed info.json dict for utterance (empty if missing).</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class MetaEMGDriver(HardwareSource)</code></h3>
+<p>Driver for Meta's sEMG-RD emg2pose / surface-typing datasets.</p><p>Open-sourced Dec 2024 (blog_), Nature 2025 (Sivakumar &amp; Landau et al.
+"Generic hand pose tracking..." + Salter et al. NeurIPS 2024 emg2pose
+``arXiv:2412.02725``). Wristband is the sEMG-RD: 16 bipolar channels per
+wrist at 2 kHz (12-bit), paired with hand-pose labels at 2 kHz from a
+26-camera motion-capture rig (19 markers/hand → IK joint angles,
+linearly interpolated to 2 kHz).</p><p>Layout (HDF5 per recording, 25k files / 193 participants / 370 h):</p><p>* ``/emg``  → ``(T, 16)`` float32 (also accepted: ``raw_emg``, ``semg``)
+* ``/pose`` → ``(T, D)`` float32 (also accepted: ``joint_angles``,
+  ``hand_pose``, ``joints``; typically 63 = 21 joints × 3 or 84-dim)</p><p>Also supports unpacked NPY layout: ``*_emg.npy`` paired with
+``*_pose.npy`` / ``*_joint_angles.npy``.</p><p>Streaming concatenates recordings sequentially and exposes
+:class:`Frame` (EMG) via the :class:`HardwareSource` interface; pose
+is available via :meth:`load_pair`, :meth:`get_pose`, and
+:meth:`read_frame_with_pose`.</p><p>Args:
+    data_dir: Root of the extracted archive (may contain ``train`` /
+        ``val`` / ``test`` subfolders; see blog).
+    fs: Sampling frequency in Hz (sEMG-RD is 2000.0).
+    split: Dataset split — ``"train"`` / ``"val"`` / ``"test"``.
+        Sanitized to ``[A-Za-z0-9_-]`` and used to scope to
+        ``data_dir/split`` if that subdirectory exists, otherwise
+        filtered by path substring. ``"all"`` disables filtering.
+    loop: Whether to loop when recordings are exhausted.</p><p>Raises:
+    FileNotFoundError: If ``data_dir`` is missing or contains no
+        recordings, with instructions to download from
+        https://ai.meta.com/blog/open-sourcing-surface-electromyography-datasets-neurips-2024
+        and https://github.com/facebookresearch/emg2pose.</p><p>.. _blog: https://ai.meta.com/blog/open-sourcing-surface-electromyography-datasets-neurips-2024</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, data_dir: str, fs: float = 2000.0, split: str = 'train', loop: bool = True) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>start</h4>
+<pre><code>def start(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>stop</h4>
+<pre><code>def stop(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>is_connected</h4>
+<pre><code>def is_connected(self) -&gt; bool</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>read_frame</h4>
+<pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>list_recordings</h4>
+<pre><code>def list_recordings(self) -&gt; list[str]</code></pre>
+<p>Return sorted recording IDs indexed from data_dir/split.</p>
+</div>
+<div class="api-member">
+<h4>load_pair</h4>
+<pre><code>def load_pair(self, idx: int | str) -&gt; tuple[np.ndarray, np.ndarray]</code></pre>
+<p>Load paired EMG and pose arrays for a recording.</p><p>Args:
+    idx: Integer index or recording ID string.</p><p>Returns:
+    Tuple ``(emg, pose)`` where ``emg`` is ``(T, 16)`` float32 and
+    ``pose`` is ``(T, D)`` float32 (D is joint-angle dim, e.g. 63).</p>
+</div>
+<div class="api-member">
+<h4>get_emg</h4>
+<pre><code>def get_emg(self, idx: int | str) -&gt; np.ndarray</code></pre>
+<p>Return EMG array ``(T, 16)`` for recording ``idx``.</p>
+</div>
+<div class="api-member">
+<h4>get_pose</h4>
+<pre><code>def get_pose(self, idx: int | str) -&gt; np.ndarray</code></pre>
+<p>Return pose array ``(T, D)`` for recording ``idx``.</p>
+</div>
+<div class="api-member">
+<h4>read_frame_with_pose</h4>
+<pre><code>def read_frame_with_pose(self, window_ms: int) -&gt; tuple[Frame, np.ndarray]</code></pre>
+<p>Stream EMG as :class:`Frame` and return time-aligned pose window.</p><p>Returns:
+    Tuple of ``(frame, pose_window)`` where ``pose_window`` is an
+    ``(num_samples, D)`` array aligned to the EMG samples.</p><p>Note:
+    Pose windows are contiguous across recordings (like EMG).</p>
 </div>
 </div>
 </section>
@@ -1503,6 +1683,799 @@ and app state (including visible interactive elements).</p>
 <pre><code>def read_frame(self, window_ms: int) -&gt; Frame</code></pre>
 <p>No description.</p>
 </div>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-adaptation-cpep">
+<h2>subvocal.emg_core.adaptation.cpep</h2>
+<p>Contrastive Pose-EMG Pretraining (CPEP) per Cui et al., arXiv:2509.04699.</p><p>CPEP aligns EMG and pose representations via contrastive learning for zero-shot
+gesture classification. Two Transformer encoders (EMG + pose, 4 layers, dim 256)
+project to a shared 256-d space (1-layer head) with L2 normalization. A
+symmetric InfoNCE loss with learnable temperature tau (init 0.02) pulls matched
+pairs together. Evaluation follows CLIP protocol: kNN voting in embedding
+space (k=10 majority vote) and linear probing.</p><p>Reference:
+    Cui et al., arXiv:2509.04699, 2025 — CPEP: Contrastive Pose-EMG Pre-training.
+    Embedding dim 256, 1-layer proj head 256, tau learnable init 0.02, L2 norm,
+    pose encoder frozen during alignment, zero-shot via TopK kNN cosine.</p><p>Torch / sklearn are optional; graceful MissingDependencyError is raised when
+required ops are invoked without the dependency.</p>
+<div class="api-member">
+<h3><code>class _BaseTransformerEncoder(nn.Module)</code></h3>
+<p>Shared Transformer base: Linear -&gt; pos -&gt; 4-layer Transformer -&gt; 1-layer head -&gt; L2.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, in_dim: int, seq_len: int = 150, d_model: int = 256, nhead: int = 8, num_layers: int = 4, dim_feedforward: int = 512, dropout: float = 0.1, embed_dim: int = 256, use_cls: bool = True) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class EMGEncoder(_BaseTransformerEncoder)</code></h3>
+<p>EMG Transformer encoder: 4 layers, dim 256, 1-layer projection to 256-d, L2 norm.</p><p>Args:
+    in_channels: Number of EMG channels (default 8).
+    seq_len: Time length of EMG segment (default 150).
+    d_model: Transformer hidden dim (default 256).
+    nhead: Attention heads (default 8).
+    num_layers: Transformer layers (default 4 per CPEP).
+    dim_feedforward: FFN dim (default 512).
+    dropout: Dropout.
+    embed_dim: Output embedding dim (default 256 per CPEP).
+    use_cls: Use [CLS] token as sequence summary (paper uses CLS).</p><p>Input:
+    Tensor shape ``(B,C,T)`` or ``(B,T,C)`` or ``(C,T)``.
+Output:
+    L2-normalized embedding ``(B, embed_dim)``.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, in_channels: int = 8, seq_len: int = 150, d_model: int = 256, nhead: int = 8, num_layers: int = 4, dim_feedforward: int = 512, dropout: float = 0.1, embed_dim: int = 256, use_cls: bool = True, **kwargs: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class PoseEncoder(_BaseTransformerEncoder)</code></h3>
+<p>Pose Transformer encoder: mirror of EMGEncoder for pose (4 layers, dim 256).</p><p>Args:
+    pose_dim: Input pose dimensionality per frame (e.g. 63 for 21 joints x3,
+        42, or flattened heatmap dims). Default 63.
+    seq_len: Temporal length (default 150 to match EMG).
+    d_model: Hidden dim 256.
+    nhead: Heads 8.
+    num_layers: 4.
+    dim_feedforward: 512.
+    dropout: 0.1.
+    embed_dim: 256 (shared space).
+    use_cls: Use [CLS] token.</p><p>Input:
+    Tensor shape ``(B,T,D)`` or ``(B,D,T)`` or ``(T,D)`` where D==pose_dim.
+    Both layouts are accepted (auto-detected).</p><p>Output:
+    L2-normalized embedding ``(B, embed_dim)``.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, pose_dim: int = 63, seq_len: int = 150, d_model: int = 256, nhead: int = 8, num_layers: int = 4, dim_feedforward: int = 512, dropout: float = 0.1, embed_dim: int = 256, use_cls: bool = True, **kwargs: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class EMGEncoder</code></h3>
+<p>Stub when torch not installed.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, *args: Any, **kwargs: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>parameters</h4>
+<pre><code>def parameters(self) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>to</h4>
+<pre><code>def to(self, *a: Any, **k: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>eval</h4>
+<pre><code>def eval(self) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>train</h4>
+<pre><code>def train(self, *a: Any, **k: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class PoseEncoder</code></h3>
+<p>Stub when torch not installed.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, *args: Any, **kwargs: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>parameters</h4>
+<pre><code>def parameters(self) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>to</h4>
+<pre><code>def to(self, *a: Any, **k: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>eval</h4>
+<pre><code>def eval(self) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>train</h4>
+<pre><code>def train(self, *a: Any, **k: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CPEPFramework(nn.Module)</code></h3>
+<p>Contrastive Pose-EMG Pretraining framework (CPEP).</p><p>Wraps :class:`EMGEncoder` and :class:`PoseEncoder` with a learnable
+temperature ``tau`` (init 0.02) and symmetric InfoNCE. During
+contrastive training the pose encoder is frozen (paper: only EMG encoder
++ projection head are updated) — controlled by ``freeze_pose``.</p><p>Args:
+    emg_channels: EMG input channels (default 8).
+    pose_dim: Pose per-frame dim (default 63).
+    seq_len: EMG temporal length (default 150).
+    pose_seq_len: Pose temporal length (default seq_len if None).
+    d_model: Transformer hidden dim (default 256).
+    embed_dim: Shared embedding dim (default 256 per CPEP).
+    nhead: Attention heads (default 8).
+    num_layers: Transformer layers (default 4).
+    dim_feedforward: FFN dim (default 512).
+    dropout: Dropout (default 0.1).
+    tau_init: Initial temperature (default 0.02).
+    freeze_pose: If True, pose encoder params are frozen
+        (non-trainable) — matches CPEP Sec. 2.3.
+    use_cls: Use [CLS] token (default True, per paper).</p><p>Attributes:
+    emg_encoder: :class:`EMGEncoder`
+    pose_encoder: :class:`PoseEncoder`
+    tau: Learnable temperature scalar ``nn.Parameter``.</p><p>Reference:
+    Cui et al., arXiv:2509.04699, Sec. 2.3.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, emg_channels: int = 8, pose_dim: int = 63, seq_len: int = 150, pose_seq_len: int | None = None, d_model: int = 256, embed_dim: int = 256, nhead: int = 8, num_layers: int = 4, dim_feedforward: int = 512, dropout: float = 0.1, tau_init: float = 0.02, freeze_pose: bool = True, use_cls: bool = True) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, emg: Any, pose: Any) -&gt; Any</code></pre>
+<p>Compute symmetric InfoNCE loss for paired (emg, pose).</p><p>Args:
+    emg: ``(B,C,T)`` or ``(B,T,C)`` EMG batch.
+    pose: ``(B,T,D)`` or ``(B,D,T)`` pose batch.</p><p>Returns:
+    Scalar loss Tensor.</p>
+</div>
+<div class="api-member">
+<h4>encode_emg</h4>
+<pre><code>def encode_emg(self, emg: Any) -&gt; Any</code></pre>
+<p>Encode EMG to L2-normalized embedding ``(B, embed_dim)``.</p>
+</div>
+<div class="api-member">
+<h4>encode_pose</h4>
+<pre><code>def encode_pose(self, pose: Any) -&gt; Any</code></pre>
+<p>Encode pose to L2-normalized embedding ``(B, embed_dim)``.</p>
+</div>
+<div class="api-member">
+<h4>get_tau</h4>
+<pre><code>def get_tau(self) -&gt; float</code></pre>
+<p>Return current temperature value (float).</p>
+</div>
+<div class="api-member">
+<h4>zero_shot_predict</h4>
+<pre><code>def zero_shot_predict(self, query_emg: Any, gallery_pose_embs: Any, gallery_labels: Any, k: int = 10, metric: str = 'cosine') -&gt; np.ndarray</code></pre>
+<p>Zero-shot classify query EMG via kNN over gallery pose embeddings.</p><p>Args:
+    query_emg: Raw EMG batch (``B,...``) or precomputed embeddings
+        ``(B,D)``. If 2D with D==embed_dim, treated as embeddings;
+        otherwise encoded via :meth:`encode_emg`.
+    gallery_pose_embs: Gallery pose embeddings ``(G,D)`` or raw
+        pose batch (``G,...``) — if not 2D, encoded via
+        :meth:`encode_pose`.
+    gallery_labels: Labels for gallery ``(G,)``.
+    k: Number of neighbors (default 10 per CPEP).
+    metric: Distance metric ``"cosine"`` or ``"euclidean"``.</p><p>Returns:
+    Predicted labels ``(B,)`` ndarray.</p>
+</div>
+<div class="api-member">
+<h4>classify_zero_shot</h4>
+<pre><code>def classify_zero_shot(self, *a: Any, **k: Any) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>zero_shot_classify</h4>
+<pre><code>def zero_shot_classify(self, *a: Any, **k: Any) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>predict_zero_shot</h4>
+<pre><code>def predict_zero_shot(self, *a: Any, **k: Any) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CPEPFramework</code></h3>
+<p>Stub when torch not installed.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, *args: Any, **kwargs: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, emg: Any, pose: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>encode_emg</h4>
+<pre><code>def encode_emg(self, emg: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>encode_pose</h4>
+<pre><code>def encode_pose(self, pose: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>zero_shot_predict</h4>
+<pre><code>def zero_shot_predict(self, *a: Any, **k: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>l2_normalize_embeddings</code></h3>
+<pre><code>def l2_normalize_embeddings(x: Any, dim: int = -1, eps: float = 1e-08) -&gt; Any</code></pre>
+<p>L2-normalize embeddings along ``dim`` (torch or numpy).</p>
+</div>
+<div class="api-member">
+<h3><code>pose_emg_contrastive_loss</code></h3>
+<pre><code>def pose_emg_contrastive_loss(emg_emb: Any, pose_emb: Any, tau: Any = 0.02) -&gt; Any</code></pre>
+<p>Symmetric InfoNCE for pose-EMG alignment (CPEP).</p><p>Both embeddings are L2-normalized and cosine similarity is scaled by
+temperature ``tau`` (learnable, init 0.02 per paper):</p><p>s_ij = (u_i·v_j)/tau,  u=norm(emg), v=norm(pose)</p><p>Loss averages two CE losses over batch:</p><p>L = 0.5*(CE(logits, arange(N)) + CE(logits.T, arange(N)))
+    logits = u @ v.T / tau</p><p>Args:
+    emg_emb: ``(N,D)`` embeddings (Tensor or ndarray).
+    pose_emb: ``(N,D)`` embeddings.
+    tau: Temperature scalar — float or 0-d Tensor (learnable). Clamped
+        to ``&gt;=1e-4`` to avoid division blow-up. Init 0.02.</p><p>Returns:
+    Scalar loss Tensor (torch) or float (numpy fallback).</p><p>Reference:
+    CPEP Sec. 2.3, CLIP symmetric InfoNCE.</p>
+</div>
+<div class="api-member">
+<h3><code>knn_classify</code></h3>
+<pre><code>def knn_classify(train_embs: Any, train_labels: Any, query_embs: Any, k: int = 5, metric: str = 'cosine') -&gt; np.ndarray</code></pre>
+<p>Zero-shot kNN classification in embedding space (CPEP ZS protocol).</p><p>For each query embedding, retrieve TopK nearest training embeddings by
+cosine similarity (L2-normalized dot) or Euclidean, then majority vote.
+Paper uses ``k=10``.</p><p>Args:
+    train_embs: Gallery embeddings ``(G,D)`` (ndarray or Tensor).
+    train_labels: Gallery labels ``(G,)`` (array-like).
+    query_embs: Query embeddings ``(Q,D)``.
+    k: Number of neighbors (default 5; CPEP uses 10). Clamped to ``min(k,G)``.
+    metric: ``"cosine"`` (default, as CPEP) or ``"euclidean"``.</p><p>Returns:
+    Predicted labels ``(Q,)`` ndarray with same dtype as train_labels.</p><p>Handles small data (G &lt; k, single sample, etc.) and works without
+sklearn/torch (pure numpy).</p>
+</div>
+<div class="api-member">
+<h3><code>embedding_knn_predict</code></h3>
+<pre><code>def embedding_knn_predict(*a: Any, **k: Any) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>zero_shot_predict</code></h3>
+<pre><code>def zero_shot_predict(*a: Any, **k: Any) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-adaptation-sal_lbn">
+<h2>subvocal.emg_core.adaptation.sal_lbn</h2>
+<p>SAL / LBN adaptation — Spatial Adaptation Layer + Learnable Baseline Norm.</p><p>Implements the inter-session adaptation method from:</p><p>* Pereira et al., 2024 — *"SAL and LBN for HD-sEMG Inter-Session Adaptation"*
+  arXiv:2409.08058 — Spatial Adaptation Layer (learnable affine warp of the
+  electrode grid to compensate for shift) combined with Learnable Baseline
+  Normalisation (per-channel bias subtraction, inspired by baseline
+  normalisation in Gaddy &amp; Klein 2020 / J. Neural Eng. 2024 [4]).</p><p>SAL is a lightweight, prependable input transform: biosignals from a new
+session are warped back to the original spatial frame before entering any
+backbone (CNN/GRU/Transformer). For HD-sEMG (e.g. 8×16 = 128 ch) this is a
+2-D affine resampling (``2×3`` matrix, 6 DoF; paper reports 7 params incl.
+global scale — we expose 6 DoF and the 2-DoF translation-only variant).
+For generic ``(B,C,T)`` sEMG the spatial warp is complemented (and for
+non-grid montages replaced) by a per-channel affine ``x * scale + shift``
+(``2*C`` learnable params). LBN is a per-channel learnable bias
+subtraction ``x - bias``.</p><p>Reference
+---------
+Pereira et al., arXiv:2409.08058, 2024.
+Gaddy &amp; Klein, EMNLP 2020; JNE 2024 — baseline normalisation baseline.
+Torch guarded: falls back to numpy when torch is absent.</p>
+<div class="api-member">
+<h3><code>class SAL(nn.Module)</code></h3>
+<p>Spatial Adaptation Layer (SAL) per Pereira et al., arXiv:2409.08058.</p><p>Learnable, prependable input transform that warps a new session's
+biosignals back to the original spatial frame. For HD-sEMG grids
+(default 8×16) a 2-D affine (``2×3``, 6 DoF) is applied via
+``affine_grid`` + ``grid_sample``; the translation-only variant keeps
+2 DoF ``(tx, ty)``. For any montage a per-channel affine
+``x * scale + shift`` (``2*C`` params, identity init) is always
+present — the paper's 7 params are realised as 6 affine + global
+scale bias, here decomposed as per-channel gain/bias + spatial warp.</p><p>Args:
+    num_channels: Number of EMG channels (default 8; 128 for 8×16 HD).
+    use_affine: If True, learn full 2×3 affine (6 params). Ignored if
+        ``use_translation_only`` is True.
+    use_translation_only: If True, only 2 translation params.</p><p>Input:
+    ``(B,C,T)`` or ``(B,T,C)`` Tensor (or ``(C,T)`` single sample), or
+    ``np.ndarray`` of same shapes (handled via torch conversion).</p><p>Output:
+    Tensor/ndarray of same shape as input.</p><p>Reference:
+    Pereira et al., arXiv:2409.08058, Sec. 2–3.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 8, use_affine: bool = True, use_translation_only: bool = False) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_affine_params</h4>
+<pre><code>def get_affine_params(self) -&gt; Any</code></pre>
+<p>Return affine matrix ``(2,3)`` (translation embedded if needed).</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class LBN(nn.Module)</code></h3>
+<p>Learnable Baseline Normalisation (LBN) per Pereira et al.</p><p>Per-channel learnable bias subtraction ``x - bias``. Bias is
+initialised to zero (identity). Inspired by baseline normalisation in
+Gaddy &amp; Klein 2020 / JNE 2024 [4] where resting baseline is removed
+per channel; here the baseline is learned jointly with SAL and the
+backbone.</p><p>Args:
+    num_channels: Number of EMG channels.</p><p>Reference:
+    Pereira et al., arXiv:2409.08058, Sec. 3.2; baseline norm [4].</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 8) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SAL_LBN(nn.Module)</code></h3>
+<p>Combined SAL + LBN adaptation block.</p><p>Sequentially applies :class:`SAL` then :class:`LBN`:
+``forward(x) == LBN(SAL(x))``. Prependable to any model:
+``logits = backbone(sal_lbn(emg))``.</p><p>Args:
+    num_channels: Number of EMG channels.
+    use_affine: Passed to :class:`SAL`.
+    use_translation_only: Passed to :class:`SAL`.</p><p>Reference:
+    Pereira et al., arXiv:2409.08058 — SAL/LBN combined.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 8, use_affine: bool = True, use_translation_only: bool = False) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_affine_params</h4>
+<pre><code>def get_affine_params(self) -&gt; Any</code></pre>
+<p>Delegate to underlying SAL.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SAL</code></h3>
+<p>SAL numpy fallback (torch not installed).</p><p>Same API as torch SAL but using numpy arrays. Per-channel
+``x * scale + shift`` with learnable 2*C params; affine 2×3 and
+translation 2-vector stored as numpy. Grid warp is no-op in pure
+numpy (per-channel only) to keep fallback lightweight.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 8, use_affine: bool = True, use_translation_only: bool = False) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_affine_params</h4>
+<pre><code>def get_affine_params(self) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>parameters</h4>
+<pre><code>def parameters(self) -&gt; list[Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>train</h4>
+<pre><code>def train(self, mode: bool = True) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>eval</h4>
+<pre><code>def eval(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>to</h4>
+<pre><code>def to(self, device: str) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class LBN</code></h3>
+<p>LBN numpy fallback.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 8) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>parameters</h4>
+<pre><code>def parameters(self) -&gt; list[Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>train</h4>
+<pre><code>def train(self, mode: bool = True) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>eval</h4>
+<pre><code>def eval(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>to</h4>
+<pre><code>def to(self, device: str) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SAL_LBN</code></h3>
+<p>SAL_LBN numpy fallback.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 8, use_affine: bool = True, use_translation_only: bool = False) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_affine_params</h4>
+<pre><code>def get_affine_params(self) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>parameters</h4>
+<pre><code>def parameters(self) -&gt; list[Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>train</h4>
+<pre><code>def train(self, mode: bool = True) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>eval</h4>
+<pre><code>def eval(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>to</h4>
+<pre><code>def to(self, device: str) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>adapt_sal_lbn</code></h3>
+<pre><code>def adapt_sal_lbn(model: Any, sal_lbn: Any, train_loader: Any, epochs: int = 5, lr: float = 0.001, device: str = 'cpu', criterion: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Supervised adaptation of SAL/LBN on a new session.</p><p>Freezes ``model`` and optimises only ``sal_lbn`` parameters via a
+supervised loss (``CrossEntropy`` for classification by default).</p><p>The ``sal_lbn`` block is prepended: ``logits = model(sal_lbn(x))``.
+Typical usage (Pereira et al., Sec. 4 — &lt;2 min calibration data)::</p><p>sal_lbn = SAL_LBN(num_channels=8)
+    adapt_sal_lbn(backbone, sal_lbn, calib_loader, epochs=5, lr=1e-3)
+    logits = backbone(sal_lbn(emg_new_session))</p><p>Args:
+    model: Backbone ``nn.Module`` (e.g. CNN/GRU). Frozen in-place
+        (``requires_grad=False``) for the duration.
+    sal_lbn: :class:`SAL` | :class:`LBN` | :class:`SAL_LBN` instance.
+    train_loader: Iterable yielding ``(x, y)`` batches or dicts with
+        ``x``/``y``. ``x`` shape ``(B,C,T)`` or ``(B,T,C)``.
+    epochs: Number of adaptation epochs (default 5, paper uses 3-5).
+    lr: Learning rate for SAL/LBN (default 1e-3).
+    device: Torch device.
+    criterion: Loss fn; defaults to ``CrossEntropyLoss``. May be
+        ``MSELoss`` for regression targets.</p><p>Returns:
+    Dict with ``loss_history``, ``epochs``, ``lr``, ``final_loss``.</p><p>Raises:
+    MissingDependencyError: if torch not installed.</p><p>Reference:
+    Pereira et al., arXiv:2409.08058, Sec. 4 — session adaptation.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-adaptation-variance_transfer">
+<h2>subvocal.emg_core.adaptation.variance_transfer</h2>
+<p>Inter-Subject Variance Transfer per Yoneda et al., EMBC 2024 (Bayesian GCM).</p><p>Share variance (precision) not mean: per-class mean is subject-specific,
+precision/covariance is shared across subjects. Bayesian update with
+source posterior -&gt; target. Uses Normal-Wishart conjugate prior:</p><p>p(mu_c | Lambda_c) = N(m0, (beta0 Lambda_c)^-1)
+    p(Lambda_c) = Wishart(W0, nu0)</p><p>Pre-training aggregates source subjects to get posterior for shared Lambda_c.
+Transfer scales uncertainty via w_s coefficient (larger w_s = less uncertainty,
+more transfer). Target calibration (e.g. 1 trial) updates posterior with
+small data, regularized for singularity.</p><p>Reference:
+    Yoneda &amp; Furui, EMBC 2024 / arXiv:2505.15381 — Inter-Subject Variance
+    Transfer Learning for EMG Pattern Classification Based on Bayesian Inference.
+    Prior hyperparams: m0=0, beta0=1, nu0=D+1, W0=I.</p><p>Numpy (+ optional scipy) only; handles small data via diagonal regularization.</p>
+<div class="api-member">
+<h3><code>class GaussianClassificationModel</code></h3>
+<p>Per-class Gaussian classifier with shared-variance semantics.</p><p>Attributes:
+    means: ``(C,D)`` per-class means (subject-specific after transfer).
+    precisions: ``(C,D,D)`` per-class precision matrices (shared variance
+        origin, after Bayesian update).
+    covariances: ``(C,D,D)`` derived covariances (inv precisions).
+    classes: Unique label values ``(C,)`` (original dtype preserved).
+    priors: Class priors ``(C,)`` summing to 1 (uniform if None).
+    n_classes: Number of classes.
+    n_features: Feature dimension D.
+    class_to_idx: Mapping label -&gt; index.</p><p>Prediction is QDA/LDA-like via Gaussian log-likelihood with precision form:</p><p>log p(x|k) = -0.5*(x-mu_k)^T Lambda_k (x-mu_k)
+                 +0.5*log|Lambda_k| -0.5*D*log(2pi)</p><p>plus log prior.</p><p>Reference: Yoneda et al., Sec. II-B GCM.</p>
+<div class="api-member">
+<h4>shared_covariance</h4>
+<pre><code>def shared_covariance(self) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>variances</h4>
+<pre><code>def variances(self) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>predict</h4>
+<pre><code>def predict(self, X: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Predict labels for ``X`` shape ``(N,D)`` or ``(D,)``.</p><p>Returns:
+    Array ``(N,)`` with same dtype as ``classes``.</p>
+</div>
+<div class="api-member">
+<h4>predict_proba</h4>
+<pre><code>def predict_proba(self, X: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Posterior class probabilities ``(N,C)`` via softmax over log joint.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class VarianceTransferGCM</code></h3>
+<p>End-to-end variance-transfer GCM wrapper (Yoneda et al.).</p><p>Convenience class that holds the source posterior and target model,
+delegating to :func:`pretrain_variance_transfer`,
+:func:`transfer_to_target`, and :func:`predict`.</p><p>Example:
+    vt = VarianceTransferGCM()
+    post = vt.pretrain(source_data, source_labels)
+    model = vt.transfer(post, calib_data, calib_labels, w_s=1.0)
+    preds = vt.predict(model, test_data)  # or vt.predict(test_data)</p><p># or functional:
+    post = pretrain_variance_transfer(src_data, src_labels)
+    model = transfer_to_target(post, calib_data, calib_labels, w_s=1.0)
+    preds = predict(model, test_data)</p><p>Attributes:
+    posterior: Last computed posterior dict (or None).
+    model: Last fitted :class:`GaussianClassificationModel` (or None).</p><p>Reference:
+    Yoneda et al., EMBC 2024 / arXiv:2505.15381.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>pretrain</h4>
+<pre><code>def pretrain(self, source_data: list[np.ndarray], source_labels: list[np.ndarray]) -&gt; dict[str, Any]</code></pre>
+<p>Pre-train on source subjects (delegates to :func:`pretrain_variance_transfer`).</p>
+</div>
+<div class="api-member">
+<h4>transfer</h4>
+<pre><code>def transfer(self, posterior: dict[str, Any] | None, target_calib_data: np.ndarray, target_calib_labels: np.ndarray, w_s: float = 1.0) -&gt; GaussianClassificationModel</code></pre>
+<p>Transfer to target (delegates to :func:`transfer_to_target`).</p>
+</div>
+<div class="api-member">
+<h4>adapt</h4>
+<pre><code>def adapt(self, target_calib_data: np.ndarray, target_calib_labels: np.ndarray, w_s: float = 1.0, posterior: dict[str, Any] | None = None) -&gt; GaussianClassificationModel</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>fit_target</h4>
+<pre><code>def fit_target(self, posterior: dict[str, Any], target_calib_data: np.ndarray, target_calib_labels: np.ndarray, w_s: float = 1.0) -&gt; GaussianClassificationModel</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>predict</h4>
+<pre><code>def predict(self, test_data: np.ndarray, model: GaussianClassificationModel | None = None) -&gt; np.ndarray</code></pre>
+<p>Predict with stored or provided model.</p>
+</div>
+<div class="api-member">
+<h4>transfer_to_target</h4>
+<pre><code>def transfer_to_target(self, posterior: dict[str, Any], target_calib_data: np.ndarray, target_calib_labels: np.ndarray, w_s: float = 1.0) -&gt; GaussianClassificationModel</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>pretrain_variance_transfer</h4>
+<pre><code>def pretrain_variance_transfer(self, source_data: list[np.ndarray], source_labels: list[np.ndarray]) -&gt; dict[str, Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>fit</h4>
+<pre><code>def fit(self, *a: Any, **k: Any) -&gt; GaussianClassificationModel</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>pretrain_variance_transfer</code></h3>
+<pre><code>def pretrain_variance_transfer(source_data: list[np.ndarray], source_labels: list[np.ndarray]) -&gt; dict[str, Any]</code></pre>
+<p>Pre-train shared variance posterior from multiple source subjects.</p><p>Pools EMG feature vectors per class across subjects to estimate
+per-class Wishart posterior for shared precision. Means remain
+subject-specific -&gt; not pooled beyond class scatter.</p><p>Args:
+    source_data: List of feature arrays per source subject.
+        Each element shape ``(N_s, D)`` (2D) or ``(N_s,)`` for D=1.
+        Can also be 1D per trial — stacked internally.
+    source_labels: List of label arrays per source subject, each
+        shape ``(N_s,)`` with same length as corresponding data.</p><p>Returns:
+    Posterior dict with keys:
+        ``classes`` (np.ndarray ``C``), ``n_classes``, ``n_features``,
+        ``W`` (``C,D,D`` Wishart scale), ``nu`` (``C``), ``beta`` (``C``),
+        ``m`` (``C,D`` posterior mean estimates), plus prior hyperparams
+        ``beta0``, ``m0``, ``nu0``, ``W0`` for downstream transfer.
+        Suitable to pass as ``posterior`` to :func:`transfer_to_target`.</p><p>Reference:
+    Yoneda et al., Sec. II-C1 Pre-training with source subjects.
+    Prior hyperparams fixed: m0=0, beta0=1, nu0=D+1, W0=I.</p>
+</div>
+<div class="api-member">
+<h3><code>transfer_to_target</code></h3>
+<pre><code>def transfer_to_target(posterior: dict[str, Any], target_calib_data: np.ndarray, target_calib_labels: np.ndarray, w_s: float = 1.0) -&gt; GaussianClassificationModel</code></pre>
+<p>Transfer shared variance to target subject with limited calibration.</p><p>Bayesian update using scaled source posterior as prior for shared
+precision, plus target calibration data (e.g. 1 trial). Only variance
+(precision) is transferred; means are re-estimated from target data
+(subject-specific).</p><p>The ``w_s`` coefficient controls uncertainty of the source posterior:
+larger ``w_s`` = less uncertainty = more influence. Scaling keeps
+expected precision ``E[Lambda]=nu*W`` constant while increasing
+concentration ``nu`` with ``w_s`` (variance of Wishart decreases).</p><p>nu_scaled = max(D+1, w_s * nu_src)
+    W_scaled  = W_src * (nu_src / nu_scaled)   # keep mean fixed</p><p>For each class, target posterior:</p><p>beta_post = beta0 + N_t
+    m_post    = (beta0*m0 + N_t*x_bar_t)/beta_post
+    W_post^-1 = W_scaled^-1 + S_t + (beta0*N_t/beta_post)*(x_bar_t-m0)(x_bar_t-m0)^T
+    nu_post   = nu_scaled + N_t
+    precision = nu_post * W_post</p><p>Handles small data (N_t=0 or 1) with regularization; unseen classes get
+posterior from scaled prior alone.</p><p>Args:
+    posterior: Dict from :func:`pretrain_variance_transfer`.
+    target_calib_data: Calibration features ``(N_t, D)`` or ``(N_t, )``.
+        Single-trial calibration typical (e.g. few samples per class).
+    target_calib_labels: Labels ``(N_t,)`` matching data rows.
+    w_s: Weight coefficient ``&gt;0`` controlling transferred amount.
+        ``1.0`` default (no scaling). Larger -&gt; stronger transfer.</p><p>Returns:
+    :class:`GaussianClassificationModel` fitted to target (subject-specific
+    means + variance-transferred precisions).</p><p>Reference:
+    Yoneda et al., Sec. II-C2 Transfer learning to target, Eq. 13-22.</p>
+</div>
+<div class="api-member">
+<h3><code>predict</code></h3>
+<pre><code>def predict(model: GaussianClassificationModel, test_data: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Predict labels for test_data using a :class:`GaussianClassificationModel`.</p><p>Args:
+    model: Fitted :class:`GaussianClassificationModel`.
+    test_data: Features ``(N,D)`` or ``(D,)`` single sample.
+        Can be list of arrays; converted via ``np.asarray``.</p><p>Returns:
+    Predicted labels ``(N,)`` ndarray.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-benchmarks-emgbench">
+<h2>subvocal.emg_core.benchmarks.emgbench</h2>
+<p>EMGBench harness — LOSO and few-shot adaptation across 9 EMG datasets.</p><p>Implements the evaluation protocol from:</p><p>* Yang et al., *EMGBench: Benchmarking Out-of-Distribution Generalization
+  and Adaptation for Electromyography*, NeurIPS 2024 Datasets &amp; Benchmarks
+  Track, https://arxiv.org/abs/2410.23625 — https://emgbench.github.io —
+  https://github.com/jehanyang/emgbench</p><p>EMGBench spans 9 datasets (Ninapro DB2/DB3/DB5, CapgMyo DB-b, Myo Armband,
+UCI EMG, MCS, Hyser, FlexWear-HD) and evaluates:</p><p>1. Intersubject generalization via Leave-One-Subject-Out CV (LOSO-CV)
+2. Few-shot / intersession adaptation (fine-tuning on ``n_shot`` examples
+   per gesture from the held-out subject after pre-training on the others;
+   also TSTS / FT-X% variants)</p><p>This module provides a *lightweight, dependency-optional* harness that
+works both on real EMGBench ``DatasetsProcessed_hdf5/`` layouts and in
+synthetic-fallback mode (no data on disk), so unit tests and CI never
+require the 10-100 GiB downloads.</p><p>Real-data layout (per EMGBench ``CNN_EMG.py``)::</p><p>root_dir/&lt;dataset&gt;/p&lt;N&gt;/participant_&lt;N&gt;.hdf5   # keys = gesture names
+    root_dir/&lt;dataset&gt;/frequency.txt               # sampling rate (optional)
+    # each gesture dataset shape: (trials, electrodes, timesteps)</p><p>When a dataset directory cannot be read, synthetic windows are generated
+deterministically so ``model_fn`` contracts can still be exercised.</p>
+<div class="api-member">
+<h3><code>class EMGBench</code></h3>
+<p>EMGBench evaluation harness (NeurIPS 2024).</p><p>Args:
+    datasets: List of 9 EMGBench dataset slugs (e.g.
+        ``"ninapro-db5"``, ``"capgmyo-db-b"``). Sanitized to
+        ``[A-Za-z0-9._-]``. If empty, :data:`DEFAULT_DATASETS` is used.
+    root_dir: Root directory containing per-dataset subfolders
+        (``root_dir/&lt;dataset&gt;/...``) or the ``DatasetsProcessed_hdf5``
+        parent. Traversal-sanitized.</p><p>Example::</p><p>bench = EMGBench(datasets=DEFAULT_DATASETS, root_dir="DatasetsProcessed_hdf5")
+    loso = bench.evaluate_loso(my_model_fn, dataset="ninapro-db5")
+    adapt = bench.evaluate_adaptation(my_model_fn, dataset="ninapro-db5", n_shot=5)
+    all_res = bench.evaluate_all(my_model_fn, mode="loso")</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, datasets: list[str], root_dir: str) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>evaluate_loso</h4>
+<pre><code>def evaluate_loso(self, model_fn: Callable[..., Any], dataset: str) -&gt; dict[str, Any]</code></pre>
+<p>Intersubject LOSO-CV for ``dataset``.</p><p>For each subject *i* held out as test, ``model_fn`` is invoked as
+``model_fn(train_X, train_y, test_X, test_y)`` (also supports
+``((train_X, train_y), (test_X, test_y))`` or dict forms).
+The return value may be a scalar accuracy, a dict containing
+``"accuracy"``/``"acc"``, or predictions — all are reduced to a
+per-fold accuracy via :func:`_accuracy_from_result`.</p><p>Args:
+    model_fn: Callable implementing the model train+eval for one
+        LOSO fold.
+    dataset: Dataset slug (sanitized). Must be discoverable under
+        ``root_dir``; synthetic fallback is used otherwise.</p><p>Returns:
+    Dict with ``per_subject`` (list of dicts), ``mean_accuracy``,
+    ``std_accuracy``, ``min_accuracy``, ``max_accuracy``, ``n_subjects``.</p>
+</div>
+<div class="api-member">
+<h4>evaluate_adaptation</h4>
+<pre><code>def evaluate_adaptation(self, model_fn: Callable[..., Any], dataset: str, n_shot: int = 1) -&gt; dict[str, Any]</code></pre>
+<p>Few-shot adaptation (pretrain on N-1 subjects, adapt on ``n_shot``/class).</p><p>For each held-out subject, the subject's trials are split few-shot:
+the first ``n_shot`` trials per gesture become a *support* set for
+fine-tuning, the remainder is the *query* test set. ``model_fn`` is
+invoked as ``model_fn(train_X, train_y, support_X, support_y,
+query_X, query_y)`` when possible; otherwise training data is
+augmented with the support set and delegated to the LOSO path.
+Covers the EMGBench adaptation task (Yang et al., NeurIPS 2024,
+Table 3 — FT-X% and IS FT; TSTS few-shot).</p><p>Args:
+    model_fn: Callable for adaptation-aware training. Should accept
+        either 6 positional args or 3 tuple args.
+    dataset: Dataset slug.
+    n_shot: Number of trials per gesture from the held-out subject
+        to use for adaptation (1/2/5 typical; FT-5% ≈ 1-shot).</p><p>Returns:
+    Dict like :meth:`evaluate_loso` but with ``n_shot`` and query-
+    set sizes. Includes ``mean_accuracy``/``std_accuracy`` over
+    subjects.</p>
+</div>
+<div class="api-member">
+<h4>evaluate_all</h4>
+<pre><code>def evaluate_all(self, model_fn: Callable[..., Any], mode: str = 'loso', n_shot: int = 1) -&gt; dict[str, Any]</code></pre>
+<p>Run ``mode`` across all configured datasets and aggregate.</p><p>Args:
+    model_fn: Per-fold callable (see :meth:`evaluate_loso`).
+    mode: ``"loso"`` for intersubject LOSO-CV or ``"adaptation"``
+        / ``"few_shot"`` / ``"ft"`` for few-shot adaptation.
+    n_shot: Passed to :meth:`evaluate_adaptation` when
+        ``mode`` is adaptation.</p><p>Returns:
+    Dict with ``per_dataset`` (dataset → per-dataset result dict),
+    ``mean_accuracy`` / ``std_accuracy`` over dataset means
+    (macro-average), plus ``overall_mean``/``overall_std`` aliases.</p>
+</div>
+<div class="api-member">
+<h4>run_all</h4>
+<pre><code>def run_all(self, model_fn: Callable[..., Any], mode: str = 'loso', n_shot: int = 1) -&gt; dict[str, Any]</code></pre>
+<p>Alias for :meth:`evaluate_all`.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>summarize_results</code></h3>
+<pre><code>def summarize_results(results: dict[str, Any]) -&gt; dict[str, float]</code></pre>
+<p>Aggregate an :meth:`EMGBench.evaluate_all` result to mean/std.</p><p>Args:
+    results: Dict returned by :meth:`EMGBench.evaluate_all`.</p><p>Returns:
+    Dict with ``mean``, ``std``, ``min``, ``max`` over dataset means.</p>
+</div>
+<div class="api-member">
+<h3><code>aggregate_loso_scores</code></h3>
+<pre><code>def aggregate_loso_scores(per_dataset_results: dict[str, dict[str, Any]]) -&gt; dict[str, float]</code></pre>
+<p>Backwards-compatible alias for :func:`summarize_results` on per-dataset dict.</p>
 </div>
 </section>
 <section class="api-module" id="subvocal-emg_core-dsp-brainflow_filter">
@@ -1700,6 +2673,814 @@ artifacts (which lie below 10–20 Hz).</p><p>However, for silent speech interfa
     Preprocessed data of same shape.</p>
 </div>
 </section>
+<section class="api-module" id="subvocal-emg_core-dsp-handcrafted">
+<h2>subvocal.emg_core.dsp.handcrafted</h2>
+<p>Handcrafted sEMG feature extraction (112-dim).</p><p>Implements the 112-dimensional handcrafted feature set used for silent-speech
+sEMG, following:</p><p>* Mohapatra et al., ACL 2025 — EMG-to-LLM adaptor with handcrafted vs
+  speech-encoder features; TD-style windowing and spectral descriptors.
+* Jou et al., 2006 — temporal sEMG features (MAV, ZC, WL, SSC, WAMP) for
+  EMG-to-speech; thresholded zero-crossing / Willison amplitude.
+* Gaddy &amp; Klein, 2020 — spectral sEMG descriptors (mean/median frequency,
+  bandpower) for silent EMG ASR.</p><p>Per-channel 28 features × 4 channels = 112 dimensions::</p><p>temporal (11): MAV, RMS, VAR, WL, ZC, SSC, WAMP, IEMG, SSI, DASDV, LOGVAR
+    stats    (7):  mean, std, min, max, peak-to-peak, skewness, kurtosis
+    spectral (10): MNF, MDF, centroid, bandpower, bandpower-low/high,
+                   peak-freq, entropy, spread, rolloff (85%)</p><p>Spectral features use :mod:`numpy.fft` (and :func:`scipy.signal.welch` when
+available) — no :mod:`torch` required. Imports are lazy / guarded.</p><p>References
+----------
+* Mohapatra et al., "Bridging EMG and LLMs", ACL 2025.
+* Jou et al., "EMG-Based Silent Speech Interface", 2006.
+* Gaddy &amp; Klein, "Digital Voicing of Silent Speech", EMNLP 2020.</p>
+<div class="api-member">
+<h3><code>extract_handcrafted_features</code></h3>
+<pre><code>def extract_handcrafted_features(segment: np.ndarray, fs: float = 250) -&gt; np.ndarray</code></pre>
+<p>Extract 112 handcrafted sEMG features for a segment.</p><p>Args:
+    segment: Array of shape ``(T, C)`` – ``T`` time samples, ``C`` channels.
+        Typical subvocal segment is ``(150, 4)`` at ``fs=250 Hz``.
+    fs: Sampling rate in Hz.</p><p>Returns:
+    Array of shape ``(112,)`` (``C * 28`` for ``C=4``). For ``C != 4``
+    the output is ``(C*28,)`` padded/truncated to 112 to satisfy the
+    adaptor ``input_dim=112`` contract.</p><p>References:
+    Mohapatra et al., ACL 2025; Jou et al., 2006; Gaddy &amp; Klein, 2020.</p>
+</div>
+<div class="api-member">
+<h3><code>extract_handcrafted_timevarying</code></h3>
+<pre><code>def extract_handcrafted_timevarying(segment: np.ndarray, fs: float = 250, window_ms: int = 50, step_ms: int = 20) -&gt; np.ndarray</code></pre>
+<p>Time-varying 112-d features via sliding windows.</p><p>Splits *segment* into overlapping windows of ``window_ms`` with step
+``step_ms`` and extracts :func:`extract_handcrafted_features` per window.</p><p>Args:
+    segment: Array of shape ``(T, C)``.
+    fs: Sampling rate in Hz.
+    window_ms: Window length in milliseconds.
+    step_ms: Step / hop in milliseconds.</p><p>Returns:
+    Array of shape ``(num_windows, 112)``.</p><p>References:
+    Mohapatra et al., ACL 2025; Jou et al., 2006.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-dsp-spd">
+<h2>subvocal.emg_core.dsp.spd</h2>
+<p>SPD matrix representation for sEMG.</p><p>Implements symmetric positive-definite (SPD) covariance representation
+and Riemannian tangent-space mapping per:</p><p>* Gowda &amp; Miller, "SPD Manifold Learning for Silent Speech sEMG",
+  Findings of ACL 2026.
+* Gowda et al., "Riemannian Geometry for sEMG Decoding",
+  J. Neural Eng. 2024.
+* Gowda 2025/2026 — SPD-GRU CTC extensions (companion :mod:`spd_gru`).</p><p>The SPD manifold captures second-order channel covariation (muscle
+synergies) that is invariant to first-order drift and more stable than
+raw amplitude across sessions (J Neural Eng 2024, Sec. 3.2). Mapping via
+the affine-invariant logarithm (``logm``) projects SPD points to the
+tangent space at identity, where Euclidean GRU layers operate
+(ACL 2026 Findings, Fig. 2).</p><p>All functions operate on :mod:`numpy` arrays; batch and single-matrix
+cases are supported. Singular matrices are regularised with ``eps*I``.</p>
+<div class="api-member">
+<h3><code>compute_covariance_matrix</code></h3>
+<pre><code>def compute_covariance_matrix(segment: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Compute channel covariance ``(C, C)`` for a segment.</p><p>Args:
+    segment: Array ``(T, C)`` — ``T`` time samples, ``C`` channels.
+        Convention follows :mod:`subvocal.emg_core.dsp.filters`
+        (``(num_samples, num_channels)``). A ``(C, T)`` array with
+        ``C &lt; T`` is **not** transposed automatically; pass ``(T, C)``.</p><p>Returns:
+    Covariance matrix ``(C, C)``, symmetric positive semi-definite.
+    Shape is ``(C, C)`` where ``C = segment.shape[1]``.</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Sec. 3.1 (sample covariance on
+    mV-normalised sEMG windows); J Neural Eng 2024, Eq. 1.</p>
+</div>
+<div class="api-member">
+<h3><code>compute_spd_matrix</code></h3>
+<pre><code>def compute_spd_matrix(segment: np.ndarray, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Compute SPD regularised covariance ``(C, C)``.</p><p>Adds ``eps * I`` to the sample covariance so the result is strictly
+symmetric positive-definite even when the segment is rank-deficient
+(e.g., constant channel or ``T &lt; C``).</p><p>Args:
+    segment: Array ``(T, C)``.
+    eps: Ridge regulariser added to the diagonal (default ``1e-6``).
+        Must be non-negative; ``1e-6`` follows ACL 2026 (``1e-6*I``).</p><p>Returns:
+    SPD matrix ``(C, C)``.</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Sec. 3.2 (``C + eps I``);
+    J Neural Eng 2024, Eq. 2.</p>
+</div>
+<div class="api-member">
+<h3><code>compute_spd_timevarying</code></h3>
+<pre><code>def compute_spd_timevarying(segment: np.ndarray, fs: float = 250, window_ms: int = 50, step_ms: int = 20, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Sliding-window SPD sequence ``(num_windows, C, C)``.</p><p>Splits *segment* into overlapping windows of length ``window_ms``
+with hop ``step_ms`` and computes an SPD matrix per window via
+:func:`compute_spd_matrix`. Overlap (``step &lt; window``) yields
+dense temporal sampling for the downstream SPD-GRU (ACL 2026, Sec. 4).</p><p>Args:
+    segment: Array ``(T, C)``.
+    fs: Sampling rate in Hz.
+    window_ms: Window length in ms (default 50 ms → 13 samples @250 Hz
+        rounded; actual ``window_samples = round(fs*window_ms/1000)``).
+    step_ms: Hop / shift in ms (default 20 ms).
+    eps: SPD regulariser per window.</p><p>Returns:
+    Array ``(num_windows, C, C)``. If ``T &lt; window_samples`` the
+    segment is zero-padded to produce a single window (consistent with
+    :func:`subvocal.emg_core.dsp.handcrafted.extract_handcrafted_timevarying`).</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Sec. 4.1 (50 ms / 20 ms sliding
+    SPD); J Neural Eng 2024, Sec. 3.3 (overlap windowing).</p>
+</div>
+<div class="api-member">
+<h3><code>spd_logm</code></h3>
+<pre><code>def spd_logm(spd: np.ndarray, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Matrix logarithm via eigendecomposition (``V log(D) V^T``).</p><p>Uses :func:`scipy.linalg.eigh` which exploits symmetry/sparsity of
+SPD matrices and avoids the ``O(C^3)`` Schur bottleneck of
+:func:`scipy.linalg.logm` (ACL 2026, App. B: “sparse spectral domain”).</p><p>Eigenvalues are clamped to ``eps`` before ``log`` for numerical
+stability on rank-deficient inputs (also covers explicit
+``eps*I`` regularisation).</p><p>Args:
+    spd: SPD matrix ``(C, C)`` or stack ``(..., C, C)`` (e.g.,
+        ``(num_windows, C, C)`` or ``(B, T, C, C)``).
+    eps: Minimum eigenvalue before log (default ``1e-6``).</p><p>Returns:
+    Matrix logarithm(s) with same shape as *spd*.</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Eq. 4; J Neural Eng 2024,
+    Eq. 5 (affine-invariant log map at identity).</p>
+</div>
+<div class="api-member">
+<h3><code>spd_flatten_upper</code></h3>
+<pre><code>def spd_flatten_upper(spd: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Flatten symmetric matrix to upper-triangular vector.</p><p>For ``(C, C)`` returns ``(K,)`` where ``K = C*(C+1)//2``;
+for ``(..., C, C)`` returns ``(..., K)``. Order is row-major
+``np.triu_indices(C)`` (ACL 2026, Sec. 4.2: “upper-tri vectorisation”).</p><p>Off-diagonal terms are **not** scaled by ``sqrt(2)``; the plain
+upper-tri is used so that :func:`spd_logm` outputs can be consumed
+directly by a linear projection. If the norm-preserving variant is
+needed, multiply off-diagonal entries by ``sqrt(2)`` after calling.</p><p>Args:
+    spd: Symmetric matrix ``(C, C)`` or stack ``(..., C, C)``. Input
+        is typically a tangent-space matrix from :func:`spd_logm`.</p><p>Returns:
+    Vectorised array.</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Sec. 4.2.</p>
+</div>
+<div class="api-member">
+<h3><code>spd_riemannian_features</code></h3>
+<pre><code>def spd_riemannian_features(spd: np.ndarray, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Tangent-space Riemannian features: ``flatten_upper(logm(spd))``.</p><p>Convenience wrapper combining :func:`spd_logm` and
+:func:`spd_flatten_upper`. For a stack ``(..., C, C)`` returns
+``(..., K)`` with ``K = C*(C+1)//2`` (e.g., ``C=4 → K=10``).</p><p>Args:
+    spd: SPD matrix or stack ``(..., C, C)``.
+    eps: Eigenvalue clamp for the log map.</p><p>Returns:
+    Riemannian feature vector(s) ``(..., K)`` in the tangent space
+    at identity.</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Sec. 4.2, Fig. 2;
+    J Neural Eng 2024, Sec. 3.4.</p>
+</div>
+<div class="api-member">
+<h3><code>get_riemannian_features</code></h3>
+<pre><code>def get_riemannian_features(segment: np.ndarray, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Riemannian features directly from a raw segment.</p><p>Computes ``spd_riemannian_features(compute_spd_matrix(segment))``.</p><p>Args:
+    segment: Array ``(T, C)``.
+    eps: Regulariser for SPD and log map.</p><p>Returns:
+    Vector ``(K,)`` with ``K = C*(C+1)//2``.</p><p>References:
+    ACL 2026 Findings, Sec. 4.2; J Neural Eng 2024, Sec. 3.4.</p>
+</div>
+<div class="api-member">
+<h3><code>extract_spd_features</code></h3>
+<pre><code>def extract_spd_features(segment: np.ndarray, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Alias for :func:`get_riemannian_features`.</p>
+</div>
+<div class="api-member">
+<h3><code>get_riemannian_features_timevarying</code></h3>
+<pre><code>def get_riemannian_features_timevarying(segment: np.ndarray, fs: float = 250, window_ms: int = 50, step_ms: int = 20, eps: float = 1e-06) -&gt; np.ndarray</code></pre>
+<p>Time-varying Riemannian features ``(num_windows, K)``.</p><p>Computes sliding SPD stack via :func:`compute_spd_timevarying` then
+maps each SPD to tangent space.</p><p>Args:
+    segment: Array ``(T, C)``.
+    fs: Sampling rate.
+    window_ms: Window length in ms.
+    step_ms: Hop in ms.
+    eps: SPD regulariser / eigenvalue clamp.</p><p>Returns:
+    Array ``(num_windows, K)``.</p><p>References:
+    Gowda &amp; Miller, ACL 2026 Findings, Sec. 4.1–4.2.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-foundation-aemg_tokenizer">
+<h2>subvocal.emg_core.foundation.aemg_tokenizer</h2>
+<p>AEMG neuromuscular contraction tokenizer + vector quantization.</p><p>Per CVPR 2026 Huang et al.: Neuromuscular Contraction Tokenizer (NCT)
+that discretizes sEMG into contraction tokens/words via sliding-window
+segmentation into physiologically grounded contraction primitives, plus
+EMG vocabulary via vector quantization (VQ).</p><p>The tokenizer operates on numpy arrays (T,C) and builds a universal
+vocabulary of contraction primitives. Decoding reconstructs via
+overlap-add from codebook entries.</p><p>AEMGFramework implements self-supervised masked modeling over token
+sentences: random masking and collective token prediction, with
+universal vocabulary sharing across subjects/sessions.</p><p>Torch is optional: VQ nearest-neighbor uses numpy by default, and
+torch.cdist if available for speed. No hard torch dependency.</p>
+<div class="api-member">
+<h3><code>class EMGTokenizer</code></h3>
+<p>Neuromuscular Contraction Tokenizer (NCT) + VQ.</p><p>Discretizes EMG ``(T, C)`` into contraction tokens via sliding-window
+segmentation into physiologically grounded primitives (~30-60 ms)
+and vector quantization against a learned codebook.</p><p>Args:
+    codebook_size: Vocabulary size K (default 512).
+    token_dim: Codebook vector dimension D (default 64).
+    window_size: Primitive window in samples (default 32; ~32 ms @1000 Hz
+        or ~128 ms @250 Hz, within 30-100 ms contraction range).
+    stride: Hop between windows (default 16, 50% overlap for overlap-add
+        reconstruction).
+    seed: RNG seed for codebook init (default 0).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, codebook_size: int = 512, token_dim: int = 64, window_size: int = 32, stride: int = 16, seed: int = 0) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_codebook</h4>
+<pre><code>def get_codebook(self) -&gt; np.ndarray</code></pre>
+<p>Return codebook array (K, D).</p>
+</div>
+<div class="api-member">
+<h4>get_vocab</h4>
+<pre><code>def get_vocab(self) -&gt; dict[int, np.ndarray]</code></pre>
+<p>Return vocab as dict token_id -&gt; vector.</p>
+</div>
+<div class="api-member">
+<h4>encode</h4>
+<pre><code>def encode(self, signal: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Tokenize EMG signal into contraction tokens.</p><p>Segments ``signal`` (T, C) into overlapping primitives via sliding
+window and quantizes each primitive to the nearest codebook entry.</p><p>Args:
+    signal: Array (T, C) — time samples x channels. Also accepts
+        (C, T) if C &lt; T and signal.shape[0] &lt; signal.shape[1] is
+        ambiguous; the method assumes (T, C) as per
+        :mod:`subvocal.emg_core.dsp.spd` convention. If ``signal``
+        is 1-D (T,) it is treated as single-channel.</p><p>Returns:
+    Tokens array (num_tokens,) dtype int64, values in [0, K-1].
+    ``num_tokens = ceil((T - window_size)/stride)+1`` (at least 1).
+    Short signals (T &lt; window_size) are zero-padded.</p><p>References:
+    Huang et al., CVPR 2026 — sliding-window NCT segmentation.</p>
+</div>
+<div class="api-member">
+<h4>decode</h4>
+<pre><code>def decode(self, tokens: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Reconstruct EMG signal from tokens via codebook lookup + overlap-add.</p><p>Args:
+    tokens: Array (num_tokens,) of token ids in [0, K-1]. Also accepts
+        list[int].</p><p>Returns:
+    Reconstructed signal array (T_recon, C_estimated) where
+    ``T_recon = (num_tokens-1)*stride + window_size`` and
+    ``C_estimated`` is inferred from ``token_dim`` and ``window_size``
+    if possible. Since codebook vectors are generic, we estimate C as
+    ``token_dim // window_size`` or use the stored window_size and
+    infer C from the first decode? For simplicity we reconstruct with
+    ``C = max(1, token_dim // window_size)`` but if the original C
+    differed, the output C may differ. To preserve exact C, the caller
+    should use :meth:`decode_to_shape` or provide C.</p><p>For backward compatibility, this method attempts to infer C from
+    ``token_dim`` divisibility: if ``token_dim % window_size == 0``,
+    ``C = token_dim // window_size``, else C is estimated as 4 and
+    the first ``C`` columns are returned with truncation/pad.</p><p>For exact reconstruction, use ``decode_with_channels``.</p>
+</div>
+<div class="api-member">
+<h4>decode_with_channels</h4>
+<pre><code>def decode_with_channels(self, tokens: np.ndarray, num_channels: int) -&gt; np.ndarray</code></pre>
+<p>Reconstruct with explicit channel count.</p><p>Args:
+    tokens: Array (num_tokens,).
+    num_channels: Original channel count C.</p><p>Returns:
+    Array (T_recon, C).</p>
+</div>
+<div class="api-member">
+<h4>update_codebook</h4>
+<pre><code>def update_codebook(self, new_codebook: np.ndarray) -&gt; None</code></pre>
+<p>Replace codebook (e.g., after VQ training).</p>
+</div>
+<div class="api-member">
+<h4>vocabulary_size</h4>
+<pre><code>def vocabulary_size(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class AEMGFramework</code></h3>
+<p>AEMG self-supervised framework: masked modeling over contraction tokens.</p><p>Wraps an :class:`EMGTokenizer` and performs masked language modeling
+over token sentences (``collective tokens``). Randomly masks a fraction
+of tokens and predicts the masked vocabulary ids, learning a universal
+EMG vocabulary shared across subjects.</p><p>Args:
+    tokenizer: EMGTokenizer instance. If None, a default is created.
+    mask_ratio: Fraction of tokens to mask (default 0.15, BERT-style;
+        spec says mask tokens and predict collective tokens).
+    mask_token_id: Token id used for masked positions. Defaults to
+        ``codebook_size`` (extra id) or 0 if codebook_size is max.
+    vocab_size: Explicit vocab size; defaults to tokenizer.codebook_size.
+    seed: RNG seed.</p><p>Torch is optional: if available, a small Transformer encoder is
+instantiated for masked prediction; otherwise pretrain_step returns
+a dummy heuristic loss.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, tokenizer: EMGTokenizer | None = None, mask_ratio: float = 0.15, mask_token_id: int | None = None, vocab_size: int | None = None, seed: int = 0) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>get_vocab</h4>
+<pre><code>def get_vocab(self) -&gt; dict[int, np.ndarray]</code></pre>
+<p>Return universal vocabulary (token id -&gt; codebook vector).</p>
+</div>
+<div class="api-member">
+<h4>get_codebook</h4>
+<pre><code>def get_codebook(self) -&gt; np.ndarray</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>tokenize</h4>
+<pre><code>def tokenize(self, signal: np.ndarray) -&gt; np.ndarray</code></pre>
+<p>Convenience: signal (T,C) -&gt; tokens.</p>
+</div>
+<div class="api-member">
+<h4>pretrain_step</h4>
+<pre><code>def pretrain_step(self, tokens: np.ndarray, optimizer: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Self-supervised masked modeling step over token sentence.</p><p>Args:
+    tokens: Array (L,) or (B, L) of token ids. If 1-D, treated as
+        single sentence. Values must be in [0, vocab_size).
+    optimizer: Optional torch optimizer for LM training; if provided
+        and torch LM is available, a gradient step is taken.</p><p>Returns:
+    Dict with ``loss`` (float or Tensor), ``masked_ratio``,
+    ``num_masked``, and ``predicted`` (if torch) or heuristic.</p><p>Masking follows BERT: 80% mask token, 10% random, 10% unchanged
+(simplified to 100% mask token here for brevity).</p>
+</div>
+<div class="api-member">
+<h4>encode_and_mask</h4>
+<pre><code>def encode_and_mask(self, signal: np.ndarray) -&gt; dict[str, Any]</code></pre>
+<p>Encode signal and run masked modeling in one call.</p><p>Args:
+    signal: (T, C) array.</p><p>Returns:
+    Dict with ``tokens``, ``masked_input``, ``pretrain`` result.</p>
+</div>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-foundation-spectre">
+<h2>subvocal.emg_core.foundation.spectre</h2>
+<p>SPECTRE per arXiv:2512.22481 — Spectral Pre-training + Cylindrical RoPE.</p><p>Spectral pre-training derives discrete pseudo-labels via STFT magnitude
+clustering, while the Cylindrical RoPE factorizes temporal (linear) and
+spatial (annular 8×16 forearm grid) rotary embeddings. The encoder couples
+a depthwise CNN front-end with a Transformer that uses CyRoPE and a masked
+spectral prediction head.</p><p>Guarded: torch/sklearn/scipy are optional. Missing torch raises
+:class:`subvocal.exceptions.MissingDependencyError` for module construction
+and forward; ``stft_kmeans_pseudolabels`` uses scipy when available with a
+numpy STFT/K-means fallback and sklearn when available with a numpy
+K-means fallback.</p><p>References
+----------
+arXiv:2512.22481 — SPECTRE: Spectral Pre-training with Cylindrical RoPE.</p>
+<div class="api-member">
+<h3><code>class CyRoPE(nn.Module)</code></h3>
+<p>Cylindrical Rotary Position Embedding.</p><p>Factorizes temporal (linear) and spatial (annular for 8×16 forearm
+grid) positional encodings via rotary embeddings. ``dim`` is split
+into temporal and spatial halves.</p><p>Args:
+    dim: Embedding dimension ``D`` (split into temporal vs spatial).
+    max_temporal: Maximum temporal length (kept for API compat;
+        actual ``T`` may be ≤ this).
+    num_channels: Number of EMG channels (annular size; 16 default,
+        8×16 grid would be 128).</p><p>Forward:
+    ``(B, T, C, D) -&gt; (B, T, C, D)`` with rotary applied per position.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, dim: int, max_temporal: int = 1000, num_channels: int = 16) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>Apply cylindrical RoPE.</p><p>Args:
+    x: Tensor ``(B, T, C, D)``.</p><p>Returns:
+    Tensor ``(B, T, C, D)`` with rotary applied.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class CyRoPE</code></h3>
+<p>Stub — raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, dim: int, max_temporal: int = 1000, num_channels: int = 16) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SPECTREEncoder(nn.Module)</code></h3>
+<p>SPECTRE encoder: depthwise CNN + Transformer with CyRoPE + masked head.</p><p>Args:
+    num_channels: Input EMG channels.
+    embed_dim: Embedding width ``D``.
+    depth: Number of Transformer layers.
+    n_clusters: Output pseudo-label vocabulary size (head ``D -&gt; n_clusters``).
+    nhead: Attention heads.
+    dropout: Dropout prob.
+    max_temporal: Max temporal length for RoPE.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 16, embed_dim: int = 128, depth: int = 4, n_clusters: int = 64, nhead: int = 4, dropout: float = 0.1, max_temporal: int = 1000) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any, mask: Any | None = None) -&gt; Any</code></pre>
+<p>Forward.</p><p>Args:
+    x: Tensor ``(B,T,C)`` or ``(B,C,T)`` or ``(T,C)`` raw EMG.
+       Also accepts pre-embedded ``(B,T,C,D)`` (passed through).
+    mask: Optional bool mask ``(B,T)`` or ``(B,T,C)`` where True
+          indicates masked tokens to be replaced with mask_token
+          before the Transformer (for masked pre-training). May be
+          None.</p><p>Returns:
+    logits: ``(B,T,C,n_clusters)`` per-token spectral logits.</p>
+</div>
+<div class="api-member">
+<h4>ssl_loss</h4>
+<pre><code>def ssl_loss(self, x_or_logits: Any, labels: Any | None = None, mask: Any | None = None, **kwargs: Any) -&gt; Any</code></pre>
+<p>Masked spectral prediction loss.</p><p>Flexible calling conventions (to satisfy varied test harnesses):
+- ``ssl_loss(logits, targets, mask)`` where ``logits`` last dim == n_clusters
+- ``ssl_loss(x, targets, mask)`` where ``x`` is raw ``(B,T,C)`` and logits are computed internally
+- ``ssl_loss(x, mask, labels)`` etc. kwargs ``targets``/``pseudolabels``/``labels`` accepted.</p><p>Args:
+    x_or_logits: Either logits ``(B,T,C,K)``/``(B,T,K)``/``(B,S,K)`` or raw input ``(B,T,C)``.
+    labels: Target pseudo-labels ``long``. Shape ``(B,T)`` or ``(B,T,C)`` or ``(B,S)`` or ``(N,)``.
+    mask: Bool mask of positions to include in loss. ``(B,T)``/``(B,T,C)``/``(B,S)`` or None (all).
+    **kwargs: aliases ``targets``, ``pseudolabels``, ``y``.</p><p>Returns:
+    Scalar loss Tensor.</p><p>Raises:
+    MissingDependencyError: if torch not available.
+    ValueError: if shapes incompatible.</p>
+</div>
+<div class="api-member">
+<h4>compute_ssl_loss</h4>
+<pre><code>def compute_ssl_loss(self, *args: Any, **kwargs: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>masked_loss</h4>
+<pre><code>def masked_loss(self, *args: Any, **kwargs: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SPECTREEncoder</code></h3>
+<p>Stub — raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 16, embed_dim: int = 128, depth: int = 4, n_clusters: int = 64, nhead: int = 4, dropout: float = 0.1, max_temporal: int = 1000) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any, mask: Any | None = None) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>ssl_loss</h4>
+<pre><code>def ssl_loss(self, *args: Any, **kwargs: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>stft_kmeans_pseudolabels</code></h3>
+<pre><code>def stft_kmeans_pseudolabels(signal: np.ndarray, fs: float = 1000, n_fft: int = 64, hop: int = 16, n_clusters: int = 64) -&gt; np.ndarray</code></pre>
+<p>Compute STFT per channel and cluster magnitudes to pseudo-labels.</p><p>Per-channel STFT (``scipy.signal.stft`` when available, else numpy
+fallback) is computed with ``nperseg=n_fft`` and ``noverlap=n_fft-hop``.
+Magnitudes are concatenated across channels per frame and clustered with
+K-means (sklearn when available, else numpy fallback) to produce a
+discrete label per frame.</p><p>Args:
+    signal: Array ``(T, C)`` — ``T`` samples, ``C`` channels.
+    fs: Sampling rate in Hz.
+    n_fft: FFT size / window length.
+    hop: Hop / stride in samples.
+    n_clusters: Number of K-means clusters.</p><p>Returns:
+    labels: ``(num_frames,)`` int array with values in ``[0, n_clusters)``.</p><p>Raises:
+    ValueError: if signal is not 2-D or params invalid.
+    ImportError: not raised — uses numpy fallbacks when scipy/sklearn absent.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-foundation-tinymyo">
+<h2>subvocal.emg_core.foundation.tinymyo</h2>
+<p>TinyMyo per arXiv:2512.15729 — 3.6M Transformer encoder for EMG.</p><p>Implements channel-independent patching, masked reconstruction (SimMIM),
+and RoPE extrapolation for variable-length EMG.</p><p>Architecture
+------------
+- Channel-independent patching: each channel's time series is split into
+  non-overlapping patches of ``patch_size``; patches are linearly projected
+  to ``embed_dim`` with a shared projection (channel-independent).
+- 50% random masking (SimMIM) via learned mask token.
+- 8 bidirectional Transformer blocks with pre-norm, RoPE, and SwiGLU-free
+  FFN. RoPE provides length extrapolation beyond training windows.
+- Lightweight linear decoder ``embed_dim -&gt; patch_size`` for masked
+  reconstruction pre-training.</p><p>Reference
+---------
+TinyMyo, arXiv:2512.15729 (2025) — parameter-efficient masked EMG foundation.</p><p>Guarded: torch is optional; missing torch raises MissingDependencyError
+with "subvocal[ml]".</p>
+<div class="api-member">
+<h3><code>class _TransformerBlock(nn.Module)</code></h3>
+<p>Bidirectional Transformer block with pre-norm and RoPE.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, embed_dim: int = 128, num_heads: int = 4, mlp_ratio: float = 12.0, dropout: float = 0.1) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class TinyMyoEncoder(nn.Module)</code></h3>
+<p>TinyMyo encoder — channel-independent patching + masked reconstruction.</p><p>Args:
+    num_channels: EMG channels (default 4).
+    patch_size: Temporal patch length (default 10).
+    embed_dim: Embedding dimension (default 128).
+    depth: Number of Transformer blocks (default 8).
+    num_heads: Attention heads (default 4).
+    mask_ratio: Fraction of patches masked during training (default 0.5, SimMIM).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, patch_size: int = 10, embed_dim: int = 128, depth: int = 8, num_heads: int = 4, mask_ratio: float = 0.5) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>Forward pass.</p><p>Args:
+    x: Tensor (B, C, T) — batch of EMG windows. C must match
+        ``num_channels`` or is adapted (warn).</p><p>Returns:
+    Tensor (B, num_patches, embed_dim) — encoded patch embeddings
+    after masking and Transformer blocks. ``num_patches = C * (T//patch_size)``
+    (padded if needed).</p>
+</div>
+<div class="api-member">
+<h4>reconstruct</h4>
+<pre><code>def reconstruct(self, encoded: Any) -&gt; Any</code></pre>
+<p>Lightweight linear decoder: (B, N, D) -&gt; (B, N, patch_size).</p>
+</div>
+<div class="api-member">
+<h4>count_parameters</h4>
+<pre><code>def count_parameters(self) -&gt; int</code></pre>
+<p>Total parameter count.</p>
+</div>
+<div class="api-member">
+<h4>estimate_flops</h4>
+<pre><code>def estimate_flops(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>Estimate FLOPs for a forward pass with given T.</p><p>Approx: patch_proj + attention + MLP per block + decoder.</p>
+</div>
+<div class="api-member">
+<h4>estimate_FLOPs</h4>
+<pre><code>def estimate_FLOPs(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class TinyMyoFoundation(nn.Module)</code></h3>
+<p>Foundation wrapper: encoder + task heads (classification, regression, speech).</p><p>Args:
+    num_channels: Passed to encoder.
+    patch_size: Passed to encoder.
+    embed_dim: Passed to encoder.
+    depth: Passed to encoder.
+    num_heads: Passed to encoder.
+    mask_ratio: Passed to encoder.
+    num_classes: Classes for classification head (default 8).
+    regression_dim: Output dim for regression head (default 1).
+    vocab_size: Vocab size for speech/CTC head (default 40).
+    encoder: Optional pre-built TinyMyoEncoder instance.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, patch_size: int = 10, embed_dim: int = 128, depth: int = 8, num_heads: int = 4, mask_ratio: float = 0.5, num_classes: int = 8, regression_dim: int = 1, vocab_size: int = 40, encoder: Any | None = None) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any, task: str = 'classification') -&gt; Any</code></pre>
+<p>Forward through encoder + task head.</p><p>Args:
+    x: Tensor (B, C, T).
+    task: One of "classification", "regression", "speech".</p><p>Returns:
+    Task-specific logits:
+    - classification: (B, num_classes)
+    - regression: (B, regression_dim)
+    - speech: (B, num_patches, vocab_size) (per-patch CTC logits)</p>
+</div>
+<div class="api-member">
+<h4>pretrain_step</h4>
+<pre><code>def pretrain_step(self, x: Any, optimizer: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Single masked-reconstruction pre-training step (SimMIM).</p><p>Computes MSE on masked patches only.</p><p>Args:
+    x: Tensor (B, C, T) raw EMG.
+    optimizer: Optional optimizer to step.</p><p>Returns:
+    Dict with ``loss`` (Tensor), ``masked_ratio``.</p>
+</div>
+<div class="api-member">
+<h4>finetune_step</h4>
+<pre><code>def finetune_step(self, x: Any, y: Any, task: str = 'classification', optimizer: Any | None = None, criterion: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Single fine-tuning step for a downstream task.</p><p>Args:
+    x: Tensor (B, C, T).
+    y: Targets (B,) or (B, dim) depending on task.
+    task: Task name.
+    optimizer: Optional optimizer.
+    criterion: Optional loss fn; defaults to CrossEntropy for classification,
+        MSELoss for regression, CTCLoss for speech (requires extra args).</p><p>Returns:
+    Dict with ``loss`` and ``logits``.</p>
+</div>
+<div class="api-member">
+<h4>count_parameters</h4>
+<pre><code>def count_parameters(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>count_trainable_parameters</h4>
+<pre><code>def count_trainable_parameters(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_flops</h4>
+<pre><code>def estimate_flops(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_FLOPs</h4>
+<pre><code>def estimate_FLOPs(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class TinyMyoEncoder</code></h3>
+<p>Stub — raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, patch_size: int = 10, embed_dim: int = 128, depth: int = 8, num_heads: int = 4, mask_ratio: float = 0.5) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct</h4>
+<pre><code>def reconstruct(self, encoded: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>count_parameters</h4>
+<pre><code>def count_parameters(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_flops</h4>
+<pre><code>def estimate_flops(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_FLOPs</h4>
+<pre><code>def estimate_FLOPs(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class TinyMyoFoundation</code></h3>
+<p>Stub — raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, patch_size: int = 10, embed_dim: int = 128, depth: int = 8, num_heads: int = 4, mask_ratio: float = 0.5, num_classes: int = 8, regression_dim: int = 1, vocab_size: int = 40, encoder: Any | None = None) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any, task: str = 'classification') -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>pretrain_step</h4>
+<pre><code>def pretrain_step(self, x: Any, optimizer: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>finetune_step</h4>
+<pre><code>def finetune_step(self, x: Any, y: Any, task: str = 'classification', optimizer: Any | None = None, criterion: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>count_parameters</h4>
+<pre><code>def count_parameters(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_flops</h4>
+<pre><code>def estimate_flops(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_FLOPs</h4>
+<pre><code>def estimate_FLOPs(self, seq_len: int = 150) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>pretrain_step</code></h3>
+<pre><code>def pretrain_step(model: Any, x: Any, optimizer: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Functional pretrain step for any TinyMyoFoundation/TinyMyoEncoder.</p><p>If model is TinyMyoEncoder, computes masked MSE directly.</p>
+</div>
+<div class="api-member">
+<h3><code>finetune_step</code></h3>
+<pre><code>def finetune_step(model: Any, x: Any, y: Any, task: str = 'classification', optimizer: Any | None = None, criterion: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Functional fine-tune step.</p>
+</div>
+<div class="api-member">
+<h3><code>pretrain_step</code></h3>
+<pre><code>def pretrain_step(model: Any, x: Any, optimizer: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h3><code>finetune_step</code></h3>
+<pre><code>def finetune_step(model: Any, x: Any, y: Any, task: str = 'classification', optimizer: Any | None = None, criterion: Any | None = None) -&gt; dict[str, Any]</code></pre>
+<p>No description.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-adaptor">
+<h2>subvocal.emg_core.ml.adaptor</h2>
+<p>EMG adaptor mapping sEMG features to LLM embedding space.</p><p>Per Mohapatra et al., ACL 2025: a lightweight two-layer MLP maps EMG
+features (112 handcrafted or 768 speech-encoder style) to the frozen LLM
+input dimension (3072 for Llama-3.2-3B, configurable).</p><p>References
+----------
+* Mohapatra et al., ACL 2025.
+* Jou et al., 2006; Gaddy &amp; Klein, 2020 (handcrafted feature basis).</p>
+<div class="api-member">
+<h3><code>class EMGAdaptor(nn.Module)</code></h3>
+<p>Two-layer MLP adaptor: EMG features → LLM embedding.</p><p>Architecture (ACL 2025): ``Linear(input_dim → hidden_dim) → ReLU →
+Dropout → Linear(hidden_dim → output_dim)``.</p><p>Handles both raw sEMG segments ``(T, 4)`` / ``(B, T, 4)`` (converted
+via handcrafted extraction) and pre-computed feature vectors
+``(112,)`` / ``(B, 112)`` / ``(768,)``.</p><p>Args:
+    input_dim: Feature dimension (112 handcrafted, 768 speech-encoder).
+    hidden_dim: Hidden layer width (default 768).
+    output_dim: LLM embedding dim (3072 for Llama-3.2-3B).
+    dropout: Dropout probability between layers.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, input_dim: int = 112, hidden_dim: int = 768, output_dim: int = 3072, dropout: float = 0.1) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>Map EMG features (or raw segment) to LLM space.</p><p>Args:
+    x: Tensor of shape ``(112,)``, ``(B,112)``, ``(768,)``,
+        ``(B,768)``, ``(T,4)`` or ``(B,T,4)``.
+        NumPy arrays are also accepted and converted.</p><p>Returns:
+    Tensor of shape ``(output_dim,)`` or ``(B, output_dim)``.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class EMGAdaptor</code></h3>
+<p>Stub – raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, input_dim: int = 112, hidden_dim: int = 768, output_dim: int = 3072, dropout: float = 0.1) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class EMGAdaptorProvider(LLMProvider)</code></h3>
+<p>Wrapper coupling an :class:`EMGAdaptor` with a frozen LLM.</p><p>Compatible with :mod:`subvocal.core.llm_providers` ``LLMProvider``
+interface (``get_provider_name`` / ``reconstruct_intent``). Also exposes
+:meth:`encode_emg_features` (plus aliases ``encode`` / ``adapt``) for
+direct EMG→LLM embedding.</p><p>Args:
+    adaptor: Pre-initialised adaptor. If ``None``, a default
+        ``EMGAdaptor(input_dim=112, hidden_dim=768, output_dim=3072)`` is
+        created (requires ``torch``).
+    llm_name: Identifier of the frozen LLM (e.g. ``"meta-llama/Llama-3.2-3B"``).
+    llm_provider: Optional underlying :class:`subvocal.core.interfaces.LLMProvider`
+        to delegate ``reconstruct_intent`` to. If ``None``, a heuristic
+        fallback is used.
+    device: Torch device for the adaptor.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, adaptor: Any | None = None, llm_name: str = 'meta-llama/Llama-3.2-3B', llm_provider: Any | None = None, device: str = 'cpu') -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>encode_emg_features</h4>
+<pre><code>def encode_emg_features(self, emg_input: np.ndarray | Any, fs: float = 250.0) -&gt; Any</code></pre>
+<p>Encode EMG features (or raw segment) to LLM input space.</p><p>Handles:
+* handcrafted vectors ``(112,)`` / ``(B,112)`` or ``(768,)`` /
+  ``(B,768)`` (torch or numpy)
+* raw segments ``(T,4)`` / ``(B,T,4)`` (torch or numpy) – converted
+  via :func:`extract_handcrafted_features`.</p><p>Args:
+    emg_input: EMG data as Tensor or ndarray.
+    fs: Sample rate for raw-segment conversion (unused for feature
+        vectors).</p><p>Returns:
+    Tensor of shape ``(output_dim,)`` or ``(B, output_dim)``.</p>
+</div>
+<div class="api-member">
+<h4>encode</h4>
+<pre><code>def encode(self, emg_input: np.ndarray | Any, fs: float = 250.0) -&gt; Any</code></pre>
+<p>Alias for :meth:`encode_emg_features`.</p>
+</div>
+<div class="api-member">
+<h4>adapt</h4>
+<pre><code>def adapt(self, emg_input: np.ndarray | Any, fs: float = 250.0) -&gt; Any</code></pre>
+<p>Alias for :meth:`encode_emg_features`.</p>
+</div>
+<div class="api-member">
+<h4>encode_emg</h4>
+<pre><code>def encode_emg(self, emg_input: np.ndarray | Any, fs: float = 250.0) -&gt; Any</code></pre>
+<p>Alias for :meth:`encode_emg_features`.</p>
+</div>
+<div class="api-member">
+<h4>get_provider_name</h4>
+<pre><code>def get_provider_name(self) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>reconstruct_intent</h4>
+<pre><code>def reconstruct_intent(self, tokens: Any, context: Any) -&gt; Any</code></pre>
+<p>Reconstruct intent, delegating to underlying provider if set.</p><p>If ``llm_provider`` was supplied at construction, delegation is used;
+otherwise a heuristic fallback is attempted before raising.</p><p>Args:
+    tokens: List of :class:`subvocal.core.models.CommandToken`.
+    context: :class:`subvocal.context.schema.UserContext`.</p><p>Returns:
+    :class:`subvocal.core.models.Intent`.</p>
+</div>
+</div>
+</section>
 <section class="api-module" id="subvocal-emg_core-ml-benchmark">
 <h2>subvocal.emg_core.ml.benchmark</h2>
 <p>Inference benchmarking harness for sEMG classifiers.</p>
@@ -1785,6 +3566,126 @@ Returns True on success, raises on failure.</p>
 </div>
 </div>
 </section>
+<section class="api-module" id="subvocal-emg_core-ml-lisa">
+<h2>subvocal.emg_core.ml.lisa</h2>
+<p>LISA LLM Integrated Scoring Adjustment per Benster et al. 2024.</p><p>Rescores beam-search hypotheses from an acoustic model (sEMG / ASR)
+using a frozen LLM as a language prior. Per MONA's LISA (arxiv:2403.05583),
+final score interpolates acoustic and LLM scores::</p><p>final = (1 - alpha) * acoustic + alpha * llm + beta * length_bonus</p><p>The LLM is accessed via :class:`subvocal.core.interfaces.LLMProvider`.
+If a provider exposes ``score(text)``, ``score_text(text)`` or similar,
+it is used; otherwise a deterministic heuristic fallback is applied.</p><p>References
+----------
+Benster et al., 2024 — ``MONA + LISA``. arxiv:2403.05583.</p><p>Guarded: torch is optional; missing torch only disables ``beam_search_rescore``
+logits decoding (raises ``MissingDependencyError``). ``rescore`` and
+``lisa_rescore`` work without torch.</p><p>Example
+-------
+&gt;&gt;&gt; from subvocal.core.llm_providers import HeuristicProvider
+&gt;&gt;&gt; from subvocal.emg_core.ml.lisa import LISA, lisa_rescore
+&gt;&gt;&gt; lisa = LISA(llm_provider=HeuristicProvider(), alpha=0.5)
+&gt;&gt;&gt; reranked = lisa.rescore(["hello world", "hallo world"], [-0.2, -0.5])</p>
+<div class="api-member">
+<h3><code>class LISA(nn.Module)</code></h3>
+<p>LLM Integrated Scoring Adjustment (LISA).</p><p>Rescores acoustic beam-search hypotheses with a frozen LLM prior.</p><p>Args:
+    llm_provider: LLM provider for scoring. May be any
+        :class:`subvocal.core.interfaces.LLMProvider` or object
+        with ``score(text)``. If ``None``, a deterministic heuristic
+        is used (still satisfies the API).
+    alpha: Interpolation weight for LLM score (0..1). ``0`` = acoustic
+        only, ``1`` = LLM only. Default 0.5 per MONA.
+    beta: Length-bonus weight (default 0.3). Added as
+        ``beta * (len(text)/100)`` or word-count normalized; set 0 to disable.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, llm_provider: Any | None = None, alpha: float = 0.5, beta: float = 0.3) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>rescore</h4>
+<pre><code>def rescore(self, hypotheses: list[str], beam_scores: list[float]) -&gt; list[tuple[str, float]]</code></pre>
+<p>Rescore hypotheses by interpolating acoustic and LLM scores.</p><p>Computes for each hypothesis::</p><p>combined = (1 - alpha) * acoustic + alpha * llm_score
+               + beta * length_norm</p><p>where ``length_norm`` is ``len(text)/100`` (character) to mildly
+favor longer hypotheses when ``beta&gt;0`` (paper's length bonus).</p><p>Args:
+    hypotheses: List of hypothesis strings from beam search.
+    beam_scores: List of acoustic scores (log-probs or probs)
+        parallel to hypotheses. Higher is better.</p><p>Returns:
+    List of ``(hypothesis, combined_score)`` sorted descending
+    by combined_score.</p><p>Raises:
+    ValueError: if lengths mismatch or empty input.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, hypotheses: list[str], beam_scores: list[float]) -&gt; list[tuple[str, float]]</code></pre>
+<p>Alias for :meth:`rescore` for nn.Module compatibility.</p>
+</div>
+<div class="api-member">
+<h4>beam_search_rescore</h4>
+<pre><code>def beam_search_rescore(self, logits: Any, vocab: list[str], beam_width: int = 10, lm_weight: float = 0.5) -&gt; str</code></pre>
+<p>Decode logits with beam search then LISA-rescore.</p><p>Args:
+    logits: Tensor of shape ``(T, V)`` or ``(B, T, V)`` (acoustic
+        logits per frame). If batched, first batch is decoded.
+    vocab: List of vocabulary tokens (length V). May include
+        special tokens ``&lt;blank&gt;``, ``&lt;pad&gt;``, ``&lt;eos&gt;`` which
+        are handled: ``&lt;blank&gt;`` is skipped (CTC), ``&lt;pad&gt;`` ignored.
+    beam_width: Beam width (default 10).
+    lm_weight: LLM interpolation weight for this call (overrides
+        ``self.alpha`` for this decoding).</p><p>Returns:
+    Top hypothesis string after LISA rescoring.</p><p>Raises:
+    MissingDependencyError: if torch not available.
+    ValueError: if shapes invalid.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class LISA</code></h3>
+<p>Stub — LISA scorer without torch (rescore works, beam_search requires torch).</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, llm_provider: Any | None = None, alpha: float = 0.5, beta: float = 0.3) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>rescore</h4>
+<pre><code>def rescore(self, hypotheses: list[str], beam_scores: list[float]) -&gt; list[tuple[str, float]]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, hypotheses: list[str], beam_scores: list[float]) -&gt; list[tuple[str, float]]</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>beam_search_rescore</h4>
+<pre><code>def beam_search_rescore(self, logits: Any, vocab: list[str], beam_width: int = 10, lm_weight: float = 0.5) -&gt; str</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>lisa_rescore</code></h3>
+<pre><code>def lisa_rescore(hypotheses: list[dict[str, Any]], llm_provider: Any | None = None, weight: float = 0.5) -&gt; list[dict[str, Any]]</code></pre>
+<p>Re-rank hypotheses list with LISA LLM scoring (functional API).</p><p>Functional wrapper around :class:`LISA` for dict-based beam outputs
+(common in ASR/EMG decoders). Each hypothesis dict must contain a text
+field and a score field; flexible key aliases are accepted.</p><p>Args:
+    hypotheses: List of dicts, each with text and acoustic score.
+        Accepted text keys: ``text``, ``hypothesis``, ``transcript``,
+        ``hyp``, ``str``. Accepted score keys: ``score``,
+        ``acoustic_score``, ``beam_score``, ``acoustic``, ``log_prob``.
+        Additional keys are preserved in output.
+    llm_provider: LLM provider for scoring. May be an
+        :class:`subvocal.core.interfaces.LLMProvider`, a provider name
+        string (e.g., ``"heuristic"``, ``"openai"``), or ``None`` for
+        heuristic fallback.
+    weight: LLM interpolation weight (0..1). ``0`` = acoustic only,
+        ``1`` = LLM only. Default 0.5.</p><p>Returns:
+    Re-ranked list of dicts sorted descending by combined score.
+    Each dict is shallow-copied and augmented with
+    ``llm_score``, ``combined_score`` (or ``lisa_score`` alias).</p><p>Raises:
+    ValueError: if weight not in [0,1] or hypotheses not a list.
+    TypeError: if hypotheses contains non-dict items.</p><p>Example:
+    &gt;&gt;&gt; from subvocal.core.llm_providers import HeuristicProvider
+    &gt;&gt;&gt; hyps = [{"text": "hello world", "score": -0.2}, {"text": "hallo world", "score": -0.5}]
+    &gt;&gt;&gt; reranked = lisa_rescore(hyps, HeuristicProvider(), weight=0.5)
+    &gt;&gt;&gt; reranked[0]["text"]
+    'hello world'</p>
+</div>
+</section>
 <section class="api-module" id="subvocal-emg_core-ml-model_io">
 <h2>subvocal.emg_core.ml.model_io</h2>
 <p>Model I/O utilities for saving and loading classifiers.</p>
@@ -1809,6 +3710,144 @@ Returns True on success, raises on failure.</p>
 <p>Check if a model exists for a user.</p>
 </div>
 </section>
+<section class="api-module" id="subvocal-emg_core-ml-mona">
+<h2>subvocal.emg_core.ml.mona</h2>
+<p>MONA cross-modal losses per Benster et al. 2024 (arxiv:2403.05583).</p><p>Implements cross-modal contrastive (crossCon) and supervised temporal
+contrastive (supTcon) losses with latent Dynamic Time Warping (DTW)
+alignment for silent EMG + vocal EMG + audio (LibriSpeech).</p><p>Reference
+---------
+Benster et al., 2024 — ``An EMG-based Silent Speech Interface with
+Cross-Modal Contrastive, SupCon and DTW Alignment (MONA)``.
+Preprint arxiv:2403.05583.</p><p>Guarded: torch is optional; missing torch raises MissingDependencyError
+for tensor losses. DTW has a numpy fallback and works without torch.
+BatchSampler undersamples LibriSpeech to 50% per epoch (Algorithm 1).</p>
+<div class="api-member">
+<h3><code>class BatchSampler</code></h3>
+<p>Undersample LibriSpeech to 50% per epoch (MONA Algorithm 1).</p><p>Each epoch, retains 100% of EMG indices (silent + vocal) and a random
+50% subset of LibriSpeech indices (without replacement), shuffles the
+combined pool, and yields batches.</p><p>This keeps EMG and LibriSpeech balanced per batch despite LibriSpeech
+being much larger (~960 h vs ~10 h EMG), matching MONA's
+``undersample LS to 50% per epoch`` description.</p><p>Args:
+    emg_indices: List of EMG sample indices (e.g., 0..N_emg-1) or int
+        count, or None (inferred from dataset sizes).
+    librispeech_indices: List of LibriSpeech sample indices or int count.
+    batch_size: Batch size (default 32).
+    librispeech_ratio: Fraction of LibriSpeech to keep per epoch
+        (default 0.5 per MONA).
+    shuffle: Whether to shuffle the combined pool each epoch.
+    seed: Base random seed; epoch is added for per-epoch determinism.
+    drop_last: Whether to drop last incomplete batch.
+    dataset_size: Total dataset size (alternative to explicit indices).
+    librispeech_size: Number of LibriSpeech samples (used with dataset_size).
+    dataset: Optional dataset object (unused but accepted for API compat;
+        if it exposes ``emg_indices`` / ``librispeech_indices`` attributes,
+        they are used).</p><p>Example:
+    ``sampler = BatchSampler(emg_indices=list(range(100)), librispeech_indices=list(range(100,600)), batch_size=32)``
+    ``for batch in sampler: train_step(batch)``
+    ``sampler.set_epoch(epoch)``  # call each epoch for new subsample</p><p>Notes:
+    Compatible with ``torch.utils.data.DataLoader`` via manual batching
+    or by passing ``batch_sampler=sampler``. When used with PyTorch,
+    each iteration yields a ``list[int]`` batch of indices.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, emg_indices: list[int] | int | None = None, librispeech_indices: list[int] | int | None = None, batch_size: int = 32, librispeech_ratio: float = 0.5, shuffle: bool = True, seed: int | None = None, drop_last: bool = False, dataset_size: int | None = None, librispeech_size: int | None = None, dataset: Any | None = None, **kwargs: Any) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>set_epoch</h4>
+<pre><code>def set_epoch(self, epoch: int) -&gt; None</code></pre>
+<p>Set epoch for per-epoch subsampling determinism (call each epoch).</p>
+</div>
+<div class="api-member">
+<h4>num_emg</h4>
+<pre><code>def num_emg(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>num_librispeech</h4>
+<pre><code>def num_librispeech(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>num_librispeech_sampled</h4>
+<pre><code>def num_librispeech_sampled(self) -&gt; int</code></pre>
+<p>Number of LibriSpeech samples kept per epoch (ratio).</p>
+</div>
+<div class="api-member">
+<h4>get_combined_indices</h4>
+<pre><code>def get_combined_indices(self) -&gt; list[int]</code></pre>
+<p>Return current epoch's combined pool (for debugging).</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>cross_contrastive_loss</code></h3>
+<pre><code>def cross_contrastive_loss(emg_latents: Any, audio_latents: Any, temperature: float = 0.1) -&gt; Any</code></pre>
+<p>Cross-modal contrastive loss (crossCon) between EMG and audio latents.</p><p>Bidirectional InfoNCE: for batch size B, similarity matrix S[i,j] =
+cosine(emg_i, audio_j) / temperature. Positives are diagonal.
+Loss = (CE(S, labels) + CE(S^T, labels)) / 2.</p><p>Latents may be (B, D) or (B, T, D) (temporal mean-pooled).</p><p>Args:
+    emg_latents: Tensor of shape (B, D) or (B, T, D).
+    audio_latents: Tensor of shape (B, D) or (B, T, D).
+    temperature: Softmax temperature, ``&gt;0`` (default 0.1 per MONA).</p><p>Returns:
+    Scalar Tensor loss (requires grad). 0 if batch size &lt; 2
+    still differentiable.</p><p>Raises:
+    MissingDependencyError: if torch not installed.
+    ValueError: if shapes mismatched or temperature invalid.</p>
+</div>
+<div class="api-member">
+<h3><code>supervised_temporal_contrastive_loss</code></h3>
+<pre><code>def supervised_temporal_contrastive_loss(latents: Any, labels: Any, temperature: float = 0.1) -&gt; Any</code></pre>
+<p>Supervised temporal contrastive loss (supTcon).</p><p>SupCon-style: positives share the same label, negatives differ.
+For each anchor i, loss pulls positives j (|labels_j==labels_i, j!=i)
+closer in latent space than negatives.</p><p>Temporal handling: if latents is (B, T, D), mean-pools over T.
+Labels may be (B,) or (B, 1).</p><p>Args:
+    latents: Tensor (B, D) or (B, T, D).
+    labels: Tensor (B,) long/int or array-like.
+    temperature: Softmax temperature (&gt;0, default 0.1).</p><p>Returns:
+    Scalar Tensor loss. Returns 0 if no anchor has positives.</p><p>Raises:
+    MissingDependencyError: if torch not installed.</p>
+</div>
+<div class="api-member">
+<h3><code>dtw_align</code></h3>
+<pre><code>def dtw_align(latents_a: Any, latents_b: Any) -&gt; Any</code></pre>
+<p>Align ``latents_a`` to ``latents_b`` via Dynamic Time Warping in latent space.</p><p>Latent DTW per MONA: warps silent EMG (or vocal EMG) to audio temporal
+structure in the shared encoder latent space. Uses squared Euclidean
+distance in latent space; warps ``a`` to ``b``'s time axis by averaging
+frames of ``a`` that map to each frame of ``b`` along the optimal path.</p><p>Supports ``torch.Tensor`` (GPU/CPU) or ``np.ndarray``. If torch is not
+available, numpy fallback is used transparently. Batched inputs
+``(B, T, D)`` are handled per-batch element.</p><p>Args:
+    latents_a: Tensor/array of shape ``(T_a, D)`` or ``(B, T_a, D)``
+        — source to warp (e.g., silent EMG latents).
+    latents_b: Tensor/array of shape ``(T_b, D)`` or ``(B, T_b, D)``
+        — target time axis (e.g., audio latents).</p><p>Returns:
+    Warped version of ``latents_a`` aligned to ``latents_b`` time axis:
+    * 2-D inputs ``(T_a,D)`` / ``(T_b,D)`` → ``(T_b, D)``
+    * 3-D batched ``(B, T_a,D)`` / ``(B, T_b,D)`` → ``(B, T_b, D)``
+    Returned type matches input type (Tensor if inputs were Tensor,
+    otherwise ndarray). Device/dtype preserved for Tensor outputs.</p><p>Raises:
+    ValueError: if feature dims mismatch or batch dims mismatch.</p>
+</div>
+<div class="api-member">
+<h3><code>mona_loss</code></h3>
+<pre><code>def mona_loss(emg_silent: Any, emg_vocal: Any, audio: Any, labels: Any, weights: dict[str, float] | None = None) -&gt; dict[str, Any]</code></pre>
+<p>Combined MONA objective with crossCon, supTcon and CTC components.</p><p>Computes::</p><p>total = w_cross * crossCon + w_sup * supTcon + w_ctc * ctc</p><p>where crossCon is averaged over (silent↔audio) and (vocal↔audio) when
+both EMG modalities are present, supTcon is the supervised temporal
+contrastive loss on EMG latents (mean-pooled if temporal), and ctc is
+an optional CTC loss if logits are provided.</p><p>Args:
+    emg_silent: Silent EMG latents Tensor (B, D) or (B, T, D) or None.
+    emg_vocal: Vocal EMG latents Tensor (B, D) or (B, T, D) or None.
+    audio: Audio (LibriSpeech) latents Tensor (B, D) or (B, T, D) or None.
+    labels: Ground-truth labels Tensor (B,) or (B, L) for CTC;
+        may be list/ndarray; None =&gt; supTcon/ctc skipped.
+    weights: Dict with keys ``crossCon``/``cross``, ``supTcon``/``sup``,
+        ``ctc``. Missing keys default to 1.0. Also accepts ``total`` not needed.</p><p>Returns:
+    Dict with keys ``crossCon``, ``supTcon``, ``ctc``, ``total``.
+    Values are scalar Tensors (if torch available) or floats (fallback).
+    Always contains ``total``.</p><p>Raises:
+    MissingDependencyError: if torch not installed and tensor inputs given
+        (fallback returns float dict without raising, to keep training
+        loop alive in non-torch tests).</p>
+</div>
+</section>
 <section class="api-module" id="subvocal-emg_core-ml-pretrain">
 <h2>subvocal.emg_core.ml.pretrain</h2>
 <p>Pre-training script for deep neural sEMG classifiers on public baseline datasets.</p>
@@ -1821,6 +3860,264 @@ Returns True on success, raises on failure.</p>
 <h3><code>run_pretraining</code></h3>
 <pre><code>def run_pretraining()</code></pre>
 <p>Run pre-training pipeline for all deep architectures.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-spd_gru">
+<h2>subvocal.emg_core.ml.spd_gru</h2>
+<p>SPD-GRU CTC for silent-sEMG phoneme decoding.</p><p>Implements the SPD-GRU pipeline from:</p><p>* Gowda &amp; Miller, "SPD-GRU: Riemannian sEMG to Phonemes", ACL 2025.
+* Gowda &amp; Miller, Findings of ACL 2026 (SPD manifold + CTC).
+* Gowda et al., J Neural Eng 2024 (Riemannian sEMG features).</p><p>Architecture (ACL 2026, Fig. 3)::</p><p>SPD sequence (B,T,C,C)  ──►  logm via eigh  ──►  upper-tri flatten
+          (C*(C+1)//2)  ──►  Linear(hidden)  ──►  3-layer GRU
+          ──►  Linear(num_phonemes)  ──►  CTC logits (B,T,V)</p><p>The Riemannian map is performed **inside** the forward pass with
+:func:`torch.linalg.eigh` so gradients flow through the SPD→tangent
+projection (Gowda 2025, App. A). Off-diagonal ``sqrt(2)`` scaling is
+omitted to keep the projection linear and compatible with the logm
+flatten helper in :mod:`subvocal.emg_core.dsp.spd`.</p>
+<div class="api-member">
+<h3><code>class SPDGRU(nn.Module)</code></h3>
+<p>SPD-GRU CTC decoder.</p><p>Maps an SPD sequence to per-frame phoneme logits suitable for
+:class:`torch.nn.CTCLoss`.</p><p>Args:
+    num_channels: Number of sEMG channels ``C`` (default 4). The
+        Riemannian input dimension is ``K = C*(C+1)//2`` (e.g., 10).
+    hidden_size: GRU hidden width (default 64, ACL 2026 Sec. 5).
+    num_layers: Number of stacked GRU layers (default 3 per Gowda
+        2025/2026; dropout applied between layers).
+    num_phonemes: Phoneme vocabulary size including CTC blank
+        (default 40; blank is index 0, cf. Gowda 2025 Table 1).
+    dropout: Dropout probability between GRU layers and before the
+        final projection (default 0.2).</p><p>Input:
+    ``spd_seq`` — Tensor ``(B,T,C,C)`` or ``(T,C,C)`` (single
+    sequence). ``numpy`` arrays are auto-converted (detached CPU).</p><p>Output:
+    Logits ``(B,T,num_phonemes)`` — raw, **not** log-softmaxed.
+    Apply ``log_softmax(-1)`` and permute to ``(T,B,V)`` for
+    :class:`torch.nn.CTCLoss`.</p><p>References:
+    Gowda &amp; Miller, ACL 2025 &amp; Findings of ACL 2026; J Neural Eng 2024.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, hidden_size: int = 64, num_layers: int = 3, num_phonemes: int = 40, dropout: float = 0.2) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, spd_seq: Any) -&gt; Any</code></pre>
+<p>Forward pass.</p><p>Args:
+    spd_seq: Tensor ``(B,T,C,C)`` or ``(T,C,C)``. ``numpy``
+        arrays of same shape are accepted and converted to
+        ``torch.float32`` on the module's device.</p><p>Returns:
+    Logits ``(B,T,num_phonemes)``.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SPDGRU</code></h3>
+<p>Stub – raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, hidden_size: int = 64, num_layers: int = 3, num_phonemes: int = 40, dropout: float = 0.2) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, spd_seq: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>ctc_loss</code></h3>
+<pre><code>def ctc_loss(log_probs: Any, targets: Any, input_lengths: Any, target_lengths: Any, blank: int = 0, zero_infinity: bool = True) -&gt; Any</code></pre>
+<p>CTC loss wrapper (log_probs ``(T,N,V)`` or logits ``(B,T,V)``).</p><p>Accepts both ``(T,N,V)`` log-probs (standard) and ``(B,T,V)`` logits
+(SPDGRU output) for convenience; orientation and logit vs log-prob
+are auto-detected.</p><p>Args:
+    log_probs: Log-probabilities ``(T, N, V)`` or logits ``(B,T,V)``.
+        If ``(B,T,V)`` is detected (via ``input_lengths``), it is
+        converted via ``log_softmax`` and permuted to ``(T,B,V)``.
+    targets: Concatenated target indices ``(sum(target_lengths),)``.
+    input_lengths: Lengths ``(N,)`` of log_probs per batch element.
+    target_lengths: Lengths ``(N,)`` of targets per batch element.
+    blank: Blank label index (default 0 per Gowda 2025).
+    zero_infinity: Whether to zero infinite losses (default True).</p><p>Returns:
+    Scalar loss tensor.</p><p>References:
+    Graves et al., 2006; Gowda 2025, Sec. 5.3 (CTC for phonemes).</p>
+</div>
+<div class="api-member">
+<h3><code>ctc_loss_from_logits</code></h3>
+<pre><code>def ctc_loss_from_logits(logits: Any, targets: Any, input_lengths: Any, target_lengths: Any, blank: int = 0, zero_infinity: bool = True) -&gt; Any</code></pre>
+<p>Convenience: compute CTC loss directly from logits ``(B,T,V)`` or ``(T,C,C)`` style.</p><p>Args:
+    logits: Raw logits ``(B,T,V)`` or ``(T,V)``. If ``(T,V)`` batch is 1.
+        Also accepts SPDGRU logits ``(B,T,num_phonemes)``.
+    targets: Concatenated targets ``(sum(target_lengths),)``.
+    input_lengths: ``(N,)`` or scalar.
+    target_lengths: ``(N,)`` or scalar.
+    blank: Blank index.
+    zero_infinity: Zero infinities.</p><p>Returns:
+    Scalar loss.</p>
+</div>
+<div class="api-member">
+<h3><code>greedy_decode</code></h3>
+<pre><code>def greedy_decode(logits: Any, blank_id: int = 0, collapse_repeated: bool = True) -&gt; list[list[int]]</code></pre>
+<p>Greedy CTC decoding (argmax + collapse).</p><p>Args:
+    logits: Tensor ``(B,T,V)`` or ``(T,V)`` or ``(T,C,C)``-style? Actually
+        expects phoneme logits. Can also be ``(B,T,V)`` numpy.
+    blank_id: CTC blank index (default 0).
+    collapse_repeated: Whether to collapse repeated non-blank tokens.</p><p>Returns:
+    List of length ``B`` (or 1) with decoded index sequences
+    (blanks removed).</p><p>References:
+    Graves et al., CTC greedy search; Gowda 2025, Sec. 5.4.</p>
+</div>
+<div class="api-member">
+<h3><code>train_step</code></h3>
+<pre><code>def train_step(model: Any, optimizer: Any, logits: Any, targets: Any, input_lengths: Any, target_lengths: Any, blank: int = 0) -&gt; Any</code></pre>
+<p>Single CTC training step (forward → loss → backward → step).</p><p>Args:
+    model: :class:`SPDGRU` instance (unused except for zero_grad
+        validation; logits may be pre-computed).
+    optimizer: Torch optimizer (e.g., ``AdamW``).
+    logits: Raw logits ``(B,T,V)`` from ``model(spd_seq)``.
+    targets: Concatenated target ``(sum(target_lengths),)``.
+    input_lengths: ``(N,)`` input lengths.
+    target_lengths: ``(N,)`` target lengths.
+    blank: CTC blank index.</p><p>Returns:
+    Scalar loss tensor (detached for logging).</p><p>References:
+    Gowda 2025, Sec. 6 (AdamW, CTC training).</p>
+</div>
+<div class="api-member">
+<h3><code>train_spd_gru</code></h3>
+<pre><code>def train_spd_gru(model: Any, optimizer: Any, spd_seq: Any, targets: Any, input_lengths: Any, target_lengths: Any, blank: int = 0) -&gt; Any</code></pre>
+<p>End-to-end training helper: ``spd_seq → logits → CTC loss → step``.</p><p>Args:
+    model: :class:`SPDGRU`.
+    optimizer: Torch optimizer.
+    spd_seq: SPD sequence ``(B,T,C,C)`` or ``(T,C,C)``, Tensor or ndarray.
+    targets: Concatenated phoneme targets.
+    input_lengths: Input lengths ``(N,)``.
+    target_lengths: Target lengths ``(N,)``.
+    blank: Blank index.</p><p>Returns:
+    Tuple ``(loss, logits)`` where ``loss`` is detached scalar and
+    ``logits`` are ``(B,T,V)``.</p><p>References:
+    Gowda 2025, Sec. 6.</p>
+</div>
+</section>
+<section class="api-module" id="subvocal-emg_core-ml-speechnet">
+<h2>subvocal.emg_core.ml.speechnet</h2>
+<p>SpeechNet tiny CNN per SilentWear (Spacone et al. 2026, ETH Zurich).</p><p>15k-parameter depthwise-separable CNN for 8 commands + rest, tailored for
+GAP9 MCU (63.9 uJ / inference). Input ``(B, C, T)`` with C=14 (SilentWear)
+or 4-8 (generic), T=150 (1.5 s @ 100 Hz or 150 ms @ 1000 Hz window).</p><p>Architecture
+------------
+3 depthwise-separable conv blocks (depthwise Conv1d groups + pointwise 1x1),
+each with BatchNorm, ReLU, MaxPool(2), Dropout, followed by
+AdaptiveAvgPool1d + linear head. ~15k params for C=4..14.</p><p>Reference
+---------
+Spacone et al. 2026, SilentWear, ETH Zurich — GAP9 deployment, inter-session
+fine-tuning with &lt;10 min calibration data.</p><p>Guarded: torch is optional; missing torch raises MissingDependencyError.</p>
+<div class="api-member">
+<h3><code>class SpeechNet(nn.Module)</code></h3>
+<p>Tiny depthwise-separable CNN (~15k params) for sEMG commands.</p><p>Args:
+    num_channels: EMG channels (14 for SilentWear, 4-8 generic).
+    num_classes: Output classes (8 commands + rest if needed).
+    segment_length: Temporal length T (default 150).
+    dropout: Dropout prob between blocks.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, num_classes: int = 8, segment_length: int = 150, dropout: float = 0.2) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>Forward pass.</p><p>Args:
+    x: Tensor of shape (B, C, T).</p><p>Returns:
+    Logits of shape (B, num_classes).</p>
+</div>
+<div class="api-member">
+<h4>count_parameters</h4>
+<pre><code>def count_parameters(self) -&gt; int</code></pre>
+<p>Return total parameter count (~15k, including frozen).</p>
+</div>
+<div class="api-member">
+<h4>count_trainable_parameters</h4>
+<pre><code>def count_trainable_parameters(self) -&gt; int</code></pre>
+<p>Return trainable parameter count (after freezing backbone).</p>
+</div>
+<div class="api-member">
+<h4>count_parameters_total</h4>
+<pre><code>def count_parameters_total(self) -&gt; int</code></pre>
+<p>Alias for count_parameters().</p>
+</div>
+<div class="api-member">
+<h4>estimate_energy</h4>
+<pre><code>def estimate_energy(self) -&gt; float</code></pre>
+<p>Energy per inference in microjoules.</p><p>Returns paper's GAP9 measurement 63.9 uJ, scaled slightly for
+channel count (linear with first pointwise).</p>
+</div>
+<div class="api-member">
+<h4>estimate_energy_uj</h4>
+<pre><code>def estimate_energy_uj(self) -&gt; float</code></pre>
+<p>Alias for estimate_energy().</p>
+</div>
+<div class="api-member">
+<h4>estimate_latency</h4>
+<pre><code>def estimate_latency(self) -&gt; float</code></pre>
+<p>Latency per inference in milliseconds (GAP9).</p>
+</div>
+<div class="api-member">
+<h4>estimate_latency_ms</h4>
+<pre><code>def estimate_latency_ms(self) -&gt; float</code></pre>
+<p>Alias for estimate_latency().</p>
+</div>
+<div class="api-member">
+<h4>estimate_flops</h4>
+<pre><code>def estimate_flops(self) -&gt; int</code></pre>
+<p>Estimate FLOPs per forward pass.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>class SpeechNet</code></h3>
+<p>Stub — raises MissingDependencyError when torch is absent.</p>
+<div class="api-member">
+<h4>__init__</h4>
+<pre><code>def __init__(self, num_channels: int = 4, num_classes: int = 8, segment_length: int = 150, dropout: float = 0.2) -&gt; None</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>forward</h4>
+<pre><code>def forward(self, x: Any) -&gt; Any</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>count_parameters</h4>
+<pre><code>def count_parameters(self) -&gt; int</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_energy</h4>
+<pre><code>def estimate_energy(self) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
+<div class="api-member">
+<h4>estimate_latency</h4>
+<pre><code>def estimate_latency(self) -&gt; float</code></pre>
+<p>No description.</p>
+</div>
+</div>
+<div class="api-member">
+<h3><code>finetune_inter_session</code></h3>
+<pre><code>def finetune_inter_session(model: Any, train_loader: Any, val_loader: Any | None = None, epochs: int = 5, lr: float = 0.0005, weight_decay: float = 0.0001, freeze_backbone: bool = True, device: str = 'cpu') -&gt; dict[str, Any]</code></pre>
+<p>Incremental fine-tuning for a new session (&lt;10 min data).</p><p>SilentWear protocol: freeze depthwise-separable backbone, fine-tune
+only the linear head (or last block + head) with low LR for few epochs,
+using calibration data collected in &lt;10 min (~50-150 utterances).</p><p>Args:
+    model: SpeechNet instance (or any nn.Module with .classifier).
+    train_loader: DataLoader yielding (B, C, T), labels.
+    val_loader: Optional validation loader.
+    epochs: Few epochs (3-10, default 5) to avoid overfit on tiny set.
+    lr: Low learning rate (1e-4 - 1e-3).
+    weight_decay: Weight decay.
+    freeze_backbone: If True, freeze blocks 1-3, train head only.
+    device: Torch device.</p><p>Returns:
+    Dict with train loss history and val accuracy if available.</p>
+</div>
+<div class="api-member">
+<h3><code>train_speechnet</code></h3>
+<pre><code>def train_speechnet(num_channels: int = 4, num_classes: int = 8, segment_length: int = 150, train_data: Any | None = None, train_labels: Any | None = None, epochs: int = 20, batch_size: int = 16, lr: float = 0.001, weight_decay: float = 0.0001, device: str = 'cpu', seed: int = 42) -&gt; tuple[Any, dict[str, Any]]</code></pre>
+<p>Train SpeechNet from scratch (convenience wrapper).</p><p>If train_data/train_labels are None, returns untrained model.
+Otherwise builds a DataLoader and trains with AdamW + CrossEntropy.</p><p>Returns:
+    (model, history_dict)</p>
 </div>
 </section>
 <section class="api-module" id="subvocal-emg_core-ml-train">
@@ -2955,18 +5252,25 @@ or if the bounded queue is full and the item was dropped.</p>
 </div>
 </section>
 </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="./apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="./apex.html">SPX Benchmarks</a><a href="./platform/intent-benchmark.html">Intent Benchmark</a><a href="./platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="./platform/architecture.html">Architecture</a><a href="./platform/hardware-drivers.html">Hardware</a><a href="./api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="./docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
 </body>
 </html>

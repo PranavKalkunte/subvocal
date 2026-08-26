@@ -3,472 +3,316 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subvocal SDK | Physiological Silent Speech Interface Middleware</title>
-  <link rel="stylesheet" href="./index.css">
+  <title>Subvocal SDK — Physiological Silent Speech Interface Middleware</title>
+  <meta name="description" content="Hardware-agnostic middleware for silent speech. sEMG interfaces to LLM agents via articulatory shorthand, 74% @ 0.36ms, MCP stdio server, MIT licensed.">
+  <link rel="stylesheet" href="./index.css?v=2">
 </head>
 <body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="./apex.html">SPX Benchmarks</a>
+        <a href="./platform/index.html">Platform</a>
+        <a href="./docs.html">Docs</a>
+        <a href="./api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="btn-dark" href="./docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()">
+          <span class="sr-only">Open menu</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="./apex.html">SPX Benchmarks</a>
+      <a href="./platform/index.html">Platform</a>
+      <a href="./docs.html">Docs</a>
+      <a href="./api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
 
-  <main data-page="subvocal">
-    <div data-component="container">
-      
-      <!-- Top Sticky Navigation Header -->
-      <section data-component="top">
-        <div>
-          <a href="./index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="kicker">
+          <span class="kicker-pill">SPX — Silent Productivity Index</span>
+          <span class="dot"></span>
+          <span style="font-size:12.5px;font-weight:600;color:#6b7280;letter-spacing:.02em">50 Tasks · 5 Domains · 11 Commands</span>
         </div>
-        
-        <!-- Desktop Nav -->
-        <nav data-component="nav-desktop">
-          <ul>
-            <li>
-              <a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a>
-            </li>
-            <li>
-              <a href="./docs.html">Docs</a>
-            </li>
-            <li>
-              <a href="./platform/index.html">Platform</a>
-            </li>
-            <li>
-              <a href="./api.html">API</a>
-            </li>
-          </ul>
-        </nav>
-        
-        <!-- Mobile Nav -->
-        <nav data-component="nav-mobile">
-          <button
-            type="button"
-            data-component="nav-mobile-toggle"
-            aria-expanded="false"
-            aria-controls="nav-mobile-menu"
-            class="nav-toggle"
-            onclick="toggleMobileMenu()"
-          >
-            <span class="sr-only">Open Menu</span>
-            <svg id="hamburger-icon" class="icon icon-hamburger" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 17H5V16H19V17Z" fill="currentColor" />
-              <path d="M19 8H5V7H19V8Z" fill="currentColor" />
-            </svg>
-            <svg id="close-icon" class="icon icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-              <path d="M12.7071 11.9993L18.0104 17.3026L17.3033 18.0097L12 12.7064L6.6967 18.0097L5.98959 17.3026L11.2929 11.9993L5.98959 6.69595L6.6967 5.98885L12 11.2921L17.3033 5.98885L18.0104 6.69595L12.7071 11.9993Z" fill="currentColor" />
-            </svg>
-          </button>
-        </nav>
-      </section>
+        <h1>Shape the frontier of silent speech</h1>
+        <p class="hero-sub">
+          Hardware-agnostic middleware connecting surface electromyography to LLM-driven agents via compressed articulatory shorthand. Offline, auditable, and open vocabulary — from signal to intent in &lt;1&nbsp;ms.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn-dark" href="./docs.html">Start building →</a>
+          <a class="btn-ghost" href="./apex.html">View SPX Leaderboard</a>
+        </div>
+        <div class="hero-stats">
+          <span><strong>74.0%</strong> heuristic @ <strong>0.36 ms</strong></span><span class="stat-sep"></span>
+          <span><strong>100%</strong> GOTO · CLICK · SCROLL</span><span class="stat-sep"></span>
+          <span><strong>1.66 ms</strong> 1D CNN · 102k params</span><span class="stat-sep"></span>
+          <span>MIT licensed</span>
+        </div>
 
-      <!-- Mobile Menu Dropdown -->
-      <div id="nav-mobile-menu" data-component="nav-mobile" style="display: none;">
-        <nav data-component="nav-mobile-menu-list">
-          <ul>
-            <li><a href="./index.html" onclick="toggleMobileMenu()">Home</a></li>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></li>
-            <li><a href="./docs.html">Docs</a></li>
-            <li><a href="./platform/index.html">Platform</a></li>
-            <li><a href="./api.html">API</a></li>
-          </ul>
-        </nav>
-      </div>
-      
-      <div data-component="content">
-        
-        <!-- Hero Section -->
-        <section data-component="hero">
-          <div data-slot="hero-copy" style="margin-top: 1rem;">
-            <h1>Physiological Silent Speech Interface Middleware</h1>
-            <p>
-              An open-source, hardware-agnostic SDK connecting surface electromyography interfaces <span data-slot="br"></span>to LLM-driven AI agents via compressed articulatory shorthand decoders.
-            </p>
-          </div>
-          
-          <!-- Interactive Installation Tabs -->
-          <div data-slot="installation">
-            <div data-component="tabs" class="tabs" data-active="pip">
-              <div data-slot="tablist">
-                <button data-slot="tab" aria-selected="true" onclick="switchTab(this, 'pip')">pip</button>
-                <button data-slot="tab" aria-selected="false" onclick="switchTab(this, 'git')">git clone</button>
-                <button data-slot="tab" aria-selected="false" onclick="switchTab(this, 'verify')">verify</button>
-                <button data-slot="tab" aria-selected="false" onclick="switchTab(this, 'bench')">benchmark</button>
+        <div class="code-wrap">
+          <div class="tabs" data-active="pip">
+            <div class="tablist" role="tablist">
+              <button class="tab" role="tab" aria-selected="true" onclick="switchTab(this,'pip')">pip</button>
+              <button class="tab" role="tab" aria-selected="false" onclick="switchTab(this,'git')">git clone</button>
+              <button class="tab" role="tab" aria-selected="false" onclick="switchTab(this,'verify')">verify</button>
+              <button class="tab" role="tab" aria-selected="false" onclick="switchTab(this,'bench')">benchmark</button>
+            </div>
+            <div class="code-panel" id="panel-pip" aria-hidden="false">
+              <div class="codebox">
+                <code><span>pip install </span><span class="hl">subvocal</span></code>
+                <button class="copy-btn" onclick="copyText(this,'pip install subvocal')" aria-label="Copy"><svg class="ic-copy" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 9H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2M15 9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h6Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="ic-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
-              
-              <div data-slot="panels">
-                <div data-slot="panel" id="panel-pip" aria-hidden="false">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'pip install subvocal')">
-                    <span data-slot="command-script">
-                      <span>pip install </span>
-                      <span data-slot="highlight">subvocal</span>
-                    </span>
-                    <div data-component="copy-status">
-                      <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8.75 8.75V2.75H21.25V15.25H15.25M15.25 8.75H2.75V21.25H15.25V8.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-                      </svg>
-                      <svg data-slot="check" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.75 15.0938L9 20.25L21.25 3.75" stroke="#03B000" stroke-width="2" stroke-linecap="square"/>
-                      </svg>
-                    </div>
-                  </button>
-                </div>
-                
-                <div data-slot="panel" id="panel-git" aria-hidden="true" style="display: none;">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'git clone https://github.com/PranavKalkunte/subvocal.git')">
-                    <span data-slot="command-script">
-                      <span>git clone </span>
-                      <span data-slot="highlight">https://github.com/PranavKalkunte/subvocal.git</span>
-                    </span>
-                    <div data-component="copy-status">
-                      <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8.75 8.75V2.75H21.25V15.25H15.25M15.25 8.75H2.75V21.25H15.25V8.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-                      </svg>
-                      <svg data-slot="check" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.75 15.0938L9 20.25L21.25 3.75" stroke="#03B000" stroke-width="2" stroke-linecap="square"/>
-                      </svg>
-                    </div>
-                  </button>
-                </div>
-                
-                <div data-slot="panel" id="panel-verify" aria-hidden="true" style="display: none;">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'pip install -e &quot;.[all,dev]&quot; &amp;&amp; pytest')">
-                    <span data-slot="command-script">
-                      <span>pip install -e ".[all,dev]" &amp;&amp; </span>
-                      <span data-slot="highlight">pytest</span>
-                    </span>
-                    <div data-component="copy-status">
-                      <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8.75 8.75V2.75H21.25V15.25H15.25M15.25 8.75H2.75V21.25H15.25V8.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-                      </svg>
-                      <svg data-slot="check" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.75 15.0938L9 20.25L21.25 3.75" stroke="#03B000" stroke-width="2" stroke-linecap="square"/>
-                      </svg>
-                    </div>
-                  </button>
-                </div>
-                
-                <div data-slot="panel" id="panel-bench" aria-hidden="true" style="display: none;">
-                  <button data-copy data-slot="command" onclick="handleCopyClick(this, 'python benchmarks/eval_runner.py')">
-                    <span data-slot="command-script">
-                      <span>python </span>
-                      <span data-slot="highlight">benchmarks/eval_runner.py</span>
-                    </span>
-                    <div data-component="copy-status">
-                      <svg data-slot="copy" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8.75 8.75V2.75H21.25V15.25H15.25M15.25 8.75H2.75V21.25H15.25V8.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-                      </svg>
-                      <svg data-slot="check" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.75 15.0938L9 20.25L21.25 3.75" stroke="#03B000" stroke-width="2" stroke-linecap="square"/>
-                      </svg>
-                    </div>
-                  </button>
-                </div>
+            </div>
+            <div class="code-panel" id="panel-git" aria-hidden="true">
+              <div class="codebox">
+                <code>git clone <span class="hl">https://github.com/PranavKalkunte/subvocal.git</span></code>
+                <button class="copy-btn" onclick="copyText(this,'git clone https://github.com/PranavKalkunte/subvocal.git')" aria-label="Copy"><svg class="ic-copy" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 9H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2M15 9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h6Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="ic-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </div>
+            </div>
+            <div class="code-panel" id="panel-verify" aria-hidden="true">
+              <div class="codebox">
+                <code>pip install -e ".[all,dev]" && <span class="hl">pytest</span></code>
+                <button class="copy-btn" onclick="copyText(this,'pip install -e &quot;.[all,dev]&quot; && pytest')" aria-label="Copy"><svg class="ic-copy" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 9H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2M15 9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h6Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="ic-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </div>
+            </div>
+            <div class="code-panel" id="panel-bench" aria-hidden="true">
+              <div class="codebox">
+                <code>python <span class="hl">benchmarks/eval_runner.py</span></code>
+                <button class="copy-btn" onclick="copyText(this,'python benchmarks/eval_runner.py')" aria-label="Copy"><svg class="ic-copy" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 9H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2M15 9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h6Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="ic-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
             </div>
           </div>
-        </section>
-        
-        <!-- What Section -->
-        <section data-component="what">
-          <div data-slot="section-title">
-            <h3>What is Subvocal SDK?</h3>
-            <p>Subvocal SDK is a library for sEMG bio-signal capture, digital signal processing, gesture classification, and context-aware natural language intent reconstruction.</p>
-          </div>
-          <ul>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Articulatory Shorthand:</strong> Bypasses the typical 5-8 whole-word vocabulary limit of standard sEMG classifiers.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Asymmetric Levenshtein:</strong> Aligns compressed phonetic shorthand inputs using custom physiological confusion clusters.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Context Prioritization:</strong> Dynamically filters and ranks candidate targets based on focused application states.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Signal Preprocessing:</strong> AlterEgo-inspired 1.3-50.0 Hz bandpass filtering defaults optimized for slow gestures.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Classifier Skeletons:</strong> Train Random Forest, 1D CNN, GRU, and Transformer model topologies locally on raw traces.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>MCP Server:</strong> Exposes intent-reconstruction decoders as standard Model Context Protocol tools.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Offline TTS:</strong> Zero-dependency local audio feedback engine prioritizing native macOS audio tools.
-              </div>
-            </li>
-            <li>
-              <span>[*]</span>
-              <div>
-                <strong>Hardened Runtime:</strong> Bounded queues, deadlock-free pipeline, validated models.
-              </div>
-            </li>
-          </ul>
-          <a href="./docs.html">
-            <span>Read Docs </span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6.5 12L17 12M13 16.5L17.5 12L13 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-            </svg>
+          <div style="margin-top:10px;font-size:12.5px;color:#6b7280">Try the 20-line <a href="https://github.com/PranavKalkunte/subvocal/tree/main/examples/silent-typing" target="_blank" style="text-decoration:underline;text-underline-offset:3px;color:#0a0a0a">silent-typing demo</a> — no hardware or API keys.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LATEST TASKS (Mercor Latest roles → tasks) -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Latest tasks</h2>
+          <a class="link-arrow" href="./apex.html">View SPX benchmark →</a>
+        </div>
+        <div class="grid4">
+          <a class="card" href="./apex.html#spx-intent">
+            <div class="card-top"><span class="badge">GOTO · Navigation</span><span style="font-size:12px;color:#9ca3af">10 tasks</span></div>
+            <div class="card-title">gt ggl.cm → GOTO google.com</div>
+            <div class="card-desc">Consonant shorthand navigation. Heuristic 100% — fixed command patterns + domain expansions.</div>
+            <div class="card-meta"><span><strong>Heuristic</strong> 100%</span><span>·</span><span>0.36 ms</span></div>
           </a>
-          <p style="margin-top:0.75rem;font-size:0.9rem;opacity:0.8;">Try the 20-line <a href="https://github.com/PranavKalkunte/subvocal/tree/main/examples/silent-typing" target="_blank">silent-typing demo</a> — no hardware or API keys.</p>
-        </section>
-        
-        <!-- Performance Baselines Section (Graphs and Captions Removed) -->
-        <section data-component="growth">
-          <div data-slot="section-title">
-            <h3>Pipeline Performance & Baselines</h3>
-            <div>
-               <span>[*]</span>
-                <p>
-                  Evaluated across 50 realistic shorthand command scenarios, the Subvocal SDK delivers <strong>74.0% baseline heuristic reconstruction accuracy</strong> (approaching <strong>100%</strong> on specific control groups) at <strong>&lt;0.72 ms execution latency</strong>. <em>v2.0.1 hardens correctness without changing heuristic latency.</em>
-                </p>
-            </div>
-          </div>
-        </section>
-        
-        <!-- Privacy Section -->
-        <section data-component="privacy">
-          <div data-slot="privacy-title">
-            <h3>Built for privacy first</h3>
-            <div>
-              <span>[*]</span>
-              <p>
-                The Subvocal SDK operates securely and fully offline. Your biopotential raw metrics, feature vectors, and spelling shorthand logs are processed on local CPU threads, ensuring physiological metrics never leak to external cloud servers. Pipeline JSONL tracing is opt-out via <code>telemetry.trace_enabled</code> / <code>runtime.trace_enabled</code> and capped at 10MB.
-              </p>
-            </div>
-          </div>
-        </section>
-        
-        <!-- Accordion FAQ Section -->
-        <section data-component="faq">
-          <div data-slot="section-title">
-            <h3>FAQ</h3>
-          </div>
-          <ul>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">What is Subvocal SDK?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  Subvocal SDK is an open-source physiological silent speech middleware library. It captures muscle biopotentials, filters signal velocities, and reconstructs intents to drive local AI agents hands-free.
-                </div>
-              </div>
-            </li>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">How does it avoid vocabulary ceilings?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  Rather than classifying whole words (which falls off in accuracy at ~8 words), users speak compressed phonetic shorthand (consonant strings). The SDK translates these strings using Levenshtein distance mapped to anatomical muscle groups.
-                </div>
-              </div>
-            </li>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">Do I need custom neckbands or physical sensors?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  No. While it supports OpenBCI Cyton and Delsys Trigno hardware controllers, the SDK includes a built-in mock channel noise simulator to test client intent decoders fully offline.
-                </div>
-              </div>
-            </li>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">Which cognitive LLM providers are supported?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  The SDK provides adapters for OpenAI GPT-4o, Anthropic Claude, Google Gemini, and local models running via Ollama.
-                </div>
-              </div>
-            </li>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">What is the Model Context Protocol (MCP) server?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  We package our phonetic reconstruction decoders as stdio-based MCP tool servers. This enables compatible clients (like Claude Desktop) to parse and invoke subvocal inputs as standard tool calls.
-                </div>
-              </div>
-            </li>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">What changed in 2.0.1?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  v2.0.1 is a security &amp; reliability hardening release: hardened deserialization (restricted unpickling), path-traversal guards, HMAC request signing, TTS injection sanitization, plus bounded queues, deadlock-free pipeline, and validated models — with no change to heuristic latency.
-                </div>
-              </div>
-            </li>
-            <li>
-              <div data-slot="faq-item" data-closed onclick="toggleFaq(this)">
-                <button data-slot="faq-question">
-                  <svg data-slot="faq-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.5 11.5H19V12.5H12.5V19H11.5V12.5H5V11.5H11.5V5H12.5V11.5Z" fill="currentColor" />
-                  </svg>
-                  <svg data-slot="faq-icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 11.5H19V12.5H5Z" fill="currentColor" />
-                  </svg>
-                  <div data-slot="faq-question-text">Is the project open source?</div>
-                </button>
-                <div data-slot="faq-answer" style="display: none;">
-                  Yes, the Subvocal SDK is fully open-sourced under the MIT License, including the v2.0.1 security hardening release. You can use, modify, or extend it for academic research or commercial integrations.
-                </div>
-              </div>
-            </li>
-          </ul>
-        </section>
-        
-        <!-- Footer -->
-        <footer data-component="footer">
-          <div data-slot="cell">
-            <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
-          </div>
-          <div data-slot="cell">
-            <a href="./docs.html">Docs</a>
-          </div>
-          <div data-slot="cell">
-            <a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a>
-          </div>
-        </footer>
-        
+          <a class="card" href="./apex.html#spx-intent">
+            <div class="card-top"><span class="badge">CLICK · Interaction</span><span style="font-size:12px;color:#9ca3af">9 tasks</span></div>
+            <div class="card-title">clk sbt → CLICK Submit</div>
+            <div class="card-desc">Command-aware prioritization limits search pool to visible UI elements. Very high accuracy.</div>
+            <div class="card-meta"><span><strong>Heuristic</strong> 100%</span><span>·</span><span>Bounded queue</span></div>
+          </a>
+          <a class="card" href="./apex.html#spx-intent">
+            <div class="card-top"><span class="badge">SEARCH · Web</span><span style="font-size:12px;color:#9ca3af">10 tasks</span></div>
+            <div class="card-title">srch snt spch → SEARCH silent speech</div>
+            <div class="card-desc">Free-text spelling recovery + context cross-ref. Failure hotspot — hybrid LLM needed for plurals.</div>
+            <div class="card-meta"><span><strong>Heuristic</strong> 30%</span><span>·</span><span>Hybrid target 96%</span></div>
+          </a>
+          <a class="card" href="./apex.html#spx-intent">
+            <div class="card-top"><span class="badge">TYPE · Input</span><span style="font-size:12px;color:#9ca3af">10 tasks</span></div>
+            <div class="card-title">typ alc smth → TYPE Alice Smith</div>
+            <div class="card-desc">Contact-aware phonetic matching. 40% heuristic — collisions on arbitrary phrases like “thanks for help”.</div>
+            <div class="card-meta"><span><strong>Heuristic</strong> 40%</span><span>·</span><span>Vocab collision</span></div>
+          </a>
+          <a class="card" href="./apex.html#spx-intent">
+            <div class="card-top"><span class="badge">SCROLL · Viewport</span><span style="font-size:12px;color:#9ca3af">4 tasks</span></div>
+            <div class="card-title">scrl dwn → SCROLL Down</div>
+            <div class="card-desc">Single-token viewport controls. Deterministic mapping, 100% heuristic with cooldown gating.</div>
+            <div class="card-meta"><span><strong>Heuristic</strong> 100%</span><span>·</span><span>≤5s step</span></div>
+          </a>
+          <a class="card" href="./apex.html#spx-streaming">
+            <div class="card-top"><span class="badge">System</span><span style="font-size:12px;color:#9ca3af">5 tasks</span></div>
+            <div class="card-title">cnfm · cncl · und · cpy · pst</div>
+            <div class="card-desc">Clipboard & modal actions. Single-token vocab match, 100%. Backpressure via OpsQueue maxsize.</div>
+            <div class="card-meta"><span><strong>Heuristic</strong> 100%</span><span>·</span><span>thread-safe</span></div>
+          </a>
+          <a class="card" href="./apex.html#spx-signal">
+            <div class="card-top"><span class="badge">Signal · DSP</span><span style="font-size:12px;color:#9ca3af">1.3–50 Hz</span></div>
+            <div class="card-title">Physiological bandpass filtering</div>
+            <div class="card-desc">AlterEgo-inspired 1.3–50 Hz + 50/60 Hz notch, TD10 840-d. Correctly plumbed notch_freq.</div>
+            <div class="card-meta"><span><strong>Latency</strong> &lt;1 ms</span><span>·</span><span>TD10 840-d</span></div>
+          </a>
+          <a class="card" href="./apex.html#spx-hardware">
+            <div class="card-top"><span class="badge">Hardware · HAL</span><span style="font-size:12px;color:#9ca3af">4 drivers</span></div>
+            <div class="card-title">Synthetic · FileReplay · OpenBCI · Delsys</div>
+            <div class="card-desc">BrainFlow-compatible BoardShim fallback, bounded buffers. Dataset loaders: Ninapro, PutEMG, CSL-HDEMG.</div>
+            <div class="card-meta"><span><strong>HAL</strong> agnostic</span><span>·</span><span>MIT</span></div>
+          </a>
+        </div>
       </div>
-    </div>
-    
-    <!-- Legal Section -->
-    <div data-component="legal">
-      <span>
-        ©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a>
-      </span>
-      <span>
-        <a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a>
-      </span>
-      <span>English</span>
-    </div>
+    </section>
+
+    <!-- PROMO + MINI LEADERBOARD -->
+    <section class="section" style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
+      <div class="container">
+        <div class="promo">
+          <div class="promo-left">
+            <div class="kicker" style="margin-bottom:12px"><span class="badge-dark">SPX</span><span style="font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.04em">Silent Productivity Index</span></div>
+            <h3>The benchmark for silent speech productivity</h3>
+            <p>
+              50 shorthand→intent tasks across 5 domains. Evaluates articulatory phonetic decoding + context-aware reconstruction. Heuristic baseline 74% @ 0.36 ms; hybrid LLM path targets 96% with SubvocalPipeline bounded execution.
+            </p>
+            <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+              <a class="btn-dark" href="./apex.html">View leaderboard →</a>
+              <a class="btn-ghost" href="https://huggingface.co/datasets/subvocal/spx-intent" target="_blank" rel="noreferrer">Data (HF) — coming soon</a>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#6b7280">
+              <span><strong style="color:#0a0a0a">50</strong> Tasks</span>
+              <span><strong style="color:#0a0a0a">5</strong> Domains</span>
+              <span><strong style="color:#0a0a0a">11</strong> Commands</span>
+              <span><strong style="color:#0a0a0a">0.36 ms</strong> avg</span>
+            </div>
+          </div>
+          <div class="promo-right">
+            <div class="mini-lb">
+              <div class="mini-head"><strong>SPX-Intent Leaderboard</strong><a href="./apex.html#leaderboard">View all →</a></div>
+              <div class="mini-row"><span class="rank">1</span><span class="model">Hybrid LLM (target)</span><span class="acc">96.0%</span><div class="bar"><i style="width:96%"></i></div></div>
+              <div class="mini-row"><span class="rank">2</span><span class="model">Heuristic (offline)</span><span class="acc">74.0%</span><div class="bar"><i style="width:74%"></i></div></div>
+              <div class="mini-row"><span class="rank">3</span><span class="model">GOTO · CLICK · SCROLL</span><span class="acc">100%</span><div class="bar"><i style="width:100%"></i></div></div>
+              <div class="mini-row"><span class="rank">4</span><span class="model">SEARCH</span><span class="acc">30%</span><div class="bar"><i style="width:30%"></i></div></div>
+              <div class="mini-row"><span class="rank">5</span><span class="model">TYPE</span><span class="acc">40%</span><div class="bar"><i style="width:40%"></i></div></div>
+              <div style="padding:10px 14px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">Failure hotspot: <code style="font-family:var(--mono);background:#fff;border:1px solid #e5e7eb;padding:1px 6px;border-radius:9999px">srch nrl ntwk → Neural network (singular bias)</code></div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+              <span class="kicker-pill" style="background:#fff">Paper — coming soon</span>
+              <span class="kicker-pill" style="background:#fff">Code — subvocal/shorthand</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY / WHAT -->
+    <section class="why">
+      <div class="container">
+        <div class="cols3">
+          <div>
+            <h3>What is Subvocal SDK?</h3>
+            <p>Open-source, hardware-agnostic middleware. sEMG capture → conditioning → classification → articulatory shorthand → context-aware intent → action. Swap drivers, classifiers, and LLM providers without changing pipeline code.</p>
+            <div style="margin-top:12px"><a class="link-arrow" href="./docs.html">Read docs →</a></div>
+          </div>
+          <div class="kv">
+            <strong>Articulatory Shorthand</strong>
+            <div style="margin-top:6px;font-size:13px;line-height:1.6;color:#6b7280">Bypasses 5–8 word vocabulary ceiling. Compressed consonant strings decoded via asymmetric Levenshtein with physiological confusion clusters (Labial, Alveolar, Velar, Rhotic).</div>
+          </div>
+          <div class="kv">
+            <strong>Context Prioritization</strong>
+            <div style="margin-top:6px;font-size:13px;line-height:1.6;color:#6b7280">Dynamic filtering against active contacts (TYPE), calendar (SEARCH), browser URLs (GOTO), and on-screen elements (CLICK) — then LLM rescoring when needed.</div>
+          </div>
+        </div>
+        <div class="grid3" style="margin-top:18px">
+          <div class="card">
+            <div class="badge">Signal</div>
+            <div class="card-title">Physiological conditioning</div>
+            <div class="card-desc">1.3–50 Hz bandpass for slow articulatory gestures + correctly plumbed 50/60 Hz notch. TD10 features, 840-d per segment.</div>
+          </div>
+          <div class="card">
+            <div class="badge">Runtime</div>
+            <div class="card-title">Hardened v2 pipeline</div>
+            <div class="card-desc">Bounded OpsQueue with backpressure, thread-safe inject_token, 5s deadlock-free step, JSONL tracing with 10 MB rotation (opt-out).</div>
+          </div>
+          <div class="card">
+            <div class="badge">Protocol</div>
+            <div class="card-title">MCP stdio server</div>
+            <div class="card-desc">Expose intent decoders as Model Context Protocol tools. Works with Claude Desktop: <span style="font-family:var(--mono);font-size:12.5px;background:#f9fafb;border:1px solid #e5e7eb;padding:1px 6px;border-radius:6px">subvocal-mcp</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="section">
+      <div class="container">
+        <div class="grid2">
+          <div>
+            <h2 style="font-size:18px;font-weight:700;letter-spacing:-0.02em">Built for privacy first</h2>
+            <p style="margin-top:10px;font-size:14px;line-height:1.65;color:#6b7280">Fully offline. Raw biopotentials, feature vectors, and shorthand logs stay on local CPU threads — never sent to external cloud. Pipeline JSONL tracing is opt-out via <span style="font-family:var(--mono);font-size:12.5px;background:#f9fafb;border:1px solid #e5e7eb;padding:1px 6px;border-radius:6px">telemetry.trace_enabled</span> / <span style="font-family:var(--mono);font-size:12.5px;background:#f9fafb;border:1px solid #e5e7eb;padding:1px 6px;border-radius:6px">runtime.trace_enabled</span> and capped at 10 MB.</p>
+          </div>
+          <div class="kv" style="background:#fff">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div><div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af">Data residency</div><div style="margin-top:6px;font-size:13px;color:#111827;font-weight:600">Local-only · opt-out tracing</div><div style="margin-top:4px;font-size:12.5px;color:#6b7280">Per-user dirs, SUBVOCAL_DATA_DIR override</div></div>
+              <div><div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af">Security</div><div style="margin-top:6px;font-size:13px;color:#111827;font-weight:600">Validated models · sanitized paths</div><div style="margin-top:4px;font-size:12.5px;color:#6b7280">torch.load(weights_only=True), traversal guards</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq">
+      <div class="container">
+        <div class="section-head"><h2>FAQ</h2></div>
+        <div class="faq-list">
+          <details class="faq-item"><summary class="faq-q"><span>How does it avoid vocabulary ceilings?</span><span class="faq-icon">+</span></summary><div class="faq-a">Whole-word sEMG classifiers degrade beyond ~8 words. Subvocal uses compressed phonetic shorthand (consonant strings like <code>g gl</code> for <code>Google</code>) decoded via asymmetric Levenshtein over anatomical confusion clusters, then context + LLM rescoring.</div></details>
+          <details class="faq-item"><summary class="faq-q"><span>Do I need custom neckbands or sensors?</span><span class="faq-icon">+</span></summary><div class="faq-a">No. Supports OpenBCI Cyton, Delsys Trigno, FileReplay, and Synthetic generators. BrainFlow-compatible <code>BoardShim</code> fallback is pure-Python with bounded buffers — no native deps.</div></details>
+          <details class="faq-item"><summary class="faq-q"><span>Which LLM providers are supported?</span><span class="faq-icon">+</span></summary><div class="faq-a">Claude, OpenAI, Gemini, and local Llama via Ollama. <code>resolve_provider()</code> picks the best available (env API key → heuristic offline). Per-request timeouts + exponential backoff on 408/429/5xx.</div></details>
+          <details class="faq-item"><summary class="faq-q"><span>What is the MCP server?</span><span class="faq-icon">+</span></summary><div class="faq-a">A stdio Model Context Protocol server exposing <code>get_pipeline_status</code>, <code>get_token_buffer</code>, <code>inject_token</code> (thread-safe), <code>process_phrase</code>, <code>trigger_calibration</code>, and resource <code>subvocal://intent/history</code>.</div></details>
+          <details class="faq-item"><summary class="faq-q"><span>What changed in 2.0.1?</span><span class="faq-icon">+</span></summary><div class="faq-a">Security & reliability hardening: restricted unpickling, path-traversal guards, HMAC padding fix, TTS injection sanitization, bounded queues, deadlock-free pipeline (5s HardwareError), validated Frame/CommandToken, low-cardinality Prometheus (no session_id).</div></details>
+          <details class="faq-item"><summary class="faq-q"><span>Is it open source?</span><span class="faq-icon">+</span></summary><div class="faq-a">MIT licensed. <a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="text-decoration:underline">GitHub →</a> includes v2.0.1 hardening + research frontier modules under <code>subvocal[ml]</code> (handcrafted 112, SPD, adaptor, MONA/LISA, SpeechNet, etc.).</div></details>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Interactive JavaScript -->
-  <script>
-    // Tab switching logic
-    function switchTab(button, tabId) {
-      const tabList = button.parentNode;
-      const triggers = tabList.querySelectorAll('[data-slot="tab"]');
-      triggers.forEach(t => t.setAttribute('aria-selected', t === button ? 'true' : 'false'));
-      
-      const panelsContainer = tabList.nextElementSibling;
-      const panels = panelsContainer.querySelectorAll('[data-slot="panel"]');
-      panels.forEach(p => {
-        if (p.id === `panel-${tabId}`) {
-          p.style.display = 'block';
-          p.setAttribute('aria-hidden', 'false');
-        } else {
-          p.style.display = 'none';
-          p.setAttribute('aria-hidden', 'true');
-        }
-      });
-    }
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="./apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col">
+          <h4>Research</h4>
+          <a href="./apex.html">SPX Benchmarks</a>
+          <a href="./platform/intent-benchmark.html">Intent Benchmark Spec</a>
+          <a href="./platform/benchmark-report.html">Benchmark Report</a>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="./platform/architecture.html">Architecture</a>
+          <a href="./platform/hardware-drivers.html">Hardware</a>
+          <a href="./api.html">API</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+          <a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a>
+          <a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a>
+        </div>
+      </div>
+    </div>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
+    </div>
+  </footer>
 
-    // Command copy handling
-    function handleCopyClick(button, text) {
-      navigator.clipboard.writeText(text).then(() => {
-        button.setAttribute('data-copied', '');
-        setTimeout(() => {
-          button.removeAttribute('data-copied');
-        }, 1500);
-      });
-    }
-
-    // FAQ Accordion toggling
-    function toggleFaq(item) {
-      const answer = item.querySelector('[data-slot="faq-answer"]');
-      const trigger = item.querySelector('[data-slot="faq-question"]');
-      if (item.hasAttribute('data-closed')) {
-        item.removeAttribute('data-closed');
-        item.setAttribute('data-expanded', '');
-        trigger.setAttribute('aria-expanded', 'true');
-        answer.style.display = 'block';
-      } else {
-        item.removeAttribute('data-expanded');
-        item.setAttribute('data-closed', '');
-        trigger.setAttribute('aria-expanded', 'false');
-        answer.style.display = 'none';
-      }
-    }
-
-    // Mobile navigation toggle
-    function toggleMobileMenu() {
-      const menu = document.getElementById('nav-mobile-menu');
-      const hamburger = document.getElementById('hamburger-icon');
-      const close = document.getElementById('close-icon');
-      
-      const isOpen = menu.style.display === 'block';
-      if (isOpen) {
-        menu.style.display = 'none';
-        hamburger.style.display = 'block';
-        close.style.display = 'none';
-      } else {
-        menu.style.display = 'block';
-        hamburger.style.display = 'none';
-        close.style.display = 'block';
-      }
-    }
-  </script>
+<script>
+function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}
+function switchTab(btn,id){const list=btn.parentElement;list.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t===btn?'true':'false'));const wrap=list.parentElement;wrap.querySelectorAll('.code-panel').forEach(p=>p.setAttribute('aria-hidden',p.id==='panel-'+id?'false':'true'))}
+function copyText(btn,text){navigator.clipboard.writeText(text).then(()=>{btn.setAttribute('data-copied','');setTimeout(()=>btn.removeAttribute('data-copied'),1400)})}
+document.querySelectorAll('.faq-item').forEach(d=>{d.addEventListener('toggle',()=>{const s=d.querySelector('.faq-icon'); if(s) s.textContent=d.open?'−':'+'})});
+</script>
 </body>
 </html>

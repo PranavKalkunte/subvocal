@@ -4,56 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classifier Infrastructure | Subvocal SDK</title>
-  <link rel="stylesheet" href="../index.css">
-  <style>
-    .docs-body table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
-    .docs-body th, .docs-body td { border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }
-    .docs-body img { max-width: 100%; }
-    .docs-body h1, .docs-body h2 { margin-top: 2rem; }
-    .mermaid { background: transparent; margin: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="../index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="../index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="../docs.html">Docs</a></li>
-            <li><a href="../platform/index.html" aria-current="page">Platform</a></li>
-            <li><a href="../api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-          <h4>Platform Corpus</h4>
-          <ul>
-            <li><a href="../platform/positioning.html"><span>[*]</span> Platform Positioning</a></li>
-            <li><a href="../platform/configuration.html"><span>[*]</span> Configuration & Runtime</a></li>
-            <li><a href="../platform/declaration.html"><span>[*]</span> Declaration Post</a></li>
-            <li><a href="../platform/architecture.html"><span>[*]</span> Architecture</a></li>
-            <li><a href="../platform/intent-layer.html"><span>[*]</span> Intent Layer</a></li>
-            <li><a href="../platform/intent-benchmark.html"><span>[*]</span> Intent Reconstruction Benchmark</a></li>
-            <li><a href="../platform/benchmark-report.html"><span>[*]</span> Benchmark Report</a></li>
-            <li><a href="../platform/hardware-drivers.html"><span>[*]</span> Hardware Drivers</a></li>
-            <li><a href="../platform/classifiers.html" aria-current="page"><span>[*]</span> Classifier Infrastructure</a></li>
-            <li><a href="../platform/security.html"><span>[*]</span> Security & Threat Model</a></li>
-            <li><a href="../platform/mcp-profile.html"><span>[*]</span> MCP Intent Profile (RFC)</a></li>
-            <li><a href="../platform/release-process.html"><span>[*]</span> Release Process</a></li>
-            <li><a href="../platform/reference-bom.html"><span>[*]</span> Reference Hardware BOM</a></li>
-            <li><a href="../platform/phase0-results.html"><span>[*]</span> Phase 0: Method & Results</a></li>
-          </ul>
-          <h4>Tutorials</h4>
-          <ul>
-            <li><a href="../walkthrough.html"><span>[*]</span> End-to-End Walkthrough</a></li>
-          </ul>
-        </aside>
-        <article class="docs-body">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="../apex.html">SPX Benchmarks</a>
+        <a href="../platform/index.html" aria-current="page">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="../api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="../docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="../apex.html">SPX Benchmarks</a>
+      <a href="../platform/index.html">Platform</a>
+      <a href="../docs.html">Docs</a>
+      <a href="../api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
+    </div>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <h4>Platform Corpus</h4>
+      <ul>
+        <li><a href="../platform/positioning.html">Platform Positioning</a></li>
+        <li><a href="../platform/configuration.html">Configuration & Runtime</a></li>
+        <li><a href="../platform/declaration.html">Declaration Post</a></li>
+        <li><a href="../platform/architecture.html">Architecture</a></li>
+        <li><a href="../platform/intent-layer.html">Intent Layer</a></li>
+        <li><a href="../platform/intent-benchmark.html">Intent Reconstruction Benchmark</a></li>
+        <li><a href="../platform/benchmark-report.html">Benchmark Report</a></li>
+        <li><a href="../platform/hardware-drivers.html">Hardware Drivers</a></li>
+        <li><a href="../platform/classifiers.html" aria-current="page">Classifier Infrastructure</a></li>
+        <li><a href="../platform/security.html">Security & Threat Model</a></li>
+        <li><a href="../platform/mcp-profile.html">MCP Intent Profile (RFC)</a></li>
+        <li><a href="../platform/release-process.html">Release Process</a></li>
+        <li><a href="../platform/reference-bom.html">Reference Hardware BOM</a></li>
+        <li><a href="../platform/phase0-results.html">Phase 0: Method & Results</a></li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul>
+        <li><a href="../walkthrough.html">End-to-End Walkthrough</a></li>
+      </ul>
+      <h4>Benchmarks</h4>
+      <ul>
+        <li><a href="../apex.html">SPX Leaderboard</a></li>
+        <li><a href="../platform/benchmark-report.html">Report</a></li>
+        <li><a href="../api.html">API Reference</a></li>
+      </ul>
+    </aside>
+    <article class="docs-body">
 <h1>Classifier Infrastructure &amp; Reference Models</h1>
 <p>This document specifies the architecture, data flows, and performance characteristics of the sEMG classifier subsystem. The classifier layer serves as the physiological interface of the subvocal middleware, transforming multi-channel signal frames into discrete command tokens with associated confidences.</p>
 <pre class="mermaid">graph TD
@@ -99,20 +111,127 @@
 <p>During real-time inference, the <code>InferenceEngine</code> dynamically converts incoming structured Pydantic <code>Frame</code> objects into NumPy multi-channel segments using <code>Frame.to_numpy()</code> before ingestion, ensuring seamless typing compatibility.</p>
 <hr />
 <h2>2. Reference Model Architectures</h2>
-<p>The middleware provides five reference architectures to accommodate diverse hardware environments, ranging from zero-dependency embedded microcontrollers to dedicated neural accelerators.</p>
+<p>The middleware provides reference architectures spanning zero-dependency embedded
+microcontrollers to foundation-model research — all gated by <code>subvocal[ml]</code>
+where <code>torch</code>/<code>sklearn</code> is required (see <a href="configuration.md">Configuration</a>).</p>
 <h3>A. Classical Feature-Based Baselines</h3>
 <p>Classical pipelines extract statistical temporal features over sliding windows and pool them into fixed-length vectors.
 1. <strong>TD10 Feature Pipeline</strong>: Decomposes signals into low-frequency articulation movements (double moving average) and muscular energy. For a 4-channel system, stacking ±10 context frames yields an 840-dimensional feature vector.
 2. <strong>Random Forest (<code>rf</code>)</strong>: An ensemble baseline of decision trees mapping high-dimensional TD10 features to target gestures.
 3. <strong>Support Vector Machine (<code>svm</code>)</strong>: An SVM baseline utilizing a Radial Basis Function (RBF) kernel and Platt scaling for probability calibration, optimized for high separability on small calibration sets.</p>
-<h3>B. Deep Sequence Architectures</h3>
+<h3>B. Handcrafted 112 (<code>subvocal.emg_core.dsp.handcrafted</code>, Mohapatra et al. ACL 2025; Jou et al. 2006; Gaddy &amp; Klein EMNLP 2020)</h3>
+<p>Per-channel 28 features × 4 channels = 112-D spectral-temporal vector, no <code>torch</code>
+required (NumPy + optional SciPy Welch):
+* <strong>Temporal 11</strong>: MAV, RMS, VAR, WL, ZC, SSC, WAMP, IEMG, SSI, DASDV, LOGVAR
+* <strong>Stats 7</strong>: mean, std, min, max, peak-to-peak, skewness, kurtosis
+* <strong>Spectral 10</strong>: MNF, MDF, centroid, bandpower, bandpower-low/high, peak-freq, entropy, spread, rolloff (85 %)</p>
+<pre><code class="language-python">from subvocal.emg_core.dsp.handcrafted import extract_handcrafted_features
+feats = extract_handcrafted_features(segment, fs=250)  # (T,C) -&gt; (112,)
+seq   = extract_handcrafted_timevarying(segment, fs=250, window_ms=50, step_ms=20)  # (num_windows,112)
+</code></pre>
+<p>For <code>C≠4</code>, the output is padded/truncated to 112 to satisfy <code>EMGAdaptor(input_dim=112)</code>.</p>
+<h3>C. SPD-GRU CTC (<code>subvocal.emg_core.ml.spd_gru</code>, Gowda &amp; Miller ACL 2025; Findings of ACL 2026; J. Neural Eng. 2024)</h3>
+<p>Riemannian sEMG → phoneme decoder. SPD covariance <code>(T,C) → (C,C)</code> via <code>eps*I</code>,
+affine-invariant <code>logm</code> via batched <code>eigh</code> → upper-tri flatten to <code>K=C(C+1)/2</code>
+(e.g. 10 for <code>C=4</code>, torch-grad enabled) → <code>Linear(K→hidden)</code> → 3-layer GRU → <code>Linear(hidden→V)</code>:</p>
+<pre><code class="language-python">from subvocal.emg_core.ml.spd_gru import SPDGRU, ctc_loss, greedy_decode
+model = SPDGRU(num_channels=4, hidden_size=64, num_layers=3, num_phonemes=40)  # blank=0
+logits = model(spd_seq)  # (B,T,C,C) or (T,C,C) -&gt; (B,T,40)
+loss = ctc_loss(log_probs, targets, input_lengths, target_lengths)
+pred = greedy_decode(logits, blank_id=0)  # collapse + blank removal
+</code></pre>
+<p>Vocabulary: 40 phonemes (CMU-like subset + CTC blank at 0, Gowda 2025 Table 1).
+Training helpers <code>train_step(model, optimizer, logits, ...)</code> and <code>train_spd_gru(model, optimizer, spd_seq, ...)</code> implement the AdamW CTC loop.</p>
+<h3>D. SpeechNet (<code>subvocal.emg_core.ml.speechnet</code>, Spacone et al. 2026, SilentWear / ETH Zurich)</h3>
+<p>Tiny depthwise-separable CNN for 8 commands + rest, tailored for GAP9 MCU
+(~15 k params, 63.9 µJ / 6.4 ms on GAP9):</p>
+<pre><code>Block1: DW Conv1d C→C k7 + PW C→32 + BN/ReLU + MaxPool2
+Block2: DW 32→32 k5 + PW 32→64 + BN/ReLU + MaxPool2
+Block3: DW 64→64 k3 + PW 64→96 + BN/ReLU + MaxPool2
+→ AdaptiveAvgPool(8) → Linear(96*8 → num_classes)
+</code></pre>
+<pre><code class="language-python">from subvocal.emg_core.ml.speechnet import SpeechNet, finetune_inter_session
+net = SpeechNet(num_channels=4, num_classes=8, segment_length=150, dropout=0.2)
+net.count_parameters()   # ~15k (C=14) to ~11k (C=4)
+net.estimate_energy()    # 63.9 µJ scaled by C/14
+finetune_inter_session(net, train_loader, val_loader, epochs=5, lr=5e-4, freeze_backbone=True)
+</code></pre>
+<p>Inter-session fine-tuning freezes the depthwise backbone and retrains only the
+linear head (&lt;10 min calibration, SilentWear protocol).</p>
+<h3>E. TinyMyo Foundation (<code>subvocal.emg_core.foundation.tinymyo</code>, <code>arXiv:2512.15729</code>)</h3>
+<p>3.6 M-parameter Transformer encoder: channel-independent patching (<code>patch_size=10</code>
+→ shared <code>Linear(patch→128)</code>), 50 % SimMIM random masking via learned <code>mask_token</code>,
+8 bidirectional Transformer blocks with pre-norm + RoPE + GELU FFN (<code>mlp_ratio=12.0</code>),
+lightweight <code>Linear(128→10)</code> reconstruction decoder:</p>
+<pre><code class="language-python">from subvocal.emg_core.foundation import TinyMyoEncoder, TinyMyoFoundation
+enc = TinyMyoEncoder(num_channels=4, patch_size=10, embed_dim=128, depth=8, num_heads=4, mask_ratio=0.5)
+fm  = TinyMyoFoundation(encoder=enc, num_classes=8, regression_dim=1, vocab_size=40)
+fm.pretrain_step(x, optimizer)                # MSE on masked patches
+fm.finetune_step(x, y, task=&quot;classification&quot;) # CE over pooled embeddings
+</code></pre>
+<p>Heads: <code>classifier</code> (pooled mean → 8), <code>regressor</code>, <code>speech_head</code> (per-patch CTC <code>40</code>).
+Use <code>count_parameters()</code> / <code>estimate_flops(seq_len=150)</code> for profiling; missing <code>torch</code> raises <code>MissingDependencyError</code> with <code>subvocal[ml]</code> hint.</p>
+<h3>F. AEMG Tokenizer (<code>subvocal.emg_core.foundation.aemg_tokenizer</code>, Huang et al. CVPR 2026)</h3>
+<p>NCT sliding-window segmentation into contraction primitives (≈30–100 ms, <code>window_size=32</code>/<code>stride=16</code>) + vector quantization (<code>codebook K=512/D=64</code>, <code>torch.cdist</code> when <code>N&gt;64</code> else NumPy, overlap-add reconstruction):</p>
+<pre><code class="language-python">from subvocal.emg_core.foundation import EMGTokenizer, AEMGFramework
+tok = EMGTokenizer(codebook_size=512, token_dim=64, window_size=32, stride=16)
+ids = tok.encode(signal)   # (T,C) -&gt; (num_tokens,)
+rec = tok.decode(ids)      # overlap-add via codebook
+fw  = AEMGFramework(tokenizer=tok, mask_ratio=0.15)
+fw.pretrain_step(ids)      # 2-layer Transformer masked LM or heuristic loss
+</code></pre>
+<p>Self-supervised masked modeling over token sentences learns a universal vocabulary
+shared across subjects/sessions (random masking + collective token prediction).</p>
+<h3>G. Deep Sequence Architectures (baseline)</h3>
 <p>Deep learning models bypass manual feature engineering, operating directly on z-score standardized raw time-series arrays of shape <code>(Batch, Channels, Time)</code>.
 1. <strong>1D CNN (<code>cnn</code>)</strong>: Applies three stages of temporal 1D convolutions, batch normalization, and max pooling, followed by adaptive average pooling to feed a classification head.
 2. <strong>GRU (<code>gru</code>)</strong>: A bidirectional Gated Recurrent Unit network that models bidirectional temporal dependencies, using global mean pooling to aggregate hidden states.
 3. <strong>Small Transformer (<code>transformer</code>)</strong>: A sequence-to-sequence model that projects raw multi-channel steps into a latent space, adds a learnable positional embedding, and processes the sequence with multi-head self-attention.</p>
+<h4>DSP alternatives to TD10 — summary</h4>
+<table>
+<thead>
+<tr>
+<th>Front-end</th>
+<th>Module</th>
+<th>Dims</th>
+<th>Torch-free</th>
+<th>Paper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TD10</td>
+<td><code>emg_core.dsp.features</code></td>
+<td>840 (<code>C=4, ±10 ctx</code>)</td>
+<td>Yes</td>
+<td>Baseline</td>
+</tr>
+<tr>
+<td>Handcrafted 112</td>
+<td><code>dsp.handcrafted</code></td>
+<td>112 (<code>28×4</code>)</td>
+<td>Yes</td>
+<td>Mohapatra ACL 2025</td>
+</tr>
+<tr>
+<td>SPD Riemannian</td>
+<td><code>dsp.spd</code></td>
+<td><code>K=C(C+1)/2</code> (10 @ <code>C=4</code>)</td>
+<td>Yes</td>
+<td>Gowda &amp; Miller ACL 2026</td>
+</tr>
+<tr>
+<td>STFT spectral</td>
+<td><code>foundation.spectre.stft_kmeans_pseudolabels</code></td>
+<td><code>n_clusters=64</code></td>
+<td>With fallback</td>
+<td>SPECTRE <code>arXiv:2512.22481</code></td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2>3. Reproducible Runs &amp; Training Configs</h2>
-<p>Training parameters are governed by the <code>TrainingConfig</code> Pydantic model (<code>sdk/emg_core/ml/config_schema.py</code>) to ensure reproducibility. Configs are stored alongside model weights to enable full lineage tracking:</p>
+<p>Training parameters are governed by the <code>TrainingConfig</code> Pydantic model (<code>src/subvocal/emg_core/ml/config_schema.py</code>) to ensure reproducibility. Configs are stored alongside model weights to enable full lineage tracking:</p>
 <pre><code class="language-json">{
   &quot;model_type&quot;: &quot;cnn&quot;,
   &quot;seed&quot;: 42,
@@ -125,6 +244,15 @@
   &quot;num_layers&quot;: 2
 }
 </code></pre>
+<p>Training helpers per architecture (all require <code>torch</code> → <code>pip install "subvocal[ml]"</code>):</p>
+<ul>
+<li><strong>SPD-GRU</strong>: <code>train_step</code> / <code>train_spd_gru</code> / <code>ctc_loss</code> / <code>greedy_decode</code> in <code>emg_core.ml.spd_gru</code> (see §2C).</li>
+<li><strong>SpeechNet</strong>: <code>train_speechnet</code> (from scratch, <code>TensorDataset</code> + <code>AdamW</code>+<code>CrossEntropy</code>) and <code>finetune_inter_session</code> / <code>finetune_speechnet</code> (freeze backbone, 5 epochs, <code>lr=5e-4</code>) in <code>emg_core.ml.speechnet</code> (see §2D).</li>
+<li><strong>TinyMyo</strong>: <code>TinyMyoFoundation.pretrain_step</code> / <code>finetune_step</code> and functional <code>pretrain_step</code> / <code>finetune_step</code> in <code>emg_core.foundation.tinymyo</code> (see §2E).</li>
+<li><strong>AEMG</strong>: <code>EMGTokenizer.encode</code>/<code>decode</code> + <code>AEMGFramework.pretrain_step</code> / <code>encode_and_mask</code> in <code>emg_core.foundation.aemg_tokenizer</code> (see §2F).</li>
+<li><strong>SPECTRE</strong>: <code>stft_kmeans_pseudolabels</code> + <code>SPECTREEncoder.ssl_loss</code> / <code>forward</code> with <code>mask</code> (see <a href="configuration.md">Configuration</a>).</li>
+</ul>
+<p><code>TrainingConfig</code> is shared for <code>rf</code>/<code>svm</code>/<code>cnn</code>/<code>gru</code>/<code>transformer</code>; foundation/adaptation modules use direct constructor params as documented above and are not part of <code>SubvocalConfig</code>.</p>
 <hr />
 <h2>4. Per-User Calibration &amp; Fine-Tuning</h2>
 <p>Silent speech gestures vary highly across individuals due to anatomical differences and sensor placement. The middleware implements a transfer learning calibration routine (<code>calibrate_model</code>):</p>
@@ -134,16 +262,26 @@
 <li><strong>Layer Freezing</strong>: Freezes base feature-extraction layers to prevent representation degradation.</li>
 <li><strong>Fine-Tuning</strong>: Trains the head parameters on the user's local calibration dataset using a reduced learning rate ($10^{-4}$) to adapt quickly (15 epochs) without overfitting.</li>
 </ol>
+<p>Foundation/adaptation calibration is handled by module-specific helpers rather than <code>calibrate_model</code>:</p>
+<ul>
+<li><strong>SpeechNet inter-session</strong>: <code>finetune_inter_session(..., freeze_backbone=True, epochs=5, lr=5e-4)</code> — only the head (<code>96*8→8</code>) updates, &lt;10 min data (≈50–150 utterances) per SilentWear (Spacone et al. 2026).</li>
+<li><strong>SAL/LBN</strong>: <code>adapt_sal_lbn(backbone, sal_lbn, calib_loader, epochs=5, lr=1e-3)</code> — supervised affine correction, backbone frozen (Pereira et al. <code>arXiv:2409.08058</code>).</li>
+<li><strong>CPEP</strong>: <code>CPEPFramework.zero_shot_predict(query_emg, gallery_pose_embs, gallery_labels, k=10)</code> — no target data, or few-shot kNN after <code>pose_emg_contrastive_loss</code> alignment (Cui et al. <code>arXiv:2509.04699</code>).</li>
+<li><strong>Variance Transfer</strong>: <code>transfer_to_target(posterior, calib_data, calib_labels, w_s=1.0)</code> — closed-form Bayesian update of precision with 1 trial (Yoneda et al. <code>arXiv:2505.15381</code>).</li>
+<li><strong>TinyMyo</strong>: <code>TinyMyoFoundation.finetune_step(..., task="classification")</code> — fine-tune pooled head on calibration split; pre-training uses <code>pretrain_step</code> masked MSE (<code>arXiv:2512.15729</code>).</li>
+</ul>
 <hr />
 <h2>5. Model Export &amp; int8 Quantization</h2>
 <p>For low-power mobile or wearable integration, models can be compiled and optimized.</p>
 <h3>PyTorch → ONNX</h3>
 <p>Models are exported to ONNX format with dynamic batch sizes:</p>
 <pre><code class="language-bash">python3 -m emg_core.ml.export --user_id &lt;user&gt; --model_type cnn --format onnx
+python3 -m emg_core.ml.export --user_id &lt;user&gt; --model_type speechnet --format onnx  # SpeechNet GAP9
 </code></pre>
 <h3>Dynamic int8 Quantization</h3>
 <p>Using PyTorch's dynamic quantization, linear and recurrent weights are quantized from float32 to int8:
 $$\mathbf{W}<em>{\text{int8}} = \text{round}\left(\frac{\mathbf{W}</em>{\text{float32}}}{\text{scale}}\right) + \text{zero_point}$$</p>
+<p>For <strong>SpeechNet on GAP9</strong> (Spacone et al. 2026) the reference flow is: train → <code>finetune_inter_session</code> calibration → export ONNX with <code>dynamic_axes</code> (batch) → GreenWaves GAP9 NNTool quantization to <code>int8</code> (per-layer scale/zero-point, autotiler memory). Paper reports 63.9 µJ / 6.4 ms at 10 mW for the 15k int8 model; <code>SpeechNet.estimate_energy()</code> / <code>estimate_latency()</code> / <code>estimate_flops()</code> mirror these budgets (scaled by <code>num_channels/14</code>), and <code>count_parameters()</code> validates the ~15k footprint before flashing. No new code path is needed — the same <code>emg_core.ml.export</code> jail + <code>weights_only=True</code> guards apply.</p>
 <h3>Accuracy Regression Check</h3>
 <p>To safeguard against precision loss, the quantization pipeline runs a verification check on user validation data. If the drop in accuracy exceeds the configured threshold, the quantized model is rejected:
 $$\text{Accuracy}<em>{\text{float32}} - \text{Accuracy}</em>{\text{int8}} \le 0.05 \quad (5\%)$$</p>
@@ -230,20 +368,27 @@ $$\text{Accuracy}<em>{\text{float32}} - \text{Accuracy}</em>{\text{int8}} \le 0.
 </tr>
 </tbody>
 </table>
-        </article>
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="../apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="../apex.html">SPX Benchmarks</a><a href="../platform/intent-benchmark.html">Intent Benchmark</a><a href="../platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="../platform/architecture.html">Architecture</a><a href="../platform/hardware-drivers.html">Hardware</a><a href="../api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="../docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
     </div>
-  </main>
+  </footer>
+  <script>function toggleMobile(){const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}</script>
   <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({ startOnLoad: true, theme: "neutral" });</script>
 </body>
 </html>

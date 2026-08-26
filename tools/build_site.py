@@ -69,51 +69,64 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title} | Subvocal SDK</title>
-  <link rel="stylesheet" href="{root}index.css">
-  <style>
-    .docs-body table {{ border-collapse: collapse; margin: 1rem 0; width: 100%; }}
-    .docs-body th, .docs-body td {{ border: 1px solid var(--color-border, #444); padding: 0.4rem 0.7rem; text-align: left; }}
-    .docs-body img {{ max-width: 100%; }}
-    .docs-body h1, .docs-body h2 {{ margin-top: 2rem; }}
-    .mermaid {{ background: transparent; margin: 1rem 0; }}
-  </style>
+  <link rel="stylesheet" href="{root}index.css?v=2">
 </head>
 <body>
-  <main data-page="subvocal">
-    <div data-component="container">
-      <section data-component="top">
-        <div>
-          <a href="{root}index.html" style="text-decoration: none; font-size: 1.25rem; font-weight: 700; color: var(--color-text-strong); font-family: var(--font-mono); letter-spacing: -0.03em;">subvocal</a>
-        </div>
-        <nav data-component="nav-desktop">
-          <ul>
-            <li><a href="https://github.com/PranavKalkunte/subvocal" target="_blank" style="white-space: nowrap;">GitHub</a></li>
-            <li><a href="{root}docs.html">Docs</a></li>
-            <li><a href="{root}platform/index.html"{platform_current}>Platform</a></li>
-            <li><a href="{root}api.html">API</a></li>
-          </ul>
-        </nav>
-      </section>
-      <div class="docs-layout">
-        <aside class="docs-sidebar">
-{sidebar}
-        </aside>
-        <article class="docs-body">
-{content}
-        </article>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="{root}index.html">
+        <span class="brand-mark">subvocal</span>
+        <span class="brand-tag">Silent Productivity</span>
+      </a>
+      <nav class="nav-center" aria-label="Primary">
+        <a href="{root}apex.html">SPX Benchmarks</a>
+        <a href="{root}platform/index.html"{platform_current}>Platform</a>
+        <a href="{root}docs.html">Docs</a>
+        <a href="{root}api.html">API</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn-ghost hide-mobile" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a>
+        <a class="btn-dark" href="{root}docs.html">Start building →</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobile()"><span class="sr-only">Open menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
       </div>
-      <footer data-component="footer">
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a></div>
-        <div data-slot="cell"><a href="{root}docs.html">Docs</a></div>
-        <div data-slot="cell"><a href="https://github.com/PranavKalkunte/subvocal/commits/main" target="_blank">Changelog</a></div>
-      </footer>
     </div>
-    <div data-component="legal">
-      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a></span>
-      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a></span>
-      <span>English</span>
+  </header>
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="container" style="padding:12px 16px 16px">
+      <a href="{root}apex.html">SPX Benchmarks</a>
+      <a href="{root}platform/index.html">Platform</a>
+      <a href="{root}docs.html">Docs</a>
+      <a href="{root}api.html">API</a>
+      <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub →</a>
     </div>
-  </main>
+  </div>
+  <div class="docs-layout">
+    <aside class="sidebar">
+{sidebar}
+    </aside>
+    <article class="docs-body">
+{content}
+    </article>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="font-weight:800;letter-spacing:-0.03em;color:#0a0a0a">subvocal</div>
+          <p style="margin-top:8px">Hardware-agnostic middleware for silent speech. MIT licensed.</p>
+          <div style="margin-top:12px;display:flex;gap:8px"><a class="btn-ghost" href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a class="btn-dark" href="{root}apex.html">SPX Leaderboard</a></div>
+        </div>
+        <div class="footer-col"><h4>Research</h4><a href="{root}apex.html">SPX Benchmarks</a><a href="{root}platform/intent-benchmark.html">Intent Benchmark</a><a href="{root}platform/benchmark-report.html">Benchmark Report</a></div>
+        <div class="footer-col"><h4>Platform</h4><a href="{root}platform/architecture.html">Architecture</a><a href="{root}platform/hardware-drivers.html">Hardware</a><a href="{root}api.html">API</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a><a href="https://github.com/PranavKalkunte/subvocal/blob/main/CHANGELOG.md" target="_blank">Changelog</a></div>
+      </div>
+    </div>
+    <div class="legal">
+      <span>©2026 <a href="https://github.com/PranavKalkunte">Pranav Kalkunte</a> · San Francisco, CA</span>
+      <span><a href="https://github.com/PranavKalkunte/subvocal/blob/main/LICENSE" target="_blank">MIT License</a> · <a href="https://github.com/PranavKalkunte/subvocal" target="_blank">GitHub</a> · English</span>
+    </div>
+  </footer>
+  <script>function toggleMobile(){{const m=document.getElementById('mobileMenu');const b=document.querySelector('.nav-toggle');const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')}}</script>
   {mermaid}
 </body>
 </html>
@@ -135,16 +148,23 @@ def render_markdown(md_text: str) -> tuple[str, bool]:
 
 
 def sidebar_html(active_slug: str, root: str) -> str:
-    lines = ["          <h4>Platform Corpus</h4>", "          <ul>"]
+    lines = ["      <h4>Platform Corpus</h4>", "      <ul>"]
     for _, slug, title, _ in PLATFORM_PAGES:
         current = ' aria-current="page"' if slug == active_slug else ""
-        lines.append(f'            <li><a href="{root}platform/{slug}.html"{current}><span>[*]</span> {title}</a></li>')
-    lines.append("          </ul>")
-    lines.append("          <h4>Tutorials</h4>")
-    lines.append("          <ul>")
+        lines.append(f'        <li><a href="{root}platform/{slug}.html"{current}>{title}</a></li>')
+    lines.append("      </ul>")
+    lines.append("      <h4>Tutorials</h4>")
+    lines.append("      <ul>")
     current = ' aria-current="page"' if active_slug == "walkthrough" else ""
-    lines.append(f'            <li><a href="{root}walkthrough.html"{current}><span>[*]</span> End-to-End Walkthrough</a></li>')
-    lines.append("          </ul>")
+    lines.append(f'        <li><a href="{root}walkthrough.html"{current}>End-to-End Walkthrough</a></li>')
+    lines.append("      </ul>")
+    # SPX special links
+    lines.append("      <h4>Benchmarks</h4>")
+    lines.append("      <ul>")
+    lines.append(f'        <li><a href="{root}apex.html">SPX Leaderboard</a></li>')
+    lines.append(f'        <li><a href="{root}platform/benchmark-report.html">Report</a></li>')
+    lines.append(f'        <li><a href="{root}api.html">API Reference</a></li>')
+    lines.append("      </ul>")
     return "\n".join(lines)
 
 
@@ -179,20 +199,23 @@ def build_platform_pages() -> list[str]:
 
 
 def build_platform_index() -> str:
-    cards = ["<h1>Platform Corpus</h1>",
-             "<p>The complete public specification set behind the Subvocal SDK: positioning, "
-             "architecture, benchmarks, security, and the MCP intent-profile proposal.</p>",
-             '<div class="docs-card-grid">']
+    intro = [
+        "<h1>Platform Corpus</h1>",
+        "<p>The complete public specification set behind the Subvocal SDK: positioning, "
+        "architecture, benchmarks, security, and the MCP intent-profile proposal.</p>",
+        '<div style="margin:12px 0 18px;display:flex;gap:8px;flex-wrap:wrap"><span class="badge">14 docs</span><span class="badge">MIT licensed</span><a href="../apex.html" class="btn-dark" style="padding:6px 14px;font-size:13px">SPX Leaderboard →</a></div>',
+        '<div class="cards">'
+    ]
+    cards = []
     for _, slug, title, desc in PLATFORM_PAGES:
         cards.append(
-            f'<a href="./{slug}.html" class="docs-card">'
-            f'<div class="docs-card-header"><span class="docs-card-icon">[*]</span>'
-            f'<span class="docs-card-title">{title}</span></div>'
-            f"<p>{desc}</p></a>"
+            f'<a href="./{slug}.html" class="card">'
+            f'<div class="card-title">{title}</div>'
+            f"<p style=\"font-size:13.5px;color:#6b7280;line-height:1.5;margin:6px 0 0\">{desc}</p></a>"
         )
-    cards.append("</div>")
+    out_html = "\n".join(intro + cards + ["</div>"])
     out = os.path.join(PLATFORM_DIR, "index.html")
-    write_page(out, "Platform Corpus", "\n".join(cards), "", "../", False, platform_current=True)
+    write_page(out, "Platform Corpus", out_html, "", "../", False, platform_current=True)
     return out
 
 
