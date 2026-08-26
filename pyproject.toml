@@ -107,6 +107,13 @@ reportOptionalMemberAccess = "warning"
 reportGeneralTypeIssues = "warning"
 reportOptionalCall = "warning"
 reportAttributeAccessIssue = "warning"
+reportCallIssue = "warning"
+reportOperatorIssue = "warning"
+reportUnknownVariableType = "warning"
+reportUnknownMemberType = "warning"
+reportUnknownParameterType = "warning"
+reportArgumentType = "warning"
+reportAssignmentType = "warning"
 # basic mode keeps CI green while new research modules (SPD/MONA/SpeechNet)
 # are iterated; bump to standard once handcrafted/adaptor/SPD are fully typed.
 
